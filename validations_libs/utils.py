@@ -13,11 +13,13 @@
 #   under the License.
 #
 
-import constants
+
 import glob
 import logging
 import os
 import yaml
+
+from validations_libs import constants
 
 LOG = logging.getLogger(__name__ + ".utils")
 

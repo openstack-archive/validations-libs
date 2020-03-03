@@ -13,7 +13,6 @@
 #   under the License.
 #
 
-import os
 
 DEFAULT_VALIDATIONS_BASEDIR = '/usr/share/validations-common'
 

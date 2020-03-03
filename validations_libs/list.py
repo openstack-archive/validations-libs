@@ -13,9 +13,9 @@
 #   under the License.
 #
 
-import constants
 import logging
-import utils as validations_utils
+from validations_libs import constants
+from validations_libs import utils as validations_utils
 
 LOG = logging.getLogger(__name__ + ".list")
 
