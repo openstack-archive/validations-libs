@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = validations-libs
+omit = validations-libs/openstack/*
+
+[report]
+ignore_errors = True
