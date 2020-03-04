@@ -308,7 +308,7 @@ def get_results(results):
 
     if len(new_log_files) > len(results):
         LOG.warn('Looks like we have more log files than '
-                   'executed validations')
+                 'executed validations')
 
     for i in new_log_files:
         os.rename(

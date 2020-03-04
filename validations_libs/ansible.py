@@ -15,8 +15,10 @@
 
 import ansible_runner
 import logging
+import pwd
 import os
 import six
+import sys
 import tempfile
 import yaml
 
@@ -29,12 +31,10 @@ LOG = logging.getLogger(__name__ + ".ansible")
 
 class Ansible(object):
 
-
     def __init__(self):
         self.log = logging.getLogger(__name__ + ".Ansible")
 
-
-    def _playbook_check(self, play):
+    def _playbook_check(self, play, playbook_dir=None):
         """Check if playbook exist"""
         if not os.path.exists(play):
             play = os.path.join(playbook_dir, play)
@@ -43,8 +43,7 @@ class Ansible(object):
         self.log.debug('Ansible playbook {} found'.format(play))
         return play
 
-
-    def _inventory(self, inventory):
+    def _inventory(self, inventory, ansible_artifact_path):
         """Handle inventory for Ansible"""
         if inventory:
             if isinstance(inventory, six.string_types):
@@ -61,7 +60,6 @@ class Ansible(object):
                 ansible_artifact_path,
                 'hosts'
             )
-
 
     def _creates_ansible_fact_dir(self,
                                   temp_suffix='validagions-libs-ansible'):
@@ -85,7 +83,6 @@ class Ansible(object):
                 )
             )
 
-
     def _get_extra_vars(self, extra_vars):
         """Manage extra_vars into a dict"""
         extravars = dict()
@@ -97,20 +94,19 @@ class Ansible(object):
                     extravars.update(yaml.safe_load(f.read()))
         return extravars
 
-
-    def _callback_whitelist(self, callback_whitelist):
+    def _callback_whitelist(self, callback_whitelist, output_callback):
         """Set callback whitelist"""
         if callback_whitelist:
-            callback_whitelist = ','.join([callback_whitelist, output_callback])
+            callback_whitelist = ','.join([callback_whitelist,
+                                          output_callback])
         else:
             callback_whitelist = output_callback
-
         return ','.join([callback_whitelist, 'profile_tasks'])
-
 
     def _ansible_env_var(self, output_callback, ssh_user, workdir, connection,
                          gathering_policy, module_path, key,
-                         extra_env_variables):
+                         extra_env_variables, ansible_timeout,
+                         callback_whitelist):
         """Handle Ansible env var for Ansible config execution"""
         cwd = os.getcwd()
         env = os.environ.copy()
@@ -244,7 +240,6 @@ class Ansible(object):
 
         return env
 
-
     def _encode_envvars(self, env):
         """Encode a hash of values.
 
@@ -256,23 +251,21 @@ class Ansible(object):
         else:
             return env
 
-
     def run(self, playbook, inventory, workdir, playbook_dir=None,
             connection='smart', output_callback='yaml',
-             ssh_user='root', key=None, module_path=None,
-             limit_hosts=None, tags=None, skip_tags=None,
-             verbosity=0, quiet=False, extra_vars=None,
-             gathering_policy='smart',
-             extra_env_variables=None, parallel_run=False,
-             callback_whitelist=None, ansible_cfg=None,
-             ansible_timeout=30, reproduce_command=False,
-             fail_on_rc=True):
-
+            ssh_user='root', key=None, module_path=None,
+            limit_hosts=None, tags=None, skip_tags=None,
+            verbosity=0, quiet=False, extra_vars=None,
+            gathering_policy='smart',
+            extra_env_variables=None, parallel_run=False,
+            callback_whitelist=None, ansible_cfg=None,
+            ansible_timeout=30, reproduce_command=False,
+            fail_on_rc=True):
 
         if not playbook_dir:
             playbook_dir = workdir
 
-        playbook = self._playbook_check(play=playbook)
+        playbook = self._playbook_check(playbook, playbook_dir)
         self.log.info(
             'Running Ansible playbook: {},'
             ' Working directory: {},'
@@ -286,12 +279,14 @@ class Ansible(object):
         ansible_fact_path = self._creates_ansible_fact_dir()
         extravars = self._get_extra_vars(extra_vars)
 
-        callback_whitelist = self._callback_whitelist(callback_whitelist)
+        callback_whitelist = self._callback_whitelist(callback_whitelist,
+                                                      output_callback)
 
         # Set ansible environment variables
-        env = _ansible_env_var(output_callback, ssh_user, workdir, connection,
-                               gathering_policy, module_path, key,
-                               extra_env_variables)
+        env = self._ansible_env_var(output_callback, ssh_user, workdir,
+                                    connection, gathering_policy, module_path,
+                                    key, extra_env_variables, ansible_timeout,
+                                    callback_whitelist)
 
         command_path = None
 
@@ -310,7 +305,7 @@ class Ansible(object):
             r_opts = {
                 'private_data_dir': workdir,
                 'project_dir': playbook_dir,
-                'inventory': self._inventory(inventory),
+                'inventory': self._inventory(inventory, ansible_artifact_path),
                 'envvars': self._encode_envvars(env=env),
                 'playbook': playbook,
                 'verbosity': verbosity,
@@ -320,7 +315,7 @@ class Ansible(object):
                 'fact_cache_type': 'jsonfile',
                 'artifact_dir': ansible_artifact_path,
                 'rotate_artifacts': 256
-            }
+                }
 
         if skip_tags:
             r_opts['skip_tags'] = skip_tags
@@ -348,5 +343,3 @@ class Ansible(object):
 
         status, rc = runner.run()
         return playbook, rc, status
-
-
