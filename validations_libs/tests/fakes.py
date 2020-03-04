@@ -13,8 +13,6 @@
 #   under the License.
 #
 
-import mock
-
 
 VALIDATIONS_LIST = [{
     'description': 'My Validation One Description',
