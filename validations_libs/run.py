@@ -33,21 +33,12 @@ class Run(object):
     def run_validations(self, playbook, inventory,
                         group=None,
                         extra_vars=None,
-                        extra_vars_file=None,
                         validations_dir=None,
                         validation_name=None):
 
         self.log = logging.getLogger(__name__ + ".run_validations")
 
         playbooks = []
-        extra_vars_input = {}
-
-        if extra_vars:
-            extra_vars_input.update(extra_vars)
-
-        if extra_vars_file:
-            extra_vars_input.update(extra_vars_file)
-
         if group:
             self.log.debug('Getting the validations list by group')
             try:
@@ -68,9 +59,6 @@ class Run(object):
                           "'--validation' to run validation(s) by their "
                           "name(s)."
                          )
-
-        failed_val = False
-
         run_ansible = v_ansible()
         self.log.debug('Running the validations with Ansible')
         results = []
@@ -85,7 +73,7 @@ class Run(object):
                                             inventory=inventory,
                                             output_callback='validation_json',
                                             quiet=True,
-                                            extra_vars=extra_vars_input,
+                                            extra_vars=extra_vars,
                                             gathering_policy='explicit')
             results.append({'validation': {
                                 'playbook': _playbook,
