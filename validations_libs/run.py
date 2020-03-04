@@ -18,7 +18,6 @@ import logging
 import os
 import six
 
-from concurrent.futures import ThreadPoolExecutor
 from validations_libs.ansible import Ansible as v_ansible
 from validations_libs import utils as v_utils
 
@@ -43,7 +42,7 @@ class Run(object):
             self.log.debug('Getting the validations list by group')
             try:
                 validations = v_utils.parse_all_validations_on_disk(
-                    (self.validations_dir if validations_dir
+                    (validations_dir if validations_dir
                      else constants.ANSIBLE_VALIDATION_DIR), group)
                 for val in validations:
                     playbooks.append(val.get('id') + '.yaml')
@@ -67,8 +66,11 @@ class Run(object):
                 _playbook, _rc, _status = run_ansible.run(
                                             workdir=tmp,
                                             playbook=playbook,
-                                            playbook_dir=constants.
-                                            ANSIBLE_VALIDATION_DIR,
+                                            playbook_dir=(
+                                                validations_dir if
+                                                validations_dir else
+                                                constants.
+                                                ANSIBLE_VALIDATION_DIR),
                                             parallel_run=True,
                                             inventory=inventory,
                                             output_callback='validation_json',

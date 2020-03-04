@@ -63,7 +63,7 @@ class Pushd(object):
 class TempDirs(object):
     """Simple context manager to manage temp directories."""
 
-    def __init__(self, dir_path=None, dir_prefix='tripleo', cleanup=True,
+    def __init__(self, dir_path=None, dir_prefix='validations', cleanup=True,
                  chdir=True):
         """This context manager will create, push, and cleanup temp directories.
 
@@ -118,7 +118,8 @@ class TempDirs(object):
         if self.cleanup:
             self.clean()
         else:
-            LOG.warning("Not cleaning temporary directory [ %s ]" % self.dir)
+            LOG.warning("Not cleaning temporary directory "
+                        "[ %s ]" % self.dir)
 
     def clean(self):
         shutil.rmtree(self.dir, ignore_errors=True)
