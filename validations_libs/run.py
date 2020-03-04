@@ -30,10 +30,9 @@ class Run(object):
         self.log = logging.getLogger(__name__ + ".Run")
 
     def run_validations(self, playbook, inventory,
-                        group=None,
-                        extra_vars=None,
-                        validations_dir=None,
-                        validation_name=None):
+                        group=None, extra_vars=None, validations_dir=None,
+                        validation_name=None, extra_env_var=None,
+                        ansible_cfg=None):
 
         self.log = logging.getLogger(__name__ + ".run_validations")
 
@@ -63,23 +62,24 @@ class Run(object):
         results = []
         with v_utils.TempDirs(chdir=False) as tmp:
             for playbook in playbooks:
-                _playbook, _rc, _status = run_ansible.run(
-                                            workdir=tmp,
-                                            playbook=playbook,
-                                            playbook_dir=(
-                                                validations_dir if
-                                                validations_dir else
-                                                constants.
-                                                ANSIBLE_VALIDATION_DIR),
-                                            parallel_run=True,
-                                            inventory=inventory,
-                                            output_callback='validation_json',
-                                            quiet=True,
-                                            extra_vars=extra_vars,
-                                            gathering_policy='explicit')
+                stdout_file, _playbook, _rc, _status = run_ansible.run(
+                    workdir=tmp,
+                    playbook=playbook,
+                    playbook_dir=(validations_dir if
+                                  validations_dir else
+                                  constants.ANSIBLE_VALIDATION_DIR),
+                    parallel_run=True,
+                    inventory=inventory,
+                    output_callback='validation_json',
+                    quiet=True,
+                    extra_vars=extra_vars,
+                    extra_env_variables=extra_env_var,
+                    ansible_cfg=ansible_cfg,
+                    gathering_policy='explicit')
             results.append({'validation': {
                                 'playbook': _playbook,
                                 'rc_code': _rc,
-                                'status': _status
+                                'status': _status,
+                                'stdout_file': stdout_file
                            }})
         return results

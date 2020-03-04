@@ -28,6 +28,14 @@ from validations_libs import utils
 
 LOG = logging.getLogger(__name__ + ".ansible")
 
+# NOTE(cloudnull): This is setting the FileExistsError for py2 environments.
+#                  When we no longer support py2 (centos7) this should be
+#                  removed.
+try:
+    FileExistsError = FileExistsError
+except NameError:
+    FileExistsError = OSError
+
 
 class Ansible(object):
 
@@ -259,8 +267,7 @@ class Ansible(object):
             gathering_policy='smart',
             extra_env_variables=None, parallel_run=False,
             callback_whitelist=None, ansible_cfg=None,
-            ansible_timeout=30, reproduce_command=False,
-            fail_on_rc=True):
+            ansible_timeout=30):
 
         if not playbook_dir:
             playbook_dir = workdir
@@ -342,4 +349,4 @@ class Ansible(object):
         runner = ansible_runner.Runner(config=runner_config)
 
         status, rc = runner.run()
-        return playbook, rc, status
+        return runner.stdout.name, playbook, rc, status
