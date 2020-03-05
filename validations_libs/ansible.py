@@ -20,6 +20,7 @@ import os
 import six
 import sys
 import tempfile
+import uuid
 import yaml
 
 from six.moves import configparser
@@ -297,7 +298,8 @@ class Ansible(object):
 
         command_path = None
 
-        with utils.TempDirs(chdir=False) as ansible_artifact_path:
+        with utils.TempDirs(dir_path=constants.VALIDATION_RUN_LOG_PATH,
+                            chdir=False,) as ansible_artifact_path:
             if 'ANSIBLE_CONFIG' not in env and not ansible_cfg:
                 ansible_cfg = os.path.join(ansible_artifact_path, 'ansible.cfg')
                 config = configparser.ConfigParser()
