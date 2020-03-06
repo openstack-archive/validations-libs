@@ -48,7 +48,7 @@ class Run(object):
             except Exception as e:
                 raise(e)
 
-        else:
+        elif validation_name:
             for pb in validation_name:
                 if pb not in v_utils.get_validation_group_name_list():
                     playbooks.append(pb + '.yaml')
@@ -57,6 +57,9 @@ class Run(object):
                           "'--validation' to run validation(s) by their "
                           "name(s)."
                          )
+        else:
+            raise RuntimeError("No validations found")
+
         run_ansible = v_ansible()
         self.log.debug('Running the validations with Ansible')
         results = []
