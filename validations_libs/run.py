@@ -29,15 +29,20 @@ class Run(object):
     def __init__(self):
         self.log = logging.getLogger(__name__ + ".Run")
 
-    def run_validations(self, playbooks=[], inventory='localhost',
+    def run_validations(self, playbook=[], inventory='localhost',
                         group=None, extra_vars=None, validations_dir=None,
                         validation_name=None, extra_env_vars=None,
                         ansible_cfg=None, quiet=True):
 
         self.log = logging.getLogger(__name__ + ".run_validations")
 
-        if not isinstance(playbooks, list):
-            raise RuntimeError("Playbooks should be a List")       
+        if isinstance(playbook, list):
+            playbooks = playbook
+        elif isinstance(playbook, str):
+            playbooks = []
+            playbooks.append(playbook)
+        else:
+            raise TypeError("Playbooks should be a List or a Str")
 
         if group:
             self.log.debug('Getting the validations list by group')
@@ -78,7 +83,7 @@ class Run(object):
                     output_callback='validation_json',
                     quiet=quiet,
                     extra_vars=extra_vars,
-                    extra_env_variables=extra_env_var,
+                    extra_env_variables=extra_env_vars,
                     ansible_cfg=ansible_cfg,
                     gathering_policy='explicit')
             results.append({'validation': {
