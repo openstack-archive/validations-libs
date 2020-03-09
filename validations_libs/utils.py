@@ -21,7 +21,7 @@ import shutil
 import tempfile
 import yaml
 
-from prettytable import PrettyTable
+#from prettytable import PrettyTable
 from validations_libs import constants
 
 RED = "\033[1;31m"
@@ -238,81 +238,81 @@ def get_new_validations_logs_on_disk():
     return files
 
 
-def get_results(results):
-    """Get validations results and return as PrettytTable format"""
-    new_log_files = get_new_validations_logs_on_disk()
+#def get_results(results):
+#    """Get validations results and return as PrettytTable format"""
+#    new_log_files = get_new_validations_logs_on_disk()
 
-    for i in new_log_files:
-        val_id = "{}.yaml".format(i.split('_')[1])
-        for res in results:
-            if res['validation'].get('validation_id') == val_id:
-                res['validation']['logfile'] = \
-                    os.path.join(constants.VALIDATIONS_LOG_BASEDIR, i)
+#    for i in new_log_files:
+#        val_id = "{}.yaml".format(i.split('_')[1])
+#        for res in results:
+#            if res['validation'].get('validation_id') == val_id:
+#                res['validation']['logfile'] = \
+#                    os.path.join(constants.VALIDATIONS_LOG_BASEDIR, i)
 
-    t = PrettyTable(border=True, header=True, padding_width=1)
-    t.field_names = [
-        "UUID", "Validations", "Status", "Host Group(s)",
-        "Status by Host", "Unreachable Host(s)", "Duration"]
+#    t = PrettyTable(border=True, header=True, padding_width=1)
+#    t.field_names = [
+#        "UUID", "Validations", "Status", "Host Group(s)",
+#        "Status by Host", "Unreachable Host(s)", "Duration"]
 
-    for validation in results:
-        r = []
-        logfile = validation['validation'].get('logfile', None)
-        if logfile and os.path.exists(logfile):
-            with open(logfile, 'r') as val:
-                contents = json.load(val)
+#    for validation in results:
+#        r = []
+#        logfile = validation['validation'].get('logfile', None)
+#        if logfile and os.path.exists(logfile):
+#            with open(logfile, 'r') as val:
+#                contents = json.load(val)
 
-            for i in contents['plays']:
-                host = [
-                    x.encode('utf-8')
-                    for x in i['play'].get('host').split(', ')
-                ]
-                val_id = i['play'].get('validation_id')
-                time_elapsed = \
-                    i['play']['duration'].get('time_elapsed', None)
+#            for i in contents['plays']:
+#                host = [
+#                    x.encode('utf-8')
+#                    for x in i['play'].get('host').split(', ')
+#                ]
+#                val_id = i['play'].get('validation_id')
+#                time_elapsed = \
+#                    i['play']['duration'].get('time_elapsed', None)
 
-            r.append(contents['plays'][0]['play'].get('id'))
-            r.append(val_id)
-            if validation['validation'].get('status') == "PASSED":
-                r.append(PASSED_VALIDATION)
-            else:
-                r.append(FAILED_VALIDATION)
+#            r.append(contents['plays'][0]['play'].get('id'))
+#            r.append(val_id)
+#            if validation['validation'].get('status') == "PASSED":
+#                r.append(PASSED_VALIDATION)
+#            else:
+#                r.append(FAILED_VALIDATION)
 
-            unreachable_hosts = []
-            hosts_result = []
-            for h in list(contents['stats'].keys()):
-                ht = h.encode('utf-8')
-                if contents['stats'][ht]['unreachable'] != 0:
-                    unreachable_hosts.append(ht)
-                elif contents['stats'][ht]['failures'] != 0:
-                    hosts_result.append("{}{}{}".format(
-                        RED, ht, RESET))
-                else:
-                    hosts_result.append("{}{}{}".format(
-                        GREEN, ht, RESET))
+#            unreachable_hosts = []
+#            hosts_result = []
+#            for h in list(contents['stats'].keys()):
+#                ht = h.encode('utf-8')
+#                if contents['stats'][ht]['unreachable'] != 0:
+#                    unreachable_hosts.append(ht)
+#                elif contents['stats'][ht]['failures'] != 0:
+#                    hosts_result.append("{}{}{}".format(
+#                        RED, ht, RESET))
+#                else:
+#                    hosts_result.append("{}{}{}".format(
+#                        GREEN, ht, RESET))
 
-            r.append(", ".join(host))
-            r.append(", ".join(hosts_result))
-            r.append("{}{}{}".format(RED,
-                                     ", ".join(unreachable_hosts),
-                                     RESET))
-            r.append(time_elapsed)
-            t.add_row(r)
+#            r.append(", ".join(host))
+#            r.append(", ".join(hosts_result))
+#            r.append("{}{}{}".format(RED,
+#                                     ", ".join(unreachable_hosts),
+#                                     RESET))
+#            r.append(time_elapsed)
+#            t.add_row(r)
 
-    t.sortby = "UUID"
-    for field in t.field_names:
-        if field == "Status":
-            t.align['Status'] = "l"
-        else:
-            t.align[field] = "l"
+#    t.sortby = "UUID"
+#    for field in t.field_names:
+#        if field == "Status":
+#            t.align['Status'] = "l"
+#        else:
+#            t.align[field] = "l"
 
-    print(t)
+#    print(t)
 
-    if len(new_log_files) > len(results):
-        LOG.warn('Looks like we have more log files than '
-                 'executed validations')
+#    if len(new_log_files) > len(results):
+#        LOG.warn('Looks like we have more log files than '
+#                 'executed validations')
 
-    for i in new_log_files:
-        os.rename(
-            "{}/{}".format(constants.VALIDATIONS_LOG_BASEDIR,
-                           i), "{}/processed_{}".format(
-                               constants.VALIDATIONS_LOG_BASEDIR, i))
+#    for i in new_log_files:
+#        os.rename(
+#            "{}/{}".format(constants.VALIDATIONS_LOG_BASEDIR,
+#                           i), "{}/processed_{}".format(
+#                               constants.VALIDATIONS_LOG_BASEDIR, i))

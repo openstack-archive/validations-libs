@@ -13,12 +13,12 @@
 #   under the License.
 #
 
-import constants
 import logging
 import os
 import six
 
 from validations_libs.ansible import Ansible as v_ansible
+from validations_libs import constants
 from validations_libs import utils as v_utils
 
 LOG = logging.getLogger(__name__ + ".run")

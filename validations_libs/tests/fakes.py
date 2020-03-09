@@ -13,7 +13,7 @@
 #   under the License.
 #
 
-import mock
+from unittest import mock
 
 
 VALIDATIONS_LIST = [{
@@ -139,3 +139,7 @@ VALIDATIONS_LOGS_CONTENTS_LIST = [{
     },
     'validation_output': []
 }]
+
+
+def fake_ansible_runner_run_return(status='successful', rc=0):
+    return status, rc

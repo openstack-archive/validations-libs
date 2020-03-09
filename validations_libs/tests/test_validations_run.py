@@ -1,4 +1,4 @@
-#   Copyright 2018 Red Hat, Inc.
+#   Copyright 2020 Red Hat, Inc.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License"); you may
 #   not use this file except in compliance with the License. You may obtain
@@ -13,14 +13,14 @@
 #   under the License.
 #
 
-import mock
-import unittest
+from unittest import mock
+from unittest import TestCase
 
 from validations_libs.tests import fakes
 from validations_libs.run import Run
 
 
-class TestValidatorRun(unittest.TestCase):
+class TestValidatorRun(TestCase):
 
     def setUp(self):
         super(TestValidatorRun, self).setUp()
