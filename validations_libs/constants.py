@@ -12,8 +12,6 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
-
-
 DEFAULT_VALIDATIONS_BASEDIR = '/usr/share/validations-common'
 
 ANSIBLE_VALIDATION_DIR = '/usr/share/validations-common/playbooks'
@@ -23,3 +21,5 @@ VALIDATION_GROUPS_INFO = '%s/groups.yaml' % DEFAULT_VALIDATIONS_BASEDIR
 VALIDATION_GROUPS = ['no-op',
                      'prep',
                      'post']
+
+VALIDATION_RUN_LOG_PATH = '/var/lib/validations/logs'

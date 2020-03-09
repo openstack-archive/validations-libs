@@ -12,16 +12,117 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
-
-
 import glob
+import json
 import logging
 import os
+import six
+import shutil
+import tempfile
 import yaml
 
 from validations_libs import constants
 
+RED = "\033[1;31m"
+GREEN = "\033[0;32m"
+RESET = "\033[0;0m"
+
+FAILED_VALIDATION = "{}FAILED{}".format(RED, RESET)
+PASSED_VALIDATION = "{}PASSED{}".format(GREEN, RESET)
+
 LOG = logging.getLogger(__name__ + ".utils")
+
+
+class Pushd(object):
+    """Simple context manager to change directories and then return."""
+
+    def __init__(self, directory):
+        """This context manager will enter and exit directories.
+
+        >>> with Pushd(directory='/tmp'):
+        ...     with open('file', 'w') as f:
+        ...         f.write('test')
+
+        :param directory: path to change directory to
+        :type directory: `string`
+        """
+        self.dir = directory
+        self.pwd = self.cwd = os.getcwd()
+
+    def __enter__(self):
+        os.chdir(self.dir)
+        self.cwd = os.getcwd()
+        return self
+
+    def __exit__(self, *args):
+        if self.pwd != self.cwd:
+            os.chdir(self.pwd)
+
+
+class TempDirs(object):
+    """Simple context manager to manage temp directories."""
+
+    def __init__(self, dir_path=None, dir_prefix='validations', cleanup=True,
+                 chdir=True):
+        """This context manager will create, push, and cleanup temp directories.
+
+        >>> with TempDirs() as t:
+        ...     with open('file', 'w') as f:
+        ...         f.write('test')
+        ...     print(t)
+        ...     os.mkdir('testing')
+        ...     with open(os.path.join(t, 'file')) as w:
+        ...         print(w.read())
+        ...     with open('testing/file', 'w') as f:
+        ...         f.write('things')
+        ...     with open(os.path.join(t, 'testing/file')) as w:
+        ...         print(w.read())
+
+        :param dir_path: path to create the temp directory
+        :type dir_path: `string`
+        :param dir_prefix: prefix to add to a temp directory
+        :type dir_prefix: `string`
+        :param cleanup: when enabled the temp directory will be
+                         removed on exit.
+        :type cleanup: `boolean`
+        :param chdir: Change to/from the created temporary dir on enter/exit.
+        :type chdir: `boolean`
+        """
+
+        # NOTE(cloudnull): kwargs for tempfile.mkdtemp are created
+        #                  because args are not processed correctly
+        #                  in py2. When we drop py2 support (cent7)
+        #                  these args can be removed and used directly
+        #                  in the `tempfile.mkdtemp` function.
+        tempdir_kwargs = dict()
+        if dir_path:
+            tempdir_kwargs['dir'] = dir_path
+
+        if dir_prefix:
+            tempdir_kwargs['prefix'] = dir_prefix
+
+        self.dir = tempfile.mkdtemp(**tempdir_kwargs)
+        self.pushd = Pushd(directory=self.dir)
+        self.cleanup = cleanup
+        self.chdir = chdir
+
+    def __enter__(self):
+        if self.chdir:
+            self.pushd.__enter__()
+        return self.dir
+
+    def __exit__(self, *args):
+        if self.chdir:
+            self.pushd.__exit__()
+        if self.cleanup:
+            self.clean()
+        else:
+            LOG.warning("Not cleaning temporary directory "
+                        "[ %s ]" % self.dir)
+
+    def clean(self):
+        shutil.rmtree(self.dir, ignore_errors=True)
+        LOG.info("Temporary directory [ %s ] cleaned up" % self.dir)
 
 
 def parse_all_validations_on_disk(path, groups=None):
@@ -94,3 +195,43 @@ def get_validation_parameters(validation):
     except KeyError:
         LOG.debug("No parameters found for this validation")
         return dict()
+
+
+def read_validation_groups_file(groups_file_path=None):
+    """Load groups.yaml file and return a dictionary with its contents"""
+    if not groups_file_path:
+        groups_file_path = constants.VALIDATION_GROUPS_INFO
+
+    if not os.path.exists(groups_file_path):
+        return []
+
+    with open(groups_file_path, 'r') as grps:
+        contents = yaml.safe_load(grps)
+
+    return contents
+
+
+def get_validation_group_name_list():
+    """Get the validation group name list only"""
+    results = []
+
+    groups = read_validation_groups_file()
+
+    if groups and isinstance(dict, groups):
+        for grp_name in six.viewkeys(groups):
+            results.append(grp_name)
+
+    return results
+
+
+def get_new_validations_logs_on_disk():
+    """Return a list of new log execution filenames """
+    files = []
+
+    for root, dirs, filenames in os.walk(constants.VALIDATIONS_LOG_BASEDIR):
+        files = [
+            f for f in filenames if not f.startswith('processed')
+            and os.path.splitext(f)[1] == '.json'
+        ]
+
+    return files
