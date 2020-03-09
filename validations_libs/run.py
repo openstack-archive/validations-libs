@@ -29,14 +29,16 @@ class Run(object):
     def __init__(self):
         self.log = logging.getLogger(__name__ + ".Run")
 
-    def run_validations(self, playbook, inventory,
+    def run_validations(self, playbooks=[], inventory='localhost',
                         group=None, extra_vars=None, validations_dir=None,
-                        validation_name=None, extra_env_var=None,
+                        validation_name=None, extra_env_vars=None,
                         ansible_cfg=None, quiet=True):
 
         self.log = logging.getLogger(__name__ + ".run_validations")
 
-        playbooks = []
+        if not isinstance(playbooks, list):
+            raise RuntimeError("Playbooks should be a List")       
+
         if group:
             self.log.debug('Getting the validations list by group')
             try:
