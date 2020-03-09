@@ -24,7 +24,6 @@ from validations_libs import utils
 
 class TestAnsible(TestCase):
 
-
     def setUp(self):
         super(TestAnsible, self).setUp()
         self.unlink_patch = mock.patch('os.unlink')
@@ -45,7 +44,6 @@ class TestAnsible(TestCase):
         )
         mock_exists.assert_called_with('/tmp/non-existing.yaml')
 
-
     @mock.patch('tempfile.mkdtemp', return_value='/tmp/')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
@@ -64,17 +62,16 @@ class TestAnsible(TestCase):
                                   mock_mkdtemp):
 
         stdout_file, _playbook, _rc, _status = self.run.run('existing.yaml',
-            'localhost,',
-            '/tmp')
+                                                            'localhost,',
+                                                            '/tmp')
         self.assertEquals((_playbook, _rc, _status),
                           ('existing.yaml', 1, 'failed'))
-
 
     @mock.patch('tempfile.mkdtemp', return_value='/tmp/')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
-    @mock.patch.object(Runner,'run',
-        return_value=fakes.fake_ansible_runner_run_return(rc=0)
+    @mock.patch.object(Runner, 'run',
+                       return_value=fakes.fake_ansible_runner_run_return(rc=0)
     )
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")
@@ -91,12 +88,11 @@ class TestAnsible(TestCase):
         self.assertEquals((_playbook, _rc, _status),
                           ('existing.yaml', 0, 'successful'))
 
-
     @mock.patch('tempfile.mkdtemp', return_value='/tmp/')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
-    @mock.patch.object(Runner,'run',
-        return_value=fakes.fake_ansible_runner_run_return(rc=0)
+    @mock.patch.object(Runner, 'run',
+                       return_value=fakes.fake_ansible_runner_run_return(rc=0)
     )
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")
@@ -116,12 +112,11 @@ class TestAnsible(TestCase):
         self.assertEquals((_playbook, _rc, _status),
                           ('existing.yaml', 0, 'successful'))
 
-
     @mock.patch('tempfile.mkdtemp', return_value='/tmp/')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
-    @mock.patch.object(Runner,'run',
-        return_value=fakes.fake_ansible_runner_run_return(rc=0)
+    @mock.patch.object(Runner, 'run',
+                       return_value=fakes.fake_ansible_runner_run_return(rc=0)
     )
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")

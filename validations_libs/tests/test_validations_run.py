@@ -40,9 +40,9 @@ class TestValidatorRun(TestCase):
 
         expected_run_return = [
             {'validation': {'playbook': 'foo.yaml',
-            'rc_code': 0,
-            'status': 'successful',
-            'stdout_file': '/tmp/validation/stdout.log'}}]
+                            'rc_code': 0,
+                            'status': 'successful',
+                            'stdout_file': '/tmp/validation/stdout.log'}}]
 
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
@@ -56,7 +56,7 @@ class TestValidatorRun(TestCase):
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
     @mock.patch('validations_libs.ansible.Ansible.run')
     def test_validation_run_failed(self, mock_ansible_run,
-                                    mock_validation_dir):
+                                   mock_validation_dir):
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
             'groups': ['prep', 'pre-deployment'],
@@ -68,9 +68,9 @@ class TestValidatorRun(TestCase):
 
         expected_run_return = [
             {'validation': {'playbook': 'foo.yaml',
-            'rc_code': 0,
-            'status': 'failed',
-            'stdout_file': '/tmp/validation/stdout.log'}}]
+                            'rc_code': 0,
+                            'status': 'failed',
+                            'stdout_file': '/tmp/validation/stdout.log'}}]
 
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
