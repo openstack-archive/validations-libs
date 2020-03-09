@@ -15,7 +15,6 @@
 
 from unittest import mock
 
-
 VALIDATIONS_LIST = [{
     'description': 'My Validation One Description',
     'groups': ['prep', 'pre-deployment'],
