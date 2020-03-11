@@ -20,12 +20,10 @@ import os
 import six
 import sys
 import tempfile
-import uuid
 import yaml
 
 from six.moves import configparser
 from validations_libs import constants
-from validations_libs import utils
 
 LOG = logging.getLogger(__name__ + ".ansible")
 
@@ -40,8 +38,9 @@ except NameError:
 
 class Ansible(object):
 
-    def __init__(self):
+    def __init__(self, uuid=None):
         self.log = logging.getLogger(__name__ + ".Ansible")
+        self.uuid = uuid
 
     def _playbook_check(self, play, playbook_dir=None):
         """Check if playbook exist"""
@@ -216,6 +215,9 @@ class Ansible(object):
         env['ANSIBLE_TRANSPORT'] = connection
         env['ANSIBLE_CACHE_PLUGIN_TIMEOUT'] = 7200
 
+        if self.uuid:
+            env['ANSIBLE_UUID'] = self.uuid
+
         if connection == 'local':
             env['ANSIBLE_PYTHON_INTERPRETER'] = sys.executable
 
@@ -268,7 +270,7 @@ class Ansible(object):
             gathering_policy='smart',
             extra_env_variables=None, parallel_run=False,
             callback_whitelist=None, ansible_cfg=None,
-            ansible_timeout=30):
+            ansible_timeout=30, ansible_artifact_path=None):
 
         if not playbook_dir:
             playbook_dir = workdir
@@ -284,9 +286,8 @@ class Ansible(object):
             )
         )
 
-        ansible_fact_path = self._creates_ansible_fact_dir()
+        # ansible_fact_path = self._creates_ansible_fact_dir()
         extravars = self._get_extra_vars(extra_vars)
-
         callback_whitelist = self._callback_whitelist(callback_whitelist,
                                                       output_callback)
 
@@ -295,36 +296,34 @@ class Ansible(object):
                                     connection, gathering_policy, module_path,
                                     key, extra_env_variables, ansible_timeout,
                                     callback_whitelist)
+        if not ansible_artifact_path:
+            ansible_artifact_path = constants.VALIDATION_ANSIBLE_ARTIFACT_PATH
+        if 'ANSIBLE_CONFIG' not in env and not ansible_cfg:
+            ansible_cfg = os.path.join(ansible_artifact_path, 'ansible.cfg')
+            config = configparser.ConfigParser()
+            config.add_section('defaults')
+            config.set('defaults', 'internal_poll_interval', '0.05')
+            with open(ansible_cfg, 'w') as f:
+                config.write(f)
+            env['ANSIBLE_CONFIG'] = ansible_cfg
+        elif 'ANSIBLE_CONFIG' not in env and ansible_cfg:
+            env['ANSIBLE_CONFIG'] = ansible_cfg
 
-        command_path = None
-
-        with utils.TempDirs(dir_path=constants.VALIDATION_RUN_LOG_PATH,
-                            chdir=False,) as ansible_artifact_path:
-            if 'ANSIBLE_CONFIG' not in env and not ansible_cfg:
-                ansible_cfg = os.path.join(ansible_artifact_path, 'ansible.cfg')
-                config = configparser.ConfigParser()
-                config.add_section('defaults')
-                config.set('defaults', 'internal_poll_interval', '0.05')
-                with open(ansible_cfg, 'w') as f:
-                    config.write(f)
-                env['ANSIBLE_CONFIG'] = ansible_cfg
-            elif 'ANSIBLE_CONFIG' not in env and ansible_cfg:
-                env['ANSIBLE_CONFIG'] = ansible_cfg
-
-            r_opts = {
-                'private_data_dir': workdir,
-                'project_dir': playbook_dir,
-                'inventory': self._inventory(inventory, ansible_artifact_path),
-                'envvars': self._encode_envvars(env=env),
-                'playbook': playbook,
-                'verbosity': verbosity,
-                'quiet': quiet,
-                'extravars': extravars,
-                'fact_cache': ansible_fact_path,
-                'fact_cache_type': 'jsonfile',
-                'artifact_dir': ansible_artifact_path,
-                'rotate_artifacts': 256
-                }
+        r_opts = {
+            'private_data_dir': workdir,
+            'project_dir': playbook_dir,
+            'inventory': self._inventory(inventory, ansible_artifact_path),
+            'envvars': self._encode_envvars(env=env),
+            'playbook': playbook,
+            'verbosity': verbosity,
+            'quiet': quiet,
+            'extravars': extravars,
+            'fact_cache': ansible_artifact_path,
+            'fact_cache_type': 'jsonfile',
+            'artifact_dir': workdir,
+            'rotate_artifacts': 256,
+            'ident': ''
+            }
 
         if skip_tags:
             r_opts['skip_tags'] = skip_tags
@@ -351,4 +350,4 @@ class Ansible(object):
         runner = ansible_runner.Runner(config=runner_config)
 
         status, rc = runner.run()
-        return runner.stdout.name, playbook, rc, status
+        return playbook, rc, status

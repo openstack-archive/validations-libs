@@ -19,7 +19,6 @@ from unittest import TestCase
 from ansible_runner import Runner
 from validations_libs.ansible import Ansible
 from validations_libs.tests import fakes
-from validations_libs import utils
 
 
 class TestAnsible(TestCase):
@@ -44,7 +43,7 @@ class TestAnsible(TestCase):
         )
         mock_exists.assert_called_with('/tmp/non-existing.yaml')
 
-    @mock.patch('tempfile.mkdtemp', return_value='/tmp/')
+    @mock.patch('six.moves.builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
     @mock.patch.object(
@@ -55,32 +54,29 @@ class TestAnsible(TestCase):
     )
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")
-    @mock.patch('ansible_runner.runner.Runner.stdout', autospec=True,
-                return_value="/tmp/foo.yaml")
-    def test_ansible_runner_error(self, mock_stdout, mock_dump_artifact,
+    @mock.patch('ansible_runner.runner_config.RunnerConfig')
+    def test_ansible_runner_error(self, mock_config, mock_dump_artifact,
                                   mock_run, mock_mkdirs, mock_exists,
-                                  mock_mkdtemp):
+                                  mock_open):
 
-        stdout_file, _playbook, _rc, _status = self.run.run('existing.yaml',
-                                                            'localhost,',
-                                                            '/tmp')
+        _playbook, _rc, _status = self.run.run('existing.yaml',
+                                               'localhost,',
+                                               '/tmp')
         self.assertEquals((_playbook, _rc, _status),
                           ('existing.yaml', 1, 'failed'))
 
-    @mock.patch('tempfile.mkdtemp', return_value='/tmp/')
+    @mock.patch('six.moves.builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
     @mock.patch.object(Runner, 'run',
-                       return_value=fakes.fake_ansible_runner_run_return(rc=0)
-    )
+                       return_value=fakes.fake_ansible_runner_run_return(rc=0))
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")
-    @mock.patch('ansible_runner.runner.Runner.stdout', autospec=True,
-                return_value="/tmp/foo.yaml")
-    def test_run_success_default(self, mock_stdout, mock_dump_artifact,
+    @mock.patch('ansible_runner.runner_config.RunnerConfig')
+    def test_run_success_default(self, mock_config, mock_dump_artifact,
                                  mock_run, mock_mkdirs, mock_exists,
-                                 mock_mkstemp):
-        stdout_file, _playbook, _rc, _status = self.run.run(
+                                 mock_open):
+        _playbook, _rc, _status = self.run.run(
             playbook='existing.yaml',
             inventory='localhost,',
             workdir='/tmp'
@@ -88,21 +84,19 @@ class TestAnsible(TestCase):
         self.assertEquals((_playbook, _rc, _status),
                           ('existing.yaml', 0, 'successful'))
 
-    @mock.patch('tempfile.mkdtemp', return_value='/tmp/')
+    @mock.patch('six.moves.builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
     @mock.patch.object(Runner, 'run',
-                       return_value=fakes.fake_ansible_runner_run_return(rc=0)
-    )
+                       return_value=fakes.fake_ansible_runner_run_return(rc=0))
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")
-    @mock.patch('ansible_runner.runner.Runner.stdout', autospec=True,
-                return_value="/tmp/foo.yaml")
-    def test_run_success_gathering_policy(self, mock_stdout,
+    @mock.patch('ansible_runner.runner_config.RunnerConfig')
+    def test_run_success_gathering_policy(self, mock_config,
                                           mock_dump_artifact, mock_run,
                                           mock_mkdirs, mock_exists,
-                                          mock_mkstemp):
-        stdout_file, _playbook, _rc, _status = self.run.run(
+                                          mock_open):
+        _playbook, _rc, _status = self.run.run(
             playbook='existing.yaml',
             inventory='localhost,',
             workdir='/tmp',
@@ -112,21 +106,19 @@ class TestAnsible(TestCase):
         self.assertEquals((_playbook, _rc, _status),
                           ('existing.yaml', 0, 'successful'))
 
-    @mock.patch('tempfile.mkdtemp', return_value='/tmp/')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
     @mock.patch.object(Runner, 'run',
-                       return_value=fakes.fake_ansible_runner_run_return(rc=0)
-    )
+                       return_value=fakes.fake_ansible_runner_run_return(rc=0))
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")
-    @mock.patch('ansible_runner.runner.Runner.stdout', autospec=True,
-                return_value="/tmp/foo.yaml")
-    def test_run_success_local(self, mock_stdout,
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('ansible_runner.runner_config.RunnerConfig')
+    def test_run_success_local(self, mock_config, mock_open,
                                mock_dump_artifact, mock_run,
-                               mock_mkdirs, mock_exists,
-                               mock_mkstemp):
-        stdout_file, _playbook, _rc, _status = self.run.run(
+                               mock_mkdirs, mock_exists
+                               ):
+        _playbook, _rc, _status = self.run.run(
             playbook='existing.yaml',
             inventory='localhost,',
             workdir='/tmp',

@@ -15,7 +15,6 @@
 
 import logging
 import os
-import six
 
 from validations_libs.ansible import Ansible as v_ansible
 from validations_libs import constants
@@ -32,7 +31,7 @@ class Run(object):
     def run_validations(self, playbook=[], inventory='localhost',
                         group=None, extra_vars=None, validations_dir=None,
                         validation_name=None, extra_env_vars=None,
-                        ansible_cfg=None, quiet=True):
+                        ansible_cfg=None, quiet=True, workdir=None):
 
         self.log = logging.getLogger(__name__ + ".run_validations")
 
@@ -63,33 +62,35 @@ class Run(object):
                     raise("Please, use '--group' argument instead of "
                           "'--validation' to run validation(s) by their "
                           "name(s)."
-                         )
+                          )
         else:
             raise RuntimeError("No validations found")
 
-        run_ansible = v_ansible()
         self.log.debug('Running the validations with Ansible')
         results = []
-        with v_utils.TempDirs(chdir=False) as tmp:
-            for playbook in playbooks:
-                stdout_file, _playbook, _rc, _status = run_ansible.run(
-                    workdir=tmp,
-                    playbook=playbook,
-                    playbook_dir=(validations_dir if
-                                  validations_dir else
-                                  constants.ANSIBLE_VALIDATION_DIR),
-                    parallel_run=True,
-                    inventory=inventory,
-                    output_callback='validation_json',
-                    quiet=quiet,
-                    extra_vars=extra_vars,
-                    extra_env_variables=extra_env_vars,
-                    ansible_cfg=ansible_cfg,
-                    gathering_policy='explicit')
+        for playbook in playbooks:
+            validation_uuid, artifacts_dir = v_utils.create_artifacts_dir(
+                prefix=os.path.basename(playbook))
+            run_ansible = v_ansible(validation_uuid)
+            _playbook, _rc, _status = run_ansible.run(
+                workdir=artifacts_dir,
+                playbook=playbook,
+                playbook_dir=(validations_dir if
+                              validations_dir else
+                              constants.ANSIBLE_VALIDATION_DIR),
+                parallel_run=True,
+                inventory=inventory,
+                output_callback='validation_json',
+                quiet=quiet,
+                extra_vars=extra_vars,
+                extra_env_variables=extra_env_vars,
+                ansible_cfg=ansible_cfg,
+                gathering_policy='explicit',
+                ansible_artifact_path=artifacts_dir)
             results.append({'validation': {
-                                'playbook': _playbook,
-                                'rc_code': _rc,
-                                'status': _status,
-                                'stdout_file': stdout_file
-                           }})
+                            'playbook': _playbook,
+                            'rc_code': _rc,
+                            'status': _status,
+                            'validation_id': validation_uuid
+                            }})
         return results

@@ -27,7 +27,9 @@ class TestValidatorRun(TestCase):
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
     @mock.patch('validations_libs.ansible.Ansible.run')
-    def test_validation_run_success(self, mock_ansible_run,
+    @mock.patch('validations_libs.utils.create_artifacts_dir',
+                return_value=('1234', '/tmp/'))
+    def test_validation_run_success(self, mock_tmp, mock_ansible_run,
                                     mock_validation_dir):
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
@@ -35,14 +37,17 @@ class TestValidatorRun(TestCase):
             'id': 'foo',
             'name': 'My Validition One Name',
             'parameters': {}}]
-        mock_ansible_run.return_value = ('/tmp/validation/stdout.log',
-                                         'foo.yaml', 0, 'successful')
+        mock_ansible_run.return_value = ('foo.yaml', 0, 'successful')
 
         expected_run_return = [
             {'validation': {'playbook': 'foo.yaml',
                             'rc_code': 0,
                             'status': 'successful',
-                            'stdout_file': '/tmp/validation/stdout.log'}}]
+                            'validation_id': '1234'}},
+            {'validation': {'playbook': 'foo.yaml',
+                            'rc_code': 0,
+                            'status': 'successful',
+                            'validation_id': '1234'}}]
 
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
@@ -55,7 +60,9 @@ class TestValidatorRun(TestCase):
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
     @mock.patch('validations_libs.ansible.Ansible.run')
-    def test_validation_run_failed(self, mock_ansible_run,
+    @mock.patch('validations_libs.utils.create_artifacts_dir',
+                return_value=('1234', '/tmp/'))
+    def test_validation_run_failed(self, mock_tmp, mock_ansible_run,
                                    mock_validation_dir):
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
@@ -63,14 +70,17 @@ class TestValidatorRun(TestCase):
             'id': 'foo',
             'name': 'My Validition One Name',
             'parameters': {}}]
-        mock_ansible_run.return_value = ('/tmp/validation/stdout.log',
-                                         'foo.yaml', 0, 'failed')
+        mock_ansible_run.return_value = ('foo.yaml', 0, 'failed')
 
         expected_run_return = [
             {'validation': {'playbook': 'foo.yaml',
                             'rc_code': 0,
                             'status': 'failed',
-                            'stdout_file': '/tmp/validation/stdout.log'}}]
+                            'validation_id': '1234'}},
+            {'validation': {'playbook': 'foo.yaml',
+                            'rc_code': 0,
+                            'status': 'failed',
+                            'validation_id': '1234'}}]
 
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
