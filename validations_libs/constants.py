@@ -22,6 +22,5 @@ VALIDATION_GROUPS = ['no-op',
                      'prep',
                      'post']
 
-VALIDATION_RUN_LOG_PATH = '/var/lib/validations/logs'
-VALIDATIONS_LOG_BASEDIR = '/var/logs/validations/'
-VALIDATION_ANSIBLE_ARTIFACT_PATH = '/var/lib/validations/artifacts/'
+VALIDATIONS_LOG_BASEDIR = '/var/log/validations/'
+VALIDATION_ANSIBLE_ARTIFACT_PATH = '/var/log/validations/artifacts/'
