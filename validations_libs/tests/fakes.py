@@ -137,6 +137,15 @@ VALIDATIONS_LOGS_CONTENTS_LIST = [{
     'validation_output': []
 }]
 
+VALIDATIONS_DATA = {'Description': 'My Validation One Description',
+                    'Groups': ['prep', 'pre-deployment'],
+                    'ID': 'my_val1',
+                    'Name': 'My Validition One Name',
+                    'parameters': {}}
+
+VALIDATIONS_STATS = {'Last execution date': '2019-11-25 13:40:14',
+                     'Number of execution': 'Total: 1, Passed: 1, Failed: 0'}
+
 
 def fake_ansible_runner_run_return(status='successful', rc=0):
     return status, rc

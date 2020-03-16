@@ -20,6 +20,7 @@ import os
 import six
 import shutil
 import tempfile
+import time
 import yaml
 
 from validations_libs import constants
@@ -192,27 +193,6 @@ def parse_all_validation_groups_on_disk(groups_file_path=None):
     return results
 
 
-def parse_all_validations_logs_on_disk(uuid_run=None, validation_id=None):
-    results = []
-    path = constants.VALIDATIONS_LOG_BASEDIR
-    logfile = "{}/*.json".format(path)
-
-    if validation_id:
-        logfile = "{}/*_{}_*.json".format(path, validation_id)
-
-    if uuid_run:
-        logfile = "{}/*_{}_*.json".format(path, uuid_run)
-
-    logfiles_path = glob.glob(logfile)
-
-    for logfile_path in logfiles_path:
-        with open(logfile_path, 'r') as log:
-            contents = json.load(log)
-        results.append(contents)
-
-    return results
-
-
 def get_validation_metadata(validation, key):
     default_metadata = {
         'name': 'Unnamed',
@@ -279,5 +259,80 @@ def get_new_validations_logs_on_disk(validations_logs_dir):
             f for f in filenames if not f.startswith('processed')
             and os.path.splitext(f)[1] == '.json'
         ]
-
     return files
+
+
+def parse_all_validations_logs_on_disk(uuid_run=None, validation_id=None):
+    results = []
+    path = constants.VALIDATIONS_LOG_BASEDIR
+    logfile = "{}/*.json".format(path)
+
+    if validation_id:
+        logfile = "{}/*_{}_*.json".format(path, validation_id)
+
+    if uuid_run:
+        logfile = "{}/*_{}_*.json".format(path, uuid_run)
+
+    logfiles_path = glob.glob(logfile)
+
+    for logfile_path in logfiles_path:
+        with open(logfile_path, 'r') as log:
+            contents = json.load(log)
+        results.append(contents)
+    return results
+
+
+def get_validations_details(validation):
+    results = parse_all_validations_on_disk(constants.ANSIBLE_VALIDATION_DIR)
+    for r in results:
+        if r['id'] == validation:
+            return r
+    return {}
+
+
+def get_validations_data(validation):
+    data = {}
+    col_keys = ['ID', 'Name', 'Description', 'Groups']
+    if isinstance(validation, dict):
+        for key in validation.keys():
+            if key in map(str.lower, col_keys):
+                for k in col_keys:
+                    if key == k.lower():
+                        output_key = k
+                data[output_key] = validation.get(key)
+            else:
+                # Get all other values:
+                data[key] = validation.get(key)
+    return data
+
+
+def get_validations_stats(log):
+    # Get validation stats
+    total_number = len(log)
+    failed_number = 0
+    passed_number = 0
+    last_execution = None
+    dates = []
+
+    for l in log:
+        if l.get('validation_output'):
+            failed_number += 1
+        else:
+            passed_number += 1
+
+        date_time = \
+            l['plays'][0]['play']['duration'].get('start').split('T')
+        date_start = date_time[0]
+        time_start = date_time[1].split('Z')[0]
+        newdate = \
+            time.strptime(date_start + time_start, '%Y-%m-%d%H:%M:%S.%f')
+        dates.append(newdate)
+
+    if dates:
+        last_execution = time.strftime('%Y-%m-%d %H:%M:%S', max(dates))
+
+    return {"Last execution date": last_execution,
+            "Number of execution": "Total: {}, Passed: {}, "
+                                   "Failed: {}".format(total_number,
+                                                       passed_number,
+                                                       failed_number)}
