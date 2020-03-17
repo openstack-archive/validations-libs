@@ -17,13 +17,13 @@ VALIDATIONS_LIST = [{
     'description': 'My Validation One Description',
     'groups': ['prep', 'pre-deployment'],
     'id': 'my_val1',
-    'name': 'My Validition One Name',
+    'name': 'My Validation One Name',
     'parameters': {}
 }, {
     'description': 'My Validation Two Description',
     'groups': ['prep', 'pre-introspection'],
     'id': 'my_val2',
-    'name': 'My Validition Two Name',
+    'name': 'My Validation Two Name',
     'parameters': {'min_value': 8}
 }]
 
@@ -140,7 +140,7 @@ VALIDATIONS_LOGS_CONTENTS_LIST = [{
 VALIDATIONS_DATA = {'Description': 'My Validation One Description',
                     'Groups': ['prep', 'pre-deployment'],
                     'ID': 'my_val1',
-                    'Name': 'My Validition One Name',
+                    'Name': 'My Validation One Name',
                     'parameters': {}}
 
 VALIDATIONS_STATS = {'Last execution date': '2019-11-25 13:40:14',

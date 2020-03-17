@@ -33,8 +33,8 @@ class TestValidatorList(TestCase):
 
         self.assertEqual(validations_list.list_validations(),
                          (self.column_name, [('my_val1',
-                                              'My Validition One Name',
+                                              'My Validation One Name',
                                               ['prep', 'pre-deployment']),
                                              ('my_val2',
-                                              'My Validition Two Name',
+                                              'My Validation Two Name',
                                              ['prep', 'pre-introspection'])]))

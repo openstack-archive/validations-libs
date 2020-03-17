@@ -35,7 +35,7 @@ class TestValidatorShow(TestCase):
         data = {'Description': 'My Validation One Description',
                 'Groups': ['prep', 'pre-deployment'],
                 'ID': 'my_val1',
-                'Name': 'My Validition One Name',
+                'Name': 'My Validation One Name',
                 'parameters': {}}
         data.update({'Last execution date': '2019-11-25 13:40:14',
                      'Number of execution': 'Total: 1, Passed: 1, Failed: 0'})
