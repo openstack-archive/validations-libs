@@ -4,5 +4,5 @@
 
 pbr>=3.1.1 # Apache-2.0
 six>=1.11.0 # MIT
-
+PyYAML>=3.12 # MIT
 ansible-runner>=1.4.4 # Apache-2.0
