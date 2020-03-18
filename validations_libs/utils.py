@@ -18,114 +18,13 @@ import json
 import logging
 import os
 import six
-import shutil
-import tempfile
 import time
 import yaml
 
 from validations_libs import constants
 from uuid import uuid4
 
-RED = "\033[1;31m"
-GREEN = "\033[0;32m"
-RESET = "\033[0;0m"
-
-FAILED_VALIDATION = "{}FAILED{}".format(RED, RESET)
-PASSED_VALIDATION = "{}PASSED{}".format(GREEN, RESET)
-
 LOG = logging.getLogger(__name__ + ".utils")
-
-
-class Pushd(object):
-    """Simple context manager to change directories and then return."""
-
-    def __init__(self, directory):
-        """This context manager will enter and exit directories.
-
-        >>> with Pushd(directory='/tmp'):
-        ...     with open('file', 'w') as f:
-        ...         f.write('test')
-
-        :param directory: path to change directory to
-        :type directory: `string`
-        """
-        self.dir = directory
-        self.pwd = self.cwd = os.getcwd()
-
-    def __enter__(self):
-        os.chdir(self.dir)
-        self.cwd = os.getcwd()
-        return self
-
-    def __exit__(self, *args):
-        if self.pwd != self.cwd:
-            os.chdir(self.pwd)
-
-
-class TempDirs(object):
-    """Simple context manager to manage temp directories."""
-
-    def __init__(self, dir_path=None, dir_prefix='validations', cleanup=True,
-                 chdir=True):
-        """This context manager will create, push, and cleanup temp directories.
-
-        >>> with TempDirs() as t:
-        ...     with open('file', 'w') as f:
-        ...         f.write('test')
-        ...     print(t)
-        ...     os.mkdir('testing')
-        ...     with open(os.path.join(t, 'file')) as w:
-        ...         print(w.read())
-        ...     with open('testing/file', 'w') as f:
-        ...         f.write('things')
-        ...     with open(os.path.join(t, 'testing/file')) as w:
-        ...         print(w.read())
-
-        :param dir_path: path to create the temp directory
-        :type dir_path: `string`
-        :param dir_prefix: prefix to add to a temp directory
-        :type dir_prefix: `string`
-        :param cleanup: when enabled the temp directory will be
-                         removed on exit.
-        :type cleanup: `boolean`
-        :param chdir: Change to/from the created temporary dir on enter/exit.
-        :type chdir: `boolean`
-        """
-
-        # NOTE(cloudnull): kwargs for tempfile.mkdtemp are created
-        #                  because args are not processed correctly
-        #                  in py2. When we drop py2 support (cent7)
-        #                  these args can be removed and used directly
-        #                  in the `tempfile.mkdtemp` function.
-        tempdir_kwargs = dict()
-        if dir_path:
-            tempdir_kwargs['dir'] = dir_path
-
-        if dir_prefix:
-            tempdir_kwargs['prefix'] = dir_prefix
-
-        self.dir = tempfile.mkdtemp(**tempdir_kwargs)
-        self.pushd = Pushd(directory=self.dir)
-        self.cleanup = cleanup
-        self.chdir = chdir
-
-    def __enter__(self):
-        if self.chdir:
-            self.pushd.__enter__()
-        return self.dir
-
-    def __exit__(self, *args):
-        if self.chdir:
-            self.pushd.__exit__()
-        if self.cleanup:
-            self.clean()
-        else:
-            LOG.warning("Not cleaning temporary directory "
-                        "[ %s ]" % self.dir)
-
-    def clean(self):
-        shutil.rmtree(self.dir, ignore_errors=True)
-        LOG.info("Temporary directory [ %s ] cleaned up" % self.dir)
 
 
 def current_time():
@@ -171,7 +70,6 @@ def parse_all_validations_on_disk(path, groups=None):
                                                        'description'),
                 'parameters': get_validation_parameters(contents)
             })
-
     return results
 
 
@@ -269,7 +167,6 @@ def parse_all_validations_logs_on_disk(uuid_run=None, validation_id=None):
 
     if validation_id:
         logfile = "{}/*_{}_*.json".format(path, validation_id)
-
     if uuid_run:
         logfile = "{}/*_{}_*.json".format(path, uuid_run)
 
@@ -283,6 +180,7 @@ def parse_all_validations_logs_on_disk(uuid_run=None, validation_id=None):
 
 
 def get_validations_details(validation):
+    """Return validations information"""
     results = parse_all_validations_on_disk(constants.ANSIBLE_VALIDATION_DIR)
     for r in results:
         if r['id'] == validation:
@@ -291,6 +189,10 @@ def get_validations_details(validation):
 
 
 def get_validations_data(validation):
+    """
+    Return validations data with format:
+    ID, Name, Description, Groups, Other param
+    """
     data = {}
     col_keys = ['ID', 'Name', 'Description', 'Groups']
     if isinstance(validation, dict):
@@ -307,6 +209,7 @@ def get_validations_data(validation):
 
 
 def get_validations_stats(log):
+    """Return validations stats from a log file"""
     # Get validation stats
     total_number = len(log)
     failed_number = 0
