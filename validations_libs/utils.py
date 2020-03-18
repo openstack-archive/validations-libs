@@ -165,3 +165,16 @@ def get_validations_stats(log):
                                    "Failed: {}".format(total_number,
                                                        passed_number,
                                                        failed_number)}
+
+
+def get_validations_parameters(validations_data, validation_name=[],
+                               groups=[]):
+    params = {}
+    for val in validations_data['validations']:
+        v = Validation(val)
+        if v.id in validation_name or set(groups).intersection(v.groups):
+            params[v.id] = {
+                'parameters': (val.get('metadata') if val.get('metadata') else
+                               val.get('parameters'))
+            }
+    return params

@@ -136,3 +136,12 @@ class ValidationActions(object):
             group_info.append((gp[0], gp[1], len(validations)))
         column_name = ("Groups", "Description", "Number of Validations")
         return (column_name, group_info)
+
+    def show_validations_parameters(self, validation, group=None):
+        """Return Validations Parameters"""
+        validations = v_utils.parse_all_validations_on_disk(
+            constants.ANSIBLE_VALIDATION_DIR)
+
+        return v_utils.get_validations_parameters({'validations': validations},
+                                                  validation,
+                                                  group)

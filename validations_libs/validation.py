@@ -35,8 +35,9 @@ class Validation(object):
 
     @property
     def get_metadata(self):
-        self.metadata = {'id': self.id}
-        self.metadata.update(self.dict['vars']['metadata'])
+        if self.dict['vars'].get('metadata'):
+            self.metadata = {'id': self.id}
+            self.metadata.update(self.dict['vars'].get('metadata'))
         return self.metadata
 
     @property
@@ -52,7 +53,7 @@ class Validation(object):
 
     @property
     def groups(self):
-        return self.dict['vars']['metadata']['groups']
+        return self.dict['vars']['metadata'].get('groups')
 
     @property
     def get_id(self):
