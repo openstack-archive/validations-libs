@@ -22,16 +22,19 @@ import time
 import yaml
 
 from validations_libs import constants
+from validations_libs.validation import Validation
 from uuid import uuid4
 
 LOG = logging.getLogger(__name__ + ".utils")
 
 
 def current_time():
+    """Return current time"""
     return '%sZ' % datetime.datetime.utcnow().isoformat()
 
 
 def create_artifacts_dir(dir_path=None, prefix=None):
+    """Create Ansible artifacts directory"""
     dir_path = (dir_path if dir_path else
                 constants.VALIDATION_ANSIBLE_ARTIFACT_PATH)
     validation_uuid = str(uuid4())
@@ -46,30 +49,21 @@ def create_artifacts_dir(dir_path=None, prefix=None):
 
 
 def parse_all_validations_on_disk(path, groups=None):
+    """
+        Return a list of validations metadata
+        Can be sorted by Groups
+    """
     results = []
     validations_abspath = glob.glob("{path}/*.yaml".format(path=path))
-
     if isinstance(groups, six.string_types):
         group_list = []
         group_list.append(groups)
         groups = group_list
 
     for pl in validations_abspath:
-        validation_id, _ext = os.path.splitext(os.path.basename(pl))
-
-        with open(pl, 'r') as val_playbook:
-            contents = yaml.safe_load(val_playbook)
-
-        validation_groups = get_validation_metadata(contents, 'groups') or []
-        if not groups or set.intersection(set(groups), set(validation_groups)):
-            results.append({
-                'id': validation_id,
-                'name': get_validation_metadata(contents, 'name'),
-                'groups': get_validation_metadata(contents, 'groups'),
-                'description': get_validation_metadata(contents,
-                                                       'description'),
-                'parameters': get_validation_parameters(contents)
-            })
+        val = Validation(pl)
+        if not groups or set(groups).intersection(val.groups):
+            results.append(val.get_metadata)
     return results
 
 
@@ -91,34 +85,9 @@ def parse_all_validation_groups_on_disk(groups_file_path=None):
     return results
 
 
-def get_validation_metadata(validation, key):
-    default_metadata = {
-        'name': 'Unnamed',
-        'description': 'No description',
-        'stage': 'No stage',
-        'groups': [],
-    }
-
-    try:
-        return validation[0]['vars']['metadata'].get(key,
-                                                     default_metadata[key])
-    except KeyError:
-        LOG.exception("Key '{key}' not even found in "
-                      "default metadata").format(key=key)
-    except TypeError:
-        LOG.exception("Failed to get validation metadata.")
-
-
 def get_validation_parameters(validation):
-    try:
-        return {
-            k: v
-            for k, v in validation[0]['vars'].items()
-            if k != 'metadata'
-        }
-    except KeyError:
-        LOG.debug("No parameters found for this validation")
-        return dict()
+    """Return dictionary of parameters"""
+    return Validation(validation).get_vars
 
 
 def read_validation_groups_file(groups_file_path=None):
@@ -193,19 +162,7 @@ def get_validations_data(validation):
     Return validations data with format:
     ID, Name, Description, Groups, Other param
     """
-    data = {}
-    col_keys = ['ID', 'Name', 'Description', 'Groups']
-    if isinstance(validation, dict):
-        for key in validation.keys():
-            if key in map(str.lower, col_keys):
-                for k in col_keys:
-                    if key == k.lower():
-                        output_key = k
-                data[output_key] = validation.get(key)
-            else:
-                # Get all other values:
-                data[key] = validation.get(key)
-    return data
+    return Validation(validation).get_formated_data
 
 
 def get_validations_stats(log):

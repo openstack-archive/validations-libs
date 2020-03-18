@@ -27,18 +27,18 @@ class TestValidatorShow(TestCase):
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
                 return_value=fakes.VALIDATIONS_LIST)
-    @mock.patch('validations_libs.utils.get_validations_details',
-                return_value=fakes.VALIDATIONS_DATA)
+    @mock.patch('validations_libs.validation.Validation._get_content',
+                return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('validations_libs.utils.parse_all_validations_logs_on_disk',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
-    def test_validation_show(self, mock_parse_validation, mock_data, mock_log):
-        data = {'Description': 'My Validation One Description',
-                'Groups': ['prep', 'pre-deployment'],
-                'ID': 'my_val1',
-                'Name': 'My Validation One Name',
-                'parameters': {}}
+    @mock.patch('six.moves.builtins.open')
+    def test_validation_show(self, mock_open, mock_parse_validation, mock_data,
+                             mock_log):
+        data = {'Name': 'Advanced Format 512e Support',
+                'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
+                'ID': '512e'}
         data.update({'Last execution date': '2019-11-25 13:40:14',
                      'Number of execution': 'Total: 1, Passed: 1, Failed: 0'})
         validations_show = Show()
-        out = validations_show.show_validations('foo')
+        out = validations_show.show_validations('512e')
         self.assertEqual(out, data)

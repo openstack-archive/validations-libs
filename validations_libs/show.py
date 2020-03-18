@@ -27,8 +27,7 @@ class Show(object):
     def show_validations(self, validation):
         """Display detailed information about a Validation"""
         # Get validation data:
-        data = v_utils.get_validations_data(
-            v_utils.get_validations_details(validation))
+        data = v_utils.get_validations_data(validation)
         format = v_utils.get_validations_stats(
             v_utils.parse_all_validations_logs_on_disk())
         data.update(format)

@@ -25,9 +25,15 @@ class TestUtils(TestCase):
     def setUp(self):
         super(TestUtils, self).setUp()
 
-    def test_get_validations_data(self):
-        res = utils.get_validations_data(fakes.VALIDATIONS_LIST[0])
-        self.assertEqual(res, fakes.VALIDATIONS_DATA)
+    @mock.patch('validations_libs.validation.Validation._get_content',
+                return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_data(self, mock_open, mock_data):
+        output = {'Name': 'Advanced Format 512e Support',
+                  'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
+                  'ID': '512e'}
+        res = utils.get_validations_data('/foo/512e.yaml')
+        self.assertEqual(res, output)
 
     def test_get_validations_stats(self):
         res = utils.get_validations_stats(fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
