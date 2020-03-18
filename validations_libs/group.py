@@ -14,21 +14,29 @@
 #
 
 import logging
-from validations_libs import utils as v_utils
+import yaml
 
-LOG = logging.getLogger(__name__ + ".show")
+LOG = logging.getLogger(__name__ + ".Group")
 
 
-class Show(object):
+class Group(object):
 
-    def __init__(self):
-        self.log = logging.getLogger(__name__ + ".Show")
+    def __init__(self, groups):
+        self.data = self._get_content(groups)
 
-    def show_validations(self, validation):
-        """Display detailed information about a Validation"""
-        # Get validation data:
-        data = v_utils.get_validations_data(validation)
-        format = v_utils.get_validations_stats(
-            v_utils.parse_all_validations_logs_on_disk())
-        data.update(format)
-        return data
+    def _get_content(self, groups):
+        with open(groups, 'r') as gp:
+            return yaml.safe_load(gp)
+
+    @property
+    def get_data(self):
+        return self.data
+
+    @property
+    def get_formated_group(self):
+        return [(gp_n, gp_d[0].get('description'))
+                for (gp_n, gp_d) in sorted(self.data.items())]
+
+    @property
+    def get_groups_keys_list(self):
+        return [gp for gp in self.data.keys()]

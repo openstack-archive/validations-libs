@@ -17,7 +17,7 @@ from unittest import mock
 from unittest import TestCase
 
 from validations_libs.tests import fakes
-from validations_libs.run import Run
+from validations_libs.validation_actions import ValidationActions
 
 
 class TestValidatorRun(TestCase):
@@ -52,7 +52,7 @@ class TestValidatorRun(TestCase):
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
 
-        run = Run()
+        run = ValidationActions()
         run_return = run.run_validations(playbook, inventory,
                                          group=fakes.GROUPS_LIST,
                                          validations_dir='/tmp/foo')
@@ -85,7 +85,7 @@ class TestValidatorRun(TestCase):
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
 
-        run = Run()
+        run = ValidationActions()
         run_return = run.run_validations(playbook, inventory,
                                          group=fakes.GROUPS_LIST,
                                          validations_dir='/tmp/foo')
@@ -95,6 +95,6 @@ class TestValidatorRun(TestCase):
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
 
-        run = Run()
+        run = ValidationActions()
         self.assertRaises(RuntimeError, run.run_validations, playbook,
                           inventory)

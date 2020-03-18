@@ -17,7 +17,7 @@ from unittest import mock
 from unittest import TestCase
 
 from validations_libs.tests import fakes
-from validations_libs.show import Show
+from validations_libs.validation_actions import ValidationActions
 
 
 class TestValidatorShow(TestCase):
@@ -39,6 +39,6 @@ class TestValidatorShow(TestCase):
                 'ID': '512e'}
         data.update({'Last execution date': '2019-11-25 13:40:14',
                      'Number of execution': 'Total: 1, Passed: 1, Failed: 0'})
-        validations_show = Show()
+        validations_show = ValidationActions()
         out = validations_show.show_validations('512e')
         self.assertEqual(out, data)

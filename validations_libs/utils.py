@@ -19,9 +19,9 @@ import logging
 import os
 import six
 import time
-import yaml
 
 from validations_libs import constants
+from validations_libs.group import Group
 from validations_libs.validation import Validation
 from uuid import uuid4
 
@@ -67,54 +67,23 @@ def parse_all_validations_on_disk(path, groups=None):
     return results
 
 
-def parse_all_validation_groups_on_disk(groups_file_path=None):
-    results = []
-
-    if not groups_file_path:
-        groups_file_path = constants.VALIDATION_GROUPS_INFO
-
-    if not os.path.exists(groups_file_path):
-        return results
-
-    with open(groups_file_path, 'r') as grps:
-        contents = yaml.safe_load(grps)
-
-    for grp_name, grp_desc in sorted(contents.items()):
-        results.append((grp_name, grp_desc[0].get('description')))
-
-    return results
-
-
 def get_validation_parameters(validation):
     """Return dictionary of parameters"""
     return Validation(validation).get_vars
 
 
-def read_validation_groups_file(groups_file_path=None):
+def read_validation_groups_file(groups_path=None):
     """Load groups.yaml file and return a dictionary with its contents"""
-    if not groups_file_path:
-        groups_file_path = constants.VALIDATION_GROUPS_INFO
-
-    if not os.path.exists(groups_file_path):
-        return []
-
-    with open(groups_file_path, 'r') as grps:
-        contents = yaml.safe_load(grps)
-
-    return contents
+    gp = Group((groups_path if groups_path else
+                constants.VALIDATION_GROUPS_INFO))
+    return gp.get_data
 
 
-def get_validation_group_name_list():
+def get_validation_group_name_list(groups_path=None):
     """Get the validation group name list only"""
-    results = []
-
-    groups = read_validation_groups_file()
-
-    if groups and isinstance(dict, groups):
-        for grp_name in six.viewkeys(groups):
-            results.append(grp_name)
-
-    return results
+    gp = Group((groups_path if groups_path else
+                constants.VALIDATION_GROUPS_INFO))
+    return gp.get_groups_keys_list
 
 
 def get_new_validations_logs_on_disk(validations_logs_dir):

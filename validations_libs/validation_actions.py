@@ -17,16 +17,44 @@ import logging
 import os
 
 from validations_libs.ansible import Ansible as v_ansible
+from validations_libs.group import Group
 from validations_libs import constants
 from validations_libs import utils as v_utils
 
-LOG = logging.getLogger(__name__ + ".run")
+LOG = logging.getLogger(__name__ + ".validation_actions")
 
 
-class Run(object):
+class ValidationActions(object):
 
-    def __init__(self):
-        self.log = logging.getLogger(__name__ + ".Run")
+    def __init__(self, validation_path=None, group=None):
+        self.log = logging.getLogger(__name__ + ".ValidationActions")
+        self.validation_path = (validation_path if validation_path
+                                else constants.ANSIBLE_VALIDATION_DIR)
+        self.group = group
+
+    def list_validations(self):
+        """List the available validations"""
+        self.log = logging.getLogger(__name__ + ".list_validations")
+        validations = v_utils.parse_all_validations_on_disk(
+            self.validation_path, self.group)
+
+        return_values = []
+        column_name = ('ID', 'Name', 'Groups')
+
+        for val in validations:
+            return_values.append((val.get('id'), val.get('name'),
+                                  val.get('groups')))
+        return (column_name, return_values)
+
+    def show_validations(self, validation):
+        """Display detailed information about a Validation"""
+        self.log = logging.getLogger(__name__ + ".show_validations")
+        # Get validation data:
+        data = v_utils.get_validations_data(validation)
+        format = v_utils.get_validations_stats(
+            v_utils.parse_all_validations_logs_on_disk())
+        data.update(format)
+        return data
 
     def run_validations(self, playbook=[], inventory='localhost',
                         group=None, extra_vars=None, validations_dir=None,
@@ -94,3 +122,17 @@ class Run(object):
                             'validation_id': validation_uuid
                             }})
         return results
+
+    def group_information(self, groups):
+        """Get Information about Validation Groups"""
+        val_gp = Group(groups)
+        group = val_gp.get_formated_group
+
+        group_info = []
+        # Get validations number by groups
+        for gp in group:
+            validations = v_utils.parse_all_validations_on_disk(
+                constants.ANSIBLE_VALIDATION_DIR, gp[0])
+            group_info.append((gp[0], gp[1], len(validations)))
+        column_name = ("Groups", "Description", "Number of Validations")
+        return (column_name, group_info)

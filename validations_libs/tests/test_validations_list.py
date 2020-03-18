@@ -17,7 +17,7 @@ from unittest import mock
 from unittest import TestCase
 
 from validations_libs.tests import fakes
-from validations_libs.list import List
+from validations_libs.validation_actions import ValidationActions
 
 
 class TestValidatorList(TestCase):
@@ -29,7 +29,7 @@ class TestValidatorList(TestCase):
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
                 return_value=fakes.VALIDATIONS_LIST)
     def test_validation_list(self, mock_validation_dir):
-        validations_list = List(fakes.GROUPS_LIST, '/tmp/foo')
+        validations_list = ValidationActions(fakes.GROUPS_LIST, '/tmp/foo')
 
         self.assertEqual(validations_list.list_validations(),
                          (self.column_name, [('my_val1',
