@@ -1,12 +1,11 @@
 - project:
     templates:
-    - openstack-python3-ussuri-jobs
-    - check-requirements
+      - openstack-python3-ussuri-jobs
+      - check-requirements
+      - openstack-lower-constraints-jobs
     check:
       jobs:
-      - openstack-tox-linters
-      - openstack-tox-lower-constraints
+        - openstack-tox-linters
     gate:
       jobs:
-      - openstack-tox-linters
-      - openstack-tox-lower-constraints
+        - openstack-tox-linters
