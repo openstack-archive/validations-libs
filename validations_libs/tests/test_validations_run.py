@@ -25,12 +25,13 @@ class TestValidatorRun(TestCase):
     def setUp(self):
         super(TestValidatorRun, self).setUp()
 
+    @mock.patch('validations_libs.validation_logs.ValidationLogs.get_results')
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
     @mock.patch('validations_libs.ansible.Ansible.run')
     @mock.patch('validations_libs.utils.create_artifacts_dir',
                 return_value=('1234', '/tmp/'))
     def test_validation_run_success(self, mock_tmp, mock_ansible_run,
-                                    mock_validation_dir):
+                                    mock_validation_dir, mock_results):
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
             'groups': ['prep', 'pre-deployment'],
@@ -39,15 +40,20 @@ class TestValidatorRun(TestCase):
             'parameters': {}}]
         mock_ansible_run.return_value = ('foo.yaml', 0, 'successful')
 
-        expected_run_return = [
-            {'validation': {'playbook': 'foo.yaml',
-                            'rc_code': 0,
-                            'status': 'successful',
-                            'validation_id': '1234'}},
-            {'validation': {'playbook': 'foo.yaml',
-                            'rc_code': 0,
-                            'status': 'successful',
-                            'validation_id': '1234'}}]
+        mock_results.return_value = [{'Duration': '0:00:01.761',
+                                      'Host_Group': 'overcloud',
+                                      'Status': 'PASSED',
+                                      'Status_by_Host': 'subnode-1,PASSED',
+                                      'UUID': 'foo',
+                                      'Unreachable_Hosts': '',
+                                      'Validations': 'ntp'}]
+        expected_run_return = [{'Duration': '0:00:01.761',
+                                'Host_Group': 'overcloud',
+                                'Status': 'PASSED',
+                                'Status_by_Host': 'subnode-1,PASSED',
+                                'UUID': 'foo',
+                                'Unreachable_Hosts': '',
+                                'Validations': 'ntp'}]
 
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
@@ -58,12 +64,13 @@ class TestValidatorRun(TestCase):
                                          validations_dir='/tmp/foo')
         self.assertEqual(run_return, expected_run_return)
 
+    @mock.patch('validations_libs.validation_logs.ValidationLogs.get_results')
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
     @mock.patch('validations_libs.ansible.Ansible.run')
     @mock.patch('validations_libs.utils.create_artifacts_dir',
                 return_value=('1234', '/tmp/'))
     def test_validation_run_failed(self, mock_tmp, mock_ansible_run,
-                                   mock_validation_dir):
+                                   mock_validation_dir, mock_results):
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
             'groups': ['prep', 'pre-deployment'],
@@ -71,16 +78,20 @@ class TestValidatorRun(TestCase):
             'name': 'My Validition One Name',
             'parameters': {}}]
         mock_ansible_run.return_value = ('foo.yaml', 0, 'failed')
-
-        expected_run_return = [
-            {'validation': {'playbook': 'foo.yaml',
-                            'rc_code': 0,
-                            'status': 'failed',
-                            'validation_id': '1234'}},
-            {'validation': {'playbook': 'foo.yaml',
-                            'rc_code': 0,
-                            'status': 'failed',
-                            'validation_id': '1234'}}]
+        mock_results.return_value = [{'Duration': '0:00:01.761',
+                                      'Host_Group': 'overcloud',
+                                      'Status': 'PASSED',
+                                      'Status_by_Host': 'subnode-1,PASSED',
+                                      'UUID': 'foo',
+                                      'Unreachable_Hosts': '',
+                                      'Validations': 'ntp'}]
+        expected_run_return = [{'Duration': '0:00:01.761',
+                                'Host_Group': 'overcloud',
+                                'Status': 'PASSED',
+                                'Status_by_Host': 'subnode-1,PASSED',
+                                'UUID': 'foo',
+                                'Unreachable_Hosts': '',
+                                'Validations': 'ntp'}]
 
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'

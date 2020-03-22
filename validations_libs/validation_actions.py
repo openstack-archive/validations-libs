@@ -18,6 +18,7 @@ import os
 
 from validations_libs.ansible import Ansible as v_ansible
 from validations_libs.group import Group
+from validations_libs.validation_logs import ValidationLogs
 from validations_libs import constants
 from validations_libs import utils as v_utils
 
@@ -46,13 +47,15 @@ class ValidationActions(object):
                                   val.get('groups')))
         return (column_name, return_values)
 
-    def show_validations(self, validation):
+    def show_validations(self, validation,
+                         log_path=constants.VALIDATIONS_LOG_BASEDIR):
         """Display detailed information about a Validation"""
         self.log = logging.getLogger(__name__ + ".show_validations")
         # Get validation data:
+        vlog = ValidationLogs(log_path)
         data = v_utils.get_validations_data(validation)
-        format = v_utils.get_validations_stats(
-            v_utils.parse_all_validations_logs_on_disk())
+        logfiles = vlog.get_all_logfiles_content()
+        format = vlog.get_validations_stats(logfiles)
         data.update(format)
         return data
 
@@ -119,9 +122,11 @@ class ValidationActions(object):
                             'playbook': _playbook,
                             'rc_code': _rc,
                             'status': _status,
-                            'validation_id': validation_uuid
+                            'validation_id': _playbook.split('.')[0]
                             }})
-        return results
+        # Return log results
+        vlog = ValidationLogs()
+        return vlog.get_results(validation_uuid)
 
     def group_information(self, groups):
         """Get Information about Validation Groups"""

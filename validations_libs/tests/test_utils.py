@@ -18,12 +18,14 @@ from unittest import TestCase
 
 from validations_libs import utils
 from validations_libs.tests import fakes
+from validations_libs.validation_logs import ValidationLogs
 
 
 class TestUtils(TestCase):
 
     def setUp(self):
         super(TestUtils, self).setUp()
+        self.vlog = ValidationLogs()
 
     @mock.patch('validations_libs.validation.Validation._get_content',
                 return_value=fakes.FAKE_PLAYBOOK)
@@ -36,7 +38,8 @@ class TestUtils(TestCase):
         self.assertEqual(res, output)
 
     def test_get_validations_stats(self):
-        res = utils.get_validations_stats(fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
+        res = self.vlog.get_validations_stats(
+            fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
         self.assertEqual(res, fakes.VALIDATIONS_STATS)
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
