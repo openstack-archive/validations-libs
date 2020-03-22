@@ -12,13 +12,12 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
-
 import logging
 import os
 
 from validations_libs.ansible import Ansible as v_ansible
 from validations_libs.group import Group
-from validations_libs.validation_logs import ValidationLogs
+from validations_libs.validation_logs import ValidationLogs, ValidationLog
 from validations_libs import constants
 from validations_libs import utils as v_utils
 
@@ -150,3 +149,22 @@ class ValidationActions(object):
         return v_utils.get_validations_parameters({'validations': validations},
                                                   validation,
                                                   group)
+
+    def show_history(self, validation_id):
+        """Return validations history"""
+        vlogs = ValidationLogs()
+        logs = (vlogs.get_logfile_by_validation(validation_id)
+                if validation_id else vlogs.get_all_logfiles())
+
+        values = []
+        column_name = ('UUID', 'Validations',
+                       'Status', 'Execution at',
+                       'Duration')
+
+        for log in logs:
+            vlog = ValidationLog(logfile=log)
+            values.append((vlog.get_uuid, vlog.validation_id,
+                           vlog.get_status, vlog.get_start_time,
+                           vlog.get_duration))
+
+        return (column_name, values)

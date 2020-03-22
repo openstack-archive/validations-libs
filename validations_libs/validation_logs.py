@@ -126,6 +126,12 @@ class ValidationLog(object):
         return ', '.join([play['play']['duration'].get('time_elapsed') for
                           play in self.content['plays']])
 
+    @property
+    def get_start_time(self):
+        """Return Ansible  start time"""
+        return ', '.join([play['play']['duration'].get('start') for
+                          play in self.content['plays']])
+
 
 class ValidationLogs(object):
 
@@ -135,6 +141,16 @@ class ValidationLogs(object):
     def _get_content(self, file):
         with open(file, 'r') as log_file:
             return yaml.safe_load(log_file)[0]
+
+    def get_logfile_by_validation(self, validation_id):
+        """Return logfiles by validation_id"""
+        return glob.glob("{}/*_{}_*".format(self.logs_path, validation_id))
+
+    def get_logfile_content_by_validation(self, validation_id):
+        """Return logfiles content by validation_id"""
+        log_files = glob.glob("{}/*_{}_*".format(self.logs_path,
+                                                 validation_id))
+        return [self._get_content(l) for l in log_files]
 
     def get_logfile_by_uuid(self, uuid):
         """Return logfiles by uuid"""
@@ -158,7 +174,7 @@ class ValidationLogs(object):
 
     def get_all_logfiles(self):
         """Return logfiles from logs_path"""
-        return [f for f in listdir(self.logs_path) if
+        return [join(self.logs_path, f) for f in listdir(self.logs_path) if
                 isfile(join(self.logs_path, f))]
 
     def get_all_logfiles_content(self):
