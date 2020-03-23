@@ -29,7 +29,8 @@ class TestValidatorShow(TestCase):
                 return_value=fakes.VALIDATIONS_LIST)
     @mock.patch('validations_libs.validation.Validation._get_content',
                 return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('validations_libs.utils.parse_all_validations_logs_on_disk',
+    @mock.patch('validations_libs.validation_logs.ValidationLogs.'
+                'get_all_logfiles_content',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
     @mock.patch('six.moves.builtins.open')
     def test_validation_show(self, mock_open, mock_parse_validation, mock_data,
