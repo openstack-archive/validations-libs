@@ -41,9 +41,3 @@ class TestUtils(TestCase):
         res = self.vlog.get_validations_stats(
             fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
         self.assertEqual(res, fakes.VALIDATIONS_STATS)
-
-    @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
-                return_value=fakes.VALIDATIONS_LIST)
-    def test_get_validations_details(self, mock_parse):
-        res = utils.get_validations_details('my_val1')
-        self.assertEqual(res, fakes.VALIDATIONS_LIST[0])

@@ -18,6 +18,8 @@ import logging
 import os
 import six
 
+from os import listdir
+from os.path import isfile, join
 from validations_libs import constants
 from validations_libs.group import Group
 from validations_libs.validation import Validation
@@ -61,6 +63,24 @@ def parse_all_validations_on_disk(path, groups=None):
         if not groups or set(groups).intersection(val.groups):
             results.append(val.get_metadata)
     return results
+
+
+def get_validations_playbook(path, validation_id, groups=None):
+    """
+        Return a list of validations playbook
+        Can be sorted by Groups
+    """
+    if isinstance(groups, six.string_types):
+        groups = [groups]
+    pl = []
+    for f in listdir(path):
+        pl_path = join(path, f)
+        if isfile(pl_path):
+            if os.path.splitext(f)[0] in validation_id:
+                val = Validation(pl_path)
+                if not groups or set(groups).intersection(val.groups):
+                    pl.append(pl_path)
+    return pl
 
 
 def get_validation_parameters(validation):

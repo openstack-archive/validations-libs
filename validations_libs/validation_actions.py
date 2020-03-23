@@ -65,13 +65,13 @@ class ValidationActions(object):
 
         self.log = logging.getLogger(__name__ + ".run_validations")
 
-        if isinstance(playbook, list):
-            playbooks = playbook
-        elif isinstance(playbook, str):
-            playbooks = []
-            playbooks.append(playbook)
-        else:
-            raise TypeError("Playbooks should be a List or a Str")
+        if playbook:
+            if isinstance(playbook, list):
+                playbooks = playbook
+            elif isinstance(playbook, str):
+                playbooks = [playbook]
+            else:
+                raise TypeError("Playbooks should be a List or a Str")
 
         if group:
             self.log.debug('Getting the validations list by group')
@@ -83,16 +83,11 @@ class ValidationActions(object):
                     playbooks.append(val.get('id') + '.yaml')
             except Exception as e:
                 raise(e)
-
         elif validation_name:
-            for pb in validation_name:
-                if pb not in v_utils.get_validation_group_name_list():
-                    playbooks.append(pb + '.yaml')
-                else:
-                    raise("Please, use '--group' argument instead of "
-                          "'--validation' to run validation(s) by their "
-                          "name(s)."
-                          )
+            playbooks = v_utils.get_validations_playbook(
+                (validations_dir if validations_dir
+                 else constants.ANSIBLE_VALIDATION_DIR),
+                validation_name, group)
         else:
             raise RuntimeError("No validations found")
 
