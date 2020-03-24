@@ -33,8 +33,9 @@ class TestValidatorShow(TestCase):
                 'get_all_logfiles_content',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
     @mock.patch('six.moves.builtins.open')
-    def test_validation_show(self, mock_open, mock_parse_validation, mock_data,
-                             mock_log):
+    @mock.patch('os.path.exists', return_value=True)
+    def test_validation_show(self, mock_exists, mock_open,
+                             mock_parse_validation, mock_data, mock_log):
         data = {'Name': 'Advanced Format 512e Support',
                 'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
                 'ID': '512e'}

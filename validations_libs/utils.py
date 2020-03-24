@@ -111,12 +111,14 @@ def get_validations_details(validation):
     return {}
 
 
-def get_validations_data(validation):
+def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
     """
     Return validations data with format:
     ID, Name, Description, Groups, Other param
     """
-    return Validation(validation).get_formated_data
+    val_path = "{}/{}.yaml".format(path, validation)
+    if os.path.exists(val_path):
+        return Validation(val_path).get_formated_data
 
 
 def get_validations_parameters(validations_data, validation_name=[],
