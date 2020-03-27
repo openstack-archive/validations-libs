@@ -52,7 +52,7 @@ class ValidationActions(object):
         self.log = logging.getLogger(__name__ + ".show_validations")
         # Get validation data:
         vlog = ValidationLogs(log_path)
-        data = v_utils.get_validations_data(validation)
+        data = v_utils.get_validations_data(validation, self.validation_path)
         logfiles = vlog.get_all_logfiles_content()
         format = vlog.get_validations_stats(logfiles)
         data.update(format)

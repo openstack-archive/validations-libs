@@ -12,11 +12,11 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
+import json
 import glob
 import logging
 import os
 import time
-import yaml
 from os import listdir
 from os.path import isfile, join
 
@@ -48,7 +48,7 @@ class ValidationLog(object):
 
     def _get_content(self, file):
         with open(file, 'r') as log_file:
-            return yaml.safe_load(log_file)
+            return json.load(log_file)
 
     def get_log_path(self):
         """Return full path of a validation log"""
@@ -140,7 +140,7 @@ class ValidationLogs(object):
 
     def _get_content(self, file):
         with open(file, 'r') as log_file:
-            return yaml.safe_load(log_file)[0]
+            return json.load(log_file)
 
     def get_logfile_by_validation(self, validation_id):
         """Return logfiles by validation_id"""
@@ -179,8 +179,9 @@ class ValidationLogs(object):
 
     def get_all_logfiles_content(self):
         """Return logfiles content filter by uuid and content"""
-        return [self._get_content(f) for f in listdir(self.logs_path) if
-                isfile(join(self.logs_path, f))]
+        return [self._get_content(join(self.logs_path, f))
+                for f in listdir(self.logs_path)
+                if isfile(join(self.logs_path, f))]
 
     def get_validations_stats(self, logs):
         """

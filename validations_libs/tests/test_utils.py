@@ -30,11 +30,12 @@ class TestUtils(TestCase):
     @mock.patch('validations_libs.validation.Validation._get_content',
                 return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
-    def test_get_validations_data(self, mock_open, mock_data):
+    @mock.patch('os.path.exists', return_value=True)
+    def test_get_validations_data(self, mock_exists, mock_open, mock_data):
         output = {'Name': 'Advanced Format 512e Support',
                   'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
                   'ID': '512e'}
-        res = utils.get_validations_data('/foo/512e.yaml')
+        res = utils.get_validations_data('512e')
         self.assertEqual(res, output)
 
     def test_get_validations_stats(self):
