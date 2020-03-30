@@ -15,6 +15,7 @@
 
 import ansible_runner
 import logging
+import pkg_resources
 import pwd
 import os
 import six
@@ -34,6 +35,12 @@ try:
     FileExistsError = FileExistsError
 except NameError:
     FileExistsError = OSError
+
+try:
+    version = pkg_resources.get_distribution("ansible_runner").version
+    backward_compat = (version < '1.4.4')
+except pkg_resources.DistributionNotFound:
+    backward_compat = False
 
 
 class Ansible(object):
@@ -309,21 +316,28 @@ class Ansible(object):
         elif 'ANSIBLE_CONFIG' not in env and ansible_cfg:
             env['ANSIBLE_CONFIG'] = ansible_cfg
 
+        envvars = self._encode_envvars(env=env)
         r_opts = {
             'private_data_dir': workdir,
-            'project_dir': playbook_dir,
             'inventory': self._inventory(inventory, ansible_artifact_path),
-            'envvars': self._encode_envvars(env=env),
             'playbook': playbook,
             'verbosity': verbosity,
             'quiet': quiet,
             'extravars': extravars,
-            'fact_cache': ansible_artifact_path,
-            'fact_cache_type': 'jsonfile',
             'artifact_dir': workdir,
             'rotate_artifacts': 256,
             'ident': ''
             }
+
+        if not backward_compat:
+            r_opts.update({
+                'envvars': envvars,
+                'project_dir': playbook_dir,
+                'fact_cache': ansible_artifact_path,
+                'fact_cache_type': 'jsonfile'
+                })
+        else:
+            parallel_run = False
 
         if skip_tags:
             r_opts['skip_tags'] = skip_tags
@@ -346,7 +360,9 @@ class Ansible(object):
         #                  is merged and released. After this PR has been
         #                  made available to us, this line should be removed.
         runner_config.env['ANSIBLE_STDOUT_CALLBACK'] = \
-            r_opts['envvars']['ANSIBLE_STDOUT_CALLBACK']
+            envvars['ANSIBLE_STDOUT_CALLBACK']
+        if backward_compat:
+            runner_config.env.update(envvars)
         runner = ansible_runner.Runner(config=runner_config)
 
         status, rc = runner.run()
