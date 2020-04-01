@@ -21,17 +21,15 @@ from unittest import TestCase
 
 from validations_libs import utils
 from validations_libs.tests import fakes
-from validations_libs.validation_logs import ValidationLogs
 
 
 class TestUtils(TestCase):
 
     def setUp(self):
         super(TestUtils, self).setUp()
-        self.vlog = ValidationLogs()
 
     @mock.patch('validations_libs.validation.Validation._get_content',
-                return_value=fakes.FAKE_PLAYBOOK)
+                return_value=fakes.FAKE_PLAYBOOK[0])
     @mock.patch('six.moves.builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     def test_get_validations_data(self, mock_exists, mock_open, mock_data):
@@ -41,7 +39,116 @@ class TestUtils(TestCase):
         res = utils.get_validations_data('512e')
         self.assertEqual(res, output)
 
-    def test_get_validations_stats(self):
-        res = self.vlog.get_validations_stats(
-            fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
-        self.assertEqual(res, fakes.VALIDATIONS_STATS)
+    @mock.patch('validations_libs.utils.current_time',
+                return_value='2020-04-02T06:58:20.352272Z')
+    @mock.patch('os.makedirs')
+    @mock.patch('uuid.uuid4', return_value='1234')
+    def test_create_artifacts_dir(self, mock_uuid, mock_makedirs,
+                                  mock_datetime):
+        uuid, dir_path = utils.create_artifacts_dir(dir_path='/tmp/foo',
+                                                    prefix='ntp')
+        self.assertEqual(uuid, '1234')
+        self.assertEqual(dir_path,
+                         '/tmp/foo/1234_ntp_2020-04-02T06:58:20.352272Z')
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('glob.glob')
+    def test_parse_all_validations_on_disk(self, mock_glob, mock_open,
+                                           mock_load):
+        mock_glob.return_value = \
+            ['/foo/playbook/foo.yaml']
+        result = utils.parse_all_validations_on_disk('/foo/playbook')
+        self.assertEqual(result, [fakes.FAKE_METADATA])
+
+    @mock.patch('os.path.isfile')
+    @mock.patch('os.listdir')
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_playbook_by_id(self, mock_open, mock_load,
+                                            mock_listdir, mock_isfile):
+        mock_listdir.return_value = ['foo.yaml']
+        mock_isfile.return_value = True
+        result = utils.get_validations_playbook('/foo/playbook', 'foo')
+        self.assertEqual(result, ['/foo/playbook/foo.yaml'])
+
+    @mock.patch('os.path.isfile')
+    @mock.patch('os.listdir')
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_playbook_by_id_group(self, mock_open, mock_load,
+                                                  mock_listdir, mock_isfile):
+        mock_listdir.return_value = ['foo.yaml']
+        mock_isfile.return_value = True
+        result = utils.get_validations_playbook('/foo/playbook', 'foo', 'prep')
+        self.assertEqual(result, ['/foo/playbook/foo.yaml'])
+
+    @mock.patch('os.path.isfile')
+    @mock.patch('os.listdir')
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_playbook_group_not_exist(self, mock_open,
+                                                      mock_load,
+                                                      mock_listdir,
+                                                      mock_isfile):
+        mock_listdir.return_value = ['foo.yaml']
+        mock_isfile.return_value = True
+        result = utils.get_validations_playbook('/foo/playbook', 'foo',
+                                                'no_group')
+        self.assertEqual(result, [])
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validation_parameters(self, mock_open, mock_load):
+
+        result = utils.get_validation_parameters('/foo/playbook/foo.yaml')
+        self.assertEqual(result, {})
+
+    @mock.patch('yaml.safe_load', return_value=fakes.GROUP)
+    @mock.patch('six.moves.builtins.open')
+    def test_read_validation_groups_file(self, mock_open, mock_load):
+
+        result = utils.read_validation_groups_file('/foo/groups.yaml')
+        self.assertEqual(result, {'no-op': [{'description': 'noop-foo'}],
+                                  'post': [{'description': 'post-foo'}],
+                                  'pre': [{'description': 'pre-foo'}]})
+
+    @mock.patch('yaml.safe_load', return_value=fakes.GROUP)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validation_group_name_list(self, mock_open, mock_load):
+
+        result = utils.get_validation_group_name_list('/foo/groups.yaml')
+        self.assertEqual(result, ['no-op', 'pre', 'post'])
+
+    @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
+                return_value=[fakes.FAKE_METADATA])
+    @mock.patch('yaml.safe_load', return_value=fakes.GROUP)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_details(self, mock_open, mock_load, mock_parse):
+
+        result = utils.get_validations_details('foo')
+        self.assertEqual(result, fakes.FAKE_METADATA)
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_parameters_no_group(self, mock_open, mock_load):
+
+        result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
+                                                  'foo')
+        self.assertEqual(result, {'foo': {'parameters': fakes.FAKE_METADATA}})
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_parameters_no_val(self, mock_open, mock_load):
+
+        result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
+                                                  [], ['prep'])
+        self.assertEqual(result, {'foo': {'parameters': fakes.FAKE_METADATA}})
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_parameters_nothing(self, mock_open, mock_load):
+
+        result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
+                                                  [], [])
+        self.assertEqual(result, {})

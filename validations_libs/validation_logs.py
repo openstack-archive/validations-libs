@@ -17,8 +17,7 @@ import glob
 import logging
 import os
 import time
-from os import listdir
-from os.path import isfile, join
+from os.path import join
 
 from validations_libs import constants
 
@@ -47,8 +46,12 @@ class ValidationLog(object):
                 self.name.replace('.{}'.format(self.extension), '').split('_')
 
     def _get_content(self, file):
-        with open(file, 'r') as log_file:
-            return json.load(log_file)
+        try:
+            with open(file, 'r') as log_file:
+                return json.load(log_file)
+        except IOError:
+            msg = "log file: {} not found".format(file)
+            raise IOError(msg)
 
     def get_log_path(self):
         """Return full path of a validation log"""
@@ -63,7 +66,7 @@ class ValidationLog(object):
             Return log file information:
             uuid,
             validation_id,
-            datatime
+            datetime
         """
         return self.name.replace('.{}'.format(self.extension), '').split('_')
 
@@ -139,8 +142,12 @@ class ValidationLogs(object):
         self.logs_path = logs_path
 
     def _get_content(self, file):
-        with open(file, 'r') as log_file:
-            return json.load(log_file)
+        try:
+            with open(file, 'r') as log_file:
+                return json.load(log_file)
+        except IOError:
+            msg = "log file: {} not found".format(file)
+            raise IOError(msg)
 
     def get_logfile_by_validation(self, validation_id):
         """Return logfiles by validation_id"""
@@ -174,14 +181,14 @@ class ValidationLogs(object):
 
     def get_all_logfiles(self):
         """Return logfiles from logs_path"""
-        return [join(self.logs_path, f) for f in listdir(self.logs_path) if
-                isfile(join(self.logs_path, f))]
+        return [join(self.logs_path, f) for f in os.listdir(self.logs_path) if
+                os.path.isfile(join(self.logs_path, f))]
 
     def get_all_logfiles_content(self):
         """Return logfiles content filter by uuid and content"""
         return [self._get_content(join(self.logs_path, f))
-                for f in listdir(self.logs_path)
-                if isfile(join(self.logs_path, f))]
+                for f in os.listdir(self.logs_path)
+                if os.path.isfile(join(self.logs_path, f))]
 
     def get_validations_stats(self, logs):
         """

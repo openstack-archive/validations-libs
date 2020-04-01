@@ -30,8 +30,11 @@ class Validation(object):
         self.id = os.path.splitext(os.path.basename(validation_path))[0]
 
     def _get_content(self, val_path):
-        with open(val_path, 'r') as val_playbook:
-            return yaml.safe_load(val_playbook)[0]
+        try:
+            with open(val_path, 'r') as val_playbook:
+                return yaml.safe_load(val_playbook)[0]
+        except IOError:
+            raise IOError("Validation playbook not found")
 
     @property
     def get_metadata(self):

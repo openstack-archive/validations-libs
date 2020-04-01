@@ -25,8 +25,11 @@ class Group(object):
         self.data = self._get_content(groups)
 
     def _get_content(self, groups):
-        with open(groups, 'r') as gp:
-            return yaml.safe_load(gp)
+        try:
+            with open(groups, 'r') as gp:
+                return yaml.safe_load(gp)
+        except IOError:
+            raise IOError("Group file not found")
 
     @property
     def get_data(self):

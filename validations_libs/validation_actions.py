@@ -138,14 +138,13 @@ class ValidationActions(object):
 
     def show_validations_parameters(self, validation, group=None):
         """Return Validations Parameters"""
-        validations = v_utils.parse_all_validations_on_disk(
-            constants.ANSIBLE_VALIDATION_DIR)
+        validations = v_utils.get_validations_playbook(
+            constants.ANSIBLE_VALIDATION_DIR, group)
 
-        return v_utils.get_validations_parameters({'validations': validations},
-                                                  validation,
+        return v_utils.get_validations_parameters(validations, validation,
                                                   group)
 
-    def show_history(self, validation_id):
+    def show_history(self, validation_id=None):
         """Return validations history"""
         vlogs = ValidationLogs()
         logs = (vlogs.get_logfile_by_validation(validation_id)

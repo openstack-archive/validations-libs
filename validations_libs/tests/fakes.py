@@ -146,12 +146,27 @@ VALIDATIONS_DATA = {'Description': 'My Validation One Description',
 VALIDATIONS_STATS = {'Last execution date': '2019-11-25 13:40:14',
                      'Number of execution': 'Total: 1, Passed: 1, Failed: 0'}
 
-FAKE_PLAYBOOK = {'hosts': 'undercloud',
-                 'roles': ['advanced_format_512e_support'],
-                 'vars': {'metadata': {'description': 'foo',
-                                       'groups': ['prep', 'pre-deployment'],
-                                       'name':
-                                       'Advanced Format 512e Support'}}}
+FAKE_PLAYBOOK = [{'hosts': 'undercloud',
+                  'roles': ['advanced_format_512e_support'],
+                  'vars': {'metadata': {'description': 'foo',
+                                        'groups': ['prep', 'pre-deployment'],
+                                        'name':
+                                        'Advanced Format 512e Support'}}}]
+
+FAKE_METADATA = {'id': 'foo',
+                 'description': 'foo',
+                 'groups': ['prep', 'pre-deployment'],
+                 'name':
+                 'Advanced Format 512e Support'}
+
+FORMATED_DATA = {'Description': 'foo',
+                 'Groups': ['prep', 'pre-deployment'],
+                 'ID': 'foo',
+                 'Name': 'Advanced Format 512e Support'}
+
+GROUP = {'no-op': [{'description': 'noop-foo'}],
+         'pre': [{'description': 'pre-foo'}],
+         'post': [{'description': 'post-foo'}]}
 
 
 def fake_ansible_runner_run_return(status='successful', rc=0):

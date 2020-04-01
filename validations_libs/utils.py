@@ -17,13 +17,12 @@ import glob
 import logging
 import os
 import six
+import uuid
 
-from os import listdir
-from os.path import isfile, join
+from os.path import join
 from validations_libs import constants
 from validations_libs.group import Group
 from validations_libs.validation import Validation
-from uuid import uuid4
 
 LOG = logging.getLogger(__name__ + ".utils")
 
@@ -37,7 +36,7 @@ def create_artifacts_dir(dir_path=None, prefix=None):
     """Create Ansible artifacts directory"""
     dir_path = (dir_path if dir_path else
                 constants.VALIDATION_ANSIBLE_ARTIFACT_PATH)
-    validation_uuid = str(uuid4())
+    validation_uuid = str(uuid.uuid4())
     log_dir = "{}/{}_{}_{}".format(dir_path, validation_uuid,
                                    (prefix if prefix else ''), current_time())
     try:
@@ -73,9 +72,9 @@ def get_validations_playbook(path, validation_id, groups=None):
     if isinstance(groups, six.string_types):
         groups = [groups]
     pl = []
-    for f in listdir(path):
+    for f in os.listdir(path):
         pl_path = join(path, f)
-        if isfile(pl_path):
+        if os.path.isfile(pl_path):
             if os.path.splitext(f)[0] in validation_id:
                 val = Validation(pl_path)
                 if not groups or set(groups).intersection(val.groups):
@@ -124,11 +123,11 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
 def get_validations_parameters(validations_data, validation_name=[],
                                groups=[]):
     params = {}
-    for val in validations_data['validations']:
+    for val in validations_data:
         v = Validation(val)
         if v.id in validation_name or set(groups).intersection(v.groups):
             params[v.id] = {
-                'parameters': (val.get('metadata') if val.get('metadata') else
-                               val.get('parameters'))
+                'parameters': (v.get_metadata if v.get_metadata else
+                               v.get_vars)
             }
     return params
