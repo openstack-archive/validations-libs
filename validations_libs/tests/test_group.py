@@ -47,7 +47,7 @@ class TestGroup(TestCase):
     @mock.patch('six.moves.builtins.open')
     def test_get_groups_keys_list(self, mock_open, mock_yaml):
         grp = Group('/tmp/foo')
-        ret = ['no-op', 'pre', 'post']
+        ret = ['no-op', 'post', 'pre']
         data = grp.get_groups_keys_list
         self.assertEquals(data, ret)
 

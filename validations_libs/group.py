@@ -42,4 +42,4 @@ class Group(object):
 
     @property
     def get_groups_keys_list(self):
-        return [gp for gp in self.data.keys()]
+        return [gp for gp in sorted(self.data.keys())]

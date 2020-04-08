@@ -118,7 +118,7 @@ class TestUtils(TestCase):
     def test_get_validation_group_name_list(self, mock_open, mock_load):
 
         result = utils.get_validation_group_name_list('/foo/groups.yaml')
-        self.assertEqual(result, ['no-op', 'pre', 'post'])
+        self.assertEqual(result, ['no-op', 'post', 'pre'])
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
                 return_value=[fakes.FAKE_METADATA])
