@@ -63,9 +63,10 @@ class ValidationActions(object):
                         validation_name=None, extra_env_vars=None,
                         ansible_cfg=None, quiet=True, workdir=None,
                         limit_hosts=None):
-
         self.log = logging.getLogger(__name__ + ".run_validations")
         playbooks = []
+        validations_dir = (validations_dir if validations_dir
+                           else self.validation_path)
         if playbook:
             if isinstance(playbook, list):
                 playbooks = playbook
@@ -78,17 +79,15 @@ class ValidationActions(object):
             self.log.debug('Getting the validations list by group')
             try:
                 validations = v_utils.parse_all_validations_on_disk(
-                    (validations_dir if validations_dir
-                     else constants.ANSIBLE_VALIDATION_DIR), group)
+                    validations_dir, group)
                 for val in validations:
                     playbooks.append(val.get('id') + '.yaml')
             except Exception as e:
                 raise(e)
         elif validation_name:
-            playbooks = v_utils.get_validations_playbook(
-                (validations_dir if validations_dir
-                 else constants.ANSIBLE_VALIDATION_DIR),
-                validation_name, group)
+            playbooks = v_utils.get_validations_playbook(validations_dir,
+                                                         validation_name,
+                                                         group)
         else:
             raise RuntimeError("No validations found")
 
@@ -101,9 +100,7 @@ class ValidationActions(object):
             _playbook, _rc, _status = run_ansible.run(
                 workdir=artifacts_dir,
                 playbook=playbook,
-                playbook_dir=(validations_dir if
-                              validations_dir else
-                              constants.ANSIBLE_VALIDATION_DIR),
+                playbook_dir=validations_dir,
                 parallel_run=True,
                 inventory=inventory,
                 output_callback='validation_json',
@@ -133,7 +130,7 @@ class ValidationActions(object):
         # Get validations number by groups
         for gp in group:
             validations = v_utils.parse_all_validations_on_disk(
-                constants.ANSIBLE_VALIDATION_DIR, gp[0])
+                self.validation_path, gp[0])
             group_info.append((gp[0], gp[1], len(validations)))
         column_name = ("Groups", "Description", "Number of Validations")
         return (column_name, group_info)
@@ -141,8 +138,7 @@ class ValidationActions(object):
     def show_validations_parameters(self, validation, group=None):
         """Return Validations Parameters"""
         validations = v_utils.get_validations_playbook(
-            constants.ANSIBLE_VALIDATION_DIR, group)
-
+            self.validation_path, validation, group)
         return v_utils.get_validations_parameters(validations, validation,
                                                   group)
 
