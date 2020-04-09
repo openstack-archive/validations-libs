@@ -153,6 +153,15 @@ FAKE_PLAYBOOK = [{'hosts': 'undercloud',
                                         'name':
                                         'Advanced Format 512e Support'}}}]
 
+FAKE_PLAYBOOK2 = [{'hosts': 'undercloud',
+                   'roles': ['advanced_format_512e_support'],
+                   'vars': {'metadata': {'description': 'foo',
+                                         'groups': ['prep', 'pre-deployment'],
+                                         'name':
+                                         'Advanced Format 512e Support'},
+                            'foo': 'bar'}}]
+
+
 FAKE_METADATA = {'id': 'foo',
                  'description': 'foo',
                  'groups': ['prep', 'pre-deployment'],

@@ -135,12 +135,17 @@ class ValidationActions(object):
         column_name = ("Groups", "Description", "Number of Validations")
         return (column_name, group_info)
 
-    def show_validations_parameters(self, validation, group=None):
+    def show_validations_parameters(self, validation, group=None,
+                                    format='json', download_file=None):
         """Return Validations Parameters"""
         validations = v_utils.get_validations_playbook(
             self.validation_path, validation, group)
-        return v_utils.get_validations_parameters(validations, validation,
-                                                  group)
+        params = v_utils.get_validations_parameters(validations, validation,
+                                                    group, format)
+        if download_file:
+            with open(download_file, 'w') as f:
+                f.write(params)
+        return params
 
     def show_history(self, validation_id=None):
         """Return validations history"""

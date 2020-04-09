@@ -14,10 +14,12 @@
 #
 import datetime
 import glob
+import json
 import logging
 import os
 import six
 import uuid
+import yaml
 
 from os.path import join
 from validations_libs import constants
@@ -121,13 +123,23 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
 
 
 def get_validations_parameters(validations_data, validation_name=[],
-                               groups=[]):
+                               groups=[], format='json'):
+    """
+    Return parameters for a list of validations
+    The return format can be in json or yaml
+    """
     params = {}
     for val in validations_data:
         v = Validation(val)
         if v.id in validation_name or set(groups).intersection(v.groups):
             params[v.id] = {
-                'parameters': (v.get_metadata if v.get_metadata else
-                               v.get_vars)
+                'parameters': v.get_vars
             }
-    return params
+    if format not in ['json', 'yaml']:
+        msg = 'Invalid output format, {} is not supported'.format(format)
+        raise RuntimeError(msg)
+    elif format == 'json':
+        return json.dumps(params, indent=4, sort_keys=True)
+    else:
+        return yaml.safe_dump(params, allow_unicode=True,
+                              default_flow_style=False, indent=2)

@@ -13,6 +13,8 @@
 #   under the License.
 #
 
+import json
+import yaml
 try:
     from unittest import mock
 except ImportError:
@@ -129,21 +131,46 @@ class TestUtils(TestCase):
         result = utils.get_validations_details('foo')
         self.assertEqual(result, fakes.FAKE_METADATA)
 
-    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
     @mock.patch('six.moves.builtins.open')
     def test_get_validations_parameters_no_group(self, mock_open, mock_load):
 
         result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
                                                   'foo')
-        self.assertEqual(result, {'foo': {'parameters': fakes.FAKE_METADATA}})
+        output = {'foo': {'parameters': {'foo': 'bar'}}}
+        self.assertEqual(result, json.dumps(output, indent=4, sort_keys=True))
 
-    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_parameters_yaml(self, mock_open, mock_load):
+
+        result = utils.get_validations_parameters(
+            validations_data=['/foo/playbook/foo.yaml'],
+            validation_name='foo',
+            format='yaml')
+        output = {'foo': {'parameters': {'foo': 'bar'}}}
+        self.assertEqual(result, yaml.safe_dump(output,
+                                                allow_unicode=True,
+                                                default_flow_style=False,
+                                                indent=2))
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_parameters_wrong_format(self, mock_open,
+                                                     mock_load):
+        self.assertRaises(RuntimeError, utils.get_validations_parameters,
+                          validations_data=['/foo/playbook/foo.yaml'],
+                          validation_name='foo',
+                          format='wrong')
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
     @mock.patch('six.moves.builtins.open')
     def test_get_validations_parameters_no_val(self, mock_open, mock_load):
 
         result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
                                                   [], ['prep'])
-        self.assertEqual(result, {'foo': {'parameters': fakes.FAKE_METADATA}})
+        output = {'foo': {'parameters': {'foo': 'bar'}}}
+        self.assertEqual(result, json.dumps(output, indent=4, sort_keys=True))
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
@@ -151,4 +178,4 @@ class TestUtils(TestCase):
 
         result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
                                                   [], [])
-        self.assertEqual(result, {})
+        self.assertEqual(result, json.dumps({}))
