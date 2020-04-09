@@ -64,7 +64,7 @@ class ValidationActions(object):
                         ansible_cfg=None, quiet=True, workdir=None):
 
         self.log = logging.getLogger(__name__ + ".run_validations")
-
+        playbooks = []
         if playbook:
             if isinstance(playbook, list):
                 playbooks = playbook
