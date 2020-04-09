@@ -61,7 +61,8 @@ class ValidationActions(object):
     def run_validations(self, playbook=[], inventory='localhost',
                         group=None, extra_vars=None, validations_dir=None,
                         validation_name=None, extra_env_vars=None,
-                        ansible_cfg=None, quiet=True, workdir=None):
+                        ansible_cfg=None, quiet=True, workdir=None,
+                        limit_hosts=None):
 
         self.log = logging.getLogger(__name__ + ".run_validations")
 
@@ -108,6 +109,7 @@ class ValidationActions(object):
                 output_callback='validation_json',
                 quiet=quiet,
                 extra_vars=extra_vars,
+                limit_hosts=limit_hosts,
                 extra_env_variables=extra_env_vars,
                 ansible_cfg=ansible_cfg,
                 gathering_policy='explicit',
