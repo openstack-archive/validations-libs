@@ -7,6 +7,10 @@
       jobs:
       - openstack-tox-linters: &tripleo-linters
           nodeset: centos-8
+      - openstack-tox-docs: &tripleo-docs
+          files:
+          - ^doc/.*
+          - ^README.rst
       - tripleo-ci-centos-8-containers-multinode: &containers_multinode
           dependencies: &deps
             - openstack-tox-linters
@@ -25,5 +29,9 @@
     gate:
       jobs:
       - openstack-tox-linters: *tripleo-linters
+      - openstack-tox-docs: *tripleo-docs
       - tripleo-ci-centos-8-containers-multinode: *containers_multinode
       - tripleo-ci-centos-8-standalone: *basic_standalone
+    promote:
+      jobs:
+      - promote-openstack-tox-docs: *tripleo-docs

@@ -1,0 +1,80 @@
+# -- General configuration ----------------------------------------------------
+
+# Add any Sphinx extension module names here, as strings. They can be
+# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+extensions = ['sphinxcontrib.apidoc',
+              'sphinx.ext.viewcode',
+              'openstackdocstheme',
+              ]
+
+# sphinxcontrib.apidoc options
+apidoc_module_dir = '../../validations_libs'
+apidoc_output_dir = 'reference/api'
+apidoc_excluded_paths = []
+apidoc_separate_modules = True
+
+
+# openstackdocstheme options
+repository_name = 'openstack/validations-libs'
+use_storyboard = True
+
+# autodoc generation is a bit aggressive and a nuisance when doing heavy
+# text edit cycles.
+# execute "export SPHINX_DEBUG=1" in your terminal to disable
+
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ['_templates']
+
+# The suffix of source filenames.
+source_suffix = '.rst'
+
+# The master toctree document.
+master_doc = 'index'
+
+# General information about the project.
+copyright = u'OpenStack Foundation'
+
+# A list of ignored prefixes for module index sorting.
+modindex_common_prefix = ['validations_libs.']
+
+# If true, '()' will be appended to :func: etc. cross-reference text.
+add_function_parentheses = True
+
+# If true, the current module name will be prepended to all description
+# unit titles (such as .. function::).
+add_module_names = True
+
+# The name of the Pygments (syntax highlighting) style to use.
+pygments_style = 'sphinx'
+
+# A list of glob-style patterns that should be excluded when looking for
+# source files. They are matched against the source file names relative to the
+# source directory, using slashes as directory separators on all platforms.
+exclude_patterns = ['']
+
+# -- Options for HTML output --------------------------------------------------
+
+# The theme to use for HTML and HTML Help pages. Major themes that come with
+# Sphinx are currently 'default' and 'sphinxdoc'.
+# html_theme_path = ["."]
+# html_theme = '_theme'
+# html_static_path = ['_static']
+html_theme = 'openstackdocs'
+
+# Output file base name for HTML help builder.
+htmlhelp_basename = 'validations-libsdoc'
+
+latex_use_xindy = False
+
+# Grouping the document tree into LaTeX files. List of tuples
+# (source start file, target name, title, author, documentclass
+# [howto/manual]).
+latex_documents = [
+    (
+        'index',
+        'doc-validations-libs.tex',
+        u'Validations Framework Client Documentation',
+        u'OpenStack LLC',
+        'manual'
+    ),
+]
