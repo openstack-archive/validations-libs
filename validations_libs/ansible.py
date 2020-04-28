@@ -21,6 +21,7 @@ import os
 import six
 import sys
 import tempfile
+import threading
 import yaml
 
 from six.moves import configparser
@@ -277,7 +278,7 @@ class Ansible(object):
             gathering_policy='smart',
             extra_env_variables=None, parallel_run=False,
             callback_whitelist=None, ansible_cfg=None,
-            ansible_timeout=30, ansible_artifact_path=None):
+            ansible_timeout=30, ansible_artifact_path=None, run_async=False):
 
         if not playbook_dir:
             playbook_dir = workdir
@@ -350,20 +351,17 @@ class Ansible(object):
 
         if parallel_run:
             r_opts['directory_isolation_base_path'] = ansible_artifact_path
-
         runner_config = ansible_runner.runner_config.RunnerConfig(**r_opts)
         runner_config.prepare()
-        # NOTE(cloudnull): overload the output callback after prepare
-        #                  to define the specific format we want.
-        #                  This is only required until PR
-        #                  https://github.com/ansible/ansible-runner/pull/387
-        #                  is merged and released. After this PR has been
-        #                  made available to us, this line should be removed.
         runner_config.env['ANSIBLE_STDOUT_CALLBACK'] = \
             envvars['ANSIBLE_STDOUT_CALLBACK']
         if backward_compat:
             runner_config.env.update(envvars)
-        runner = ansible_runner.Runner(config=runner_config)
 
+        runner = ansible_runner.Runner(config=runner_config)
+        if run_async:
+            thr = threading.Thread(target=runner.run)
+            thr.start()
+            return playbook, runner.rc, runner.status
         status, rc = runner.run()
         return playbook, rc, status
