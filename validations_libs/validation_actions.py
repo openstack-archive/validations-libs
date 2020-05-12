@@ -88,6 +88,10 @@ class ValidationActions(object):
             playbooks = v_utils.get_validations_playbook(validations_dir,
                                                          validation_name,
                                                          group)
+            if not playbooks:
+                msg = "Validation {} not found in {}.".format(validation_name,
+                                                              validations_dir)
+                raise RuntimeError(msg)
         else:
             raise RuntimeError("No validations found")
 

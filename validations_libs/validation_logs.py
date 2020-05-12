@@ -157,7 +157,7 @@ class ValidationLogs(object):
         """Return logfiles content by validation_id"""
         log_files = glob.glob("{}/*_{}_*".format(self.logs_path,
                                                  validation_id))
-        return [self._get_content(l) for l in log_files]
+        return [self._get_content(log) for log in log_files]
 
     def get_logfile_by_uuid(self, uuid):
         """Return logfiles by uuid"""
@@ -166,7 +166,7 @@ class ValidationLogs(object):
     def get_logfile_content_by_uuid(self, uuid):
         """Return logfiles content by uuid"""
         log_files = glob.glob("{}/{}_*".format(self.logs_path, uuid))
-        return [self._get_content(l) for l in log_files]
+        return [self._get_content(log) for log in log_files]
 
     def get_logfile_by_uuid_validation_id(self, uuid, validation_id):
         """Return logfiles by uuid"""
@@ -177,7 +177,7 @@ class ValidationLogs(object):
         """Return logfiles content filter by uuid and content"""
         log_files = glob.glob("{}/{}_{}_*".format(self.logs_path, uuid,
                                                   validation_id))
-        return [self._get_content(l) for l in log_files]
+        return [self._get_content(log) for log in log_files]
 
     def get_all_logfiles(self):
         """Return logfiles from logs_path"""
@@ -203,13 +203,13 @@ class ValidationLogs(object):
         passed_number = 0
         last_execution = None
         dates = []
-        for l in logs:
-            if l.get('validation_output'):
+        for log in logs:
+            if log.get('validation_output'):
                 failed_number += 1
             else:
                 passed_number += 1
             date_time = \
-                l['plays'][0]['play']['duration'].get('start').split('T')
+                log['plays'][0]['play']['duration'].get('start').split('T')
             date_start = date_time[0]
             time_start = date_time[1].split('Z')[0]
             newdate = \
