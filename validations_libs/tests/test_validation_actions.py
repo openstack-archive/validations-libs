@@ -81,6 +81,16 @@ class TestValidationActions(TestCase):
                                          validations_dir='/tmp/foo')
         self.assertEqual(run_return, expected_run_return)
 
+    @mock.patch('validations_libs.utils.get_validations_playbook')
+    def test_validation_run_wrong_validation_name(self, mock_validation_play):
+        mock_validation_play.return_value = []
+
+        run = ValidationActions()
+        self.assertRaises(RuntimeError, run.run_validations,
+                          validation_name='fake.yaml',
+                          validations_dir='/tmp/foo'
+                          )
+
     @mock.patch('validations_libs.validation_logs.ValidationLogs.get_results')
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
     @mock.patch('validations_libs.ansible.Ansible.run')
