@@ -62,7 +62,7 @@ class ValidationActions(object):
                         group=None, extra_vars=None, validations_dir=None,
                         validation_name=None, extra_env_vars=None,
                         ansible_cfg=None, quiet=True, workdir=None,
-                        limit_hosts=None):
+                        limit_hosts=None, run_async=False):
         self.log = logging.getLogger(__name__ + ".run_validations")
         playbooks = []
         validations_dir = (validations_dir if validations_dir
@@ -114,13 +114,16 @@ class ValidationActions(object):
                 extra_env_variables=extra_env_vars,
                 ansible_cfg=ansible_cfg,
                 gathering_policy='explicit',
-                ansible_artifact_path=artifacts_dir)
-            results.append({'validation': {
-                            'playbook': _playbook,
+                ansible_artifact_path=artifacts_dir,
+                run_async=run_async)
+            results.append({'playbook': _playbook,
                             'rc_code': _rc,
                             'status': _status,
-                            'validation_id': _playbook.split('.')[0]
-                            }})
+                            'validations': _playbook.split('.')[0],
+                            'UUID': validation_uuid,
+                            })
+        if run_async:
+            return results
         # Return log results
         vlog = ValidationLogs()
         return vlog.get_results(validation_uuid)

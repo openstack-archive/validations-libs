@@ -129,3 +129,25 @@ class TestAnsible(TestCase):
         )
         self.assertEquals((_playbook, _rc, _status),
                           ('existing.yaml', 0, 'successful'))
+
+    @mock.patch('os.path.exists', return_value=True)
+    @mock.patch('os.makedirs')
+    @mock.patch.object(Runner, 'run',
+                       return_value=fakes.fake_ansible_runner_run_return(rc=0))
+    @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
+                return_value="/foo/inventory.yaml")
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('ansible_runner.runner_config.RunnerConfig')
+    def test_run_success_run_async(self, mock_config, mock_open,
+                                   mock_dump_artifact, mock_run,
+                                   mock_mkdirs, mock_exists
+                                   ):
+        _playbook, _rc, _status = self.run.run(
+            playbook='existing.yaml',
+            inventory='localhost,',
+            workdir='/tmp',
+            connection='local',
+            run_async=True
+        )
+        self.assertEquals((_playbook, _rc, _status),
+                          ('existing.yaml', None, 'unstarted'))
