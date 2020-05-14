@@ -33,6 +33,31 @@ GROUPS_LIST = [
     ('group3', 'Group3 description'),
 ]
 
+BAD_VALIDATIONS_LOGS_CONTENTS_LIST = [{
+    'plays': [{
+        'play': {
+            'duration': {
+                'end': '2019-11-25T13:40:17.538611Z',
+            },
+            'host': 'undercloud',
+            'id': '008886df-d297-1eaa-2a74-000000000008',
+            'validation_id': '512e',
+            'validation_path':
+            '/usr/share/openstack-tripleo-validations/playbooks'
+            }}],
+    'stats': {
+        'undercloud': {
+            'changed': 0,
+            'failures': 0,
+            'ignored': 0,
+            'ok': 1,
+            'rescued': 0,
+            'skipped': 1
+        }
+    },
+    'validation_output': []
+}]
+
 VALIDATIONS_LOGS_CONTENTS_LIST = [{
     'plays': [{
         'play': {

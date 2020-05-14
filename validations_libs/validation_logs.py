@@ -126,14 +126,16 @@ class ValidationLog(object):
     @property
     def get_duration(self):
         """Return duration of Ansible runtime"""
-        return ', '.join([play['play']['duration'].get('time_elapsed') for
-                          play in self.content['plays']])
+        duration = [play['play']['duration'].get('time_elapsed') for
+                    play in self.content['plays']]
+        return ', '.join(filter(None, duration))
 
     @property
     def get_start_time(self):
         """Return Ansible  start time"""
-        return ', '.join([play['play']['duration'].get('start') for
-                          play in self.content['plays']])
+        start_time = [play['play']['duration'].get('start') for
+                      play in self.content['plays']]
+        return ', '.join(filter(None, start_time))
 
 
 class ValidationLogs(object):

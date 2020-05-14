@@ -135,6 +135,15 @@ class TestValidationLog(TestCase):
         self.assertEquals(unreachable, '')
 
     @mock.patch('json.load',
+                return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_unreachable_hosts_bad_data(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        unreachable = val.get_unreachable_hosts
+        self.assertEquals(unreachable, '')
+
+    @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
     @mock.patch('six.moves.builtins.open')
     def test_get_duration(self, mock_open, mock_json):
@@ -144,6 +153,15 @@ class TestValidationLog(TestCase):
         self.assertEquals(duration, '0:00:03.753')
 
     @mock.patch('json.load',
+                return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_duration_bad_data(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        duration = val.get_duration
+        self.assertEquals(duration, '')
+
+    @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
     @mock.patch('six.moves.builtins.open')
     def test_get_start_time(self, mock_open, mock_json):
@@ -151,6 +169,15 @@ class TestValidationLog(TestCase):
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         start_time = val.get_start_time
         self.assertEquals(start_time, '2019-11-25T13:40:14.404623Z')
+
+    @mock.patch('json.load',
+                return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_start_time_bad_data(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        start_time = val.get_start_time
+        self.assertEquals(start_time, '')
 
     @mock.patch('six.moves.builtins.open')
     def test_log_not_found(self, mock_open):
