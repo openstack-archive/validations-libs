@@ -103,6 +103,7 @@ six==1.11.0
 smmap2==2.0.3
 snowballstemmer==1.2.1
 Sphinx==1.8.0
+sphinxcontrib-apidoc==0.2.0
 sphinxcontrib-websupport==1.0.1
 stestr==1.0.0
 stevedore==1.28.0
