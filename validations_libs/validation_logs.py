@@ -232,13 +232,24 @@ class ValidationLogs(object):
             Return a list of validation results by uuid
             Can be filter by validation_id
         """
-        results = (self.get_logfile_by_uuid_validation_id(uuid,
-                                                          validation_id)
-                   if validation_id else self.get_logfile_by_uuid(uuid))
-        data = {}
+        if isinstance(uuid, list):
+            results = []
+            for id in uuid:
+                results.extend(self.get_logfile_by_uuid_validation_id(
+                    id,
+                    validation_id)
+                               if validation_id else
+                               self.get_logfile_by_uuid(id))
+        elif isinstance(uuid, str):
+            results = (self.get_logfile_by_uuid_validation_id(uuid,
+                                                              validation_id)
+                       if validation_id else self.get_logfile_by_uuid(uuid))
+        else:
+            raise RuntimeError("uuid should be either a str or a list")
         res = []
         for result in results:
             vlog = ValidationLog(logfile=result)
+            data = {}
             data['UUID'] = vlog.get_uuid
             data['Validations'] = vlog.get_validation_id
             data['Status'] = vlog.get_status

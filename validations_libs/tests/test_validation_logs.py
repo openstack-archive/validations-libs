@@ -172,3 +172,34 @@ class TestValidationLogs(TestCase):
                                      'Unreachable_Hosts': '',
                                      'Duration': '0:00:03.753',
                                      'Validations': 'foo'}])
+
+    def test_get_results_none(self):
+        vlogs = ValidationLogs('/tmp/foo')
+        self.assertRaises(RuntimeError, vlogs.get_results, uuid=None)
+
+    @mock.patch('validations_libs.validation_logs.ValidationLogs.'
+                'get_logfile_by_uuid_validation_id')
+    @mock.patch('json.load',
+                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_results_list(self, mock_open, mock_json, mock_get_validation):
+        mock_get_validation.return_value = \
+            ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
+        vlogs = ValidationLogs('/tmp/foo')
+        content = vlogs.get_results(uuid=['123', '123'], validation_id='foo')
+        self.assertEquals(content, [{'UUID': '123',
+                                     'Validations': 'foo',
+                                     'Status': 'PASSED',
+                                     'Status_by_Host': 'undercloud,PASSED',
+                                     'Host_Group': 'undercloud',
+                                     'Unreachable_Hosts': '',
+                                     'Duration': '0:00:03.753',
+                                     'Validations': 'foo'},
+                                    {'UUID': '123',
+                                     'Validations': 'foo',
+                                     'Status': 'PASSED',
+                                     'Status_by_Host': 'undercloud,PASSED',
+                                     'Host_Group': 'undercloud',
+                                     'Unreachable_Hosts': '',
+                                     'Duration': '0:00:03.753',
+                                     'Validations': 'foo'}])
