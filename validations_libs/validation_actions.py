@@ -125,8 +125,9 @@ class ValidationActions(object):
         if run_async:
             return results
         # Return log results
+        uuid = [id['UUID'] for id in results]
         vlog = ValidationLogs()
-        return vlog.get_results(validation_uuid)
+        return vlog.get_results(uuid)
 
     def group_information(self, groups):
         """Get Information about Validation Groups"""
