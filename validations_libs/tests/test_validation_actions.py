@@ -129,7 +129,9 @@ class TestValidationActions(TestCase):
                                          validations_dir='/tmp/foo')
         self.assertEqual(run_return, expected_run_return)
 
-    def test_validation_run_no_validation(self):
+    @mock.patch('validations_libs.utils.get_validations_playbook',
+                return_value=[])
+    def test_validation_run_no_validation(self, mock_get_val):
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
 
