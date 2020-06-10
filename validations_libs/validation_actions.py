@@ -58,25 +58,15 @@ class ValidationActions(object):
         data.update(format)
         return data
 
-    def run_validations(self, playbook=[], inventory='localhost',
+    def run_validations(self, validation_name=None, inventory='localhost',
                         group=None, extra_vars=None, validations_dir=None,
-                        validation_name=None, extra_env_vars=None,
-                        ansible_cfg=None, quiet=True, workdir=None,
-                        limit_hosts=None, run_async=False,
+                        extra_env_vars=None, ansible_cfg=None, quiet=True,
+                        workdir=None, limit_hosts=None, run_async=False,
                         base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR):
         self.log = logging.getLogger(__name__ + ".run_validations")
         playbooks = []
         validations_dir = (validations_dir if validations_dir
                            else self.validation_path)
-
-        if playbook:
-            if isinstance(playbook, list):
-                playbooks = playbook
-            elif isinstance(playbook, str):
-                playbooks = [playbook]
-            else:
-                raise TypeError("Playbooks should be a List or a Str")
-
         if group:
             self.log.debug('Getting the validations list by group')
             try:
