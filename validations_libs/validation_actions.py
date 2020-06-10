@@ -62,11 +62,13 @@ class ValidationActions(object):
                         group=None, extra_vars=None, validations_dir=None,
                         validation_name=None, extra_env_vars=None,
                         ansible_cfg=None, quiet=True, workdir=None,
-                        limit_hosts=None, run_async=False):
+                        limit_hosts=None, run_async=False,
+                        base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR):
         self.log = logging.getLogger(__name__ + ".run_validations")
         playbooks = []
         validations_dir = (validations_dir if validations_dir
                            else self.validation_path)
+
         if playbook:
             if isinstance(playbook, list):
                 playbooks = playbook
@@ -104,6 +106,7 @@ class ValidationActions(object):
             _playbook, _rc, _status = run_ansible.run(
                 workdir=artifacts_dir,
                 playbook=playbook,
+                base_dir=base_dir,
                 playbook_dir=validations_dir,
                 parallel_run=True,
                 inventory=inventory,
@@ -155,11 +158,11 @@ class ValidationActions(object):
                 f.write(params)
         return params
 
-    def show_history(self, validation_id=None):
+    def show_history(self, validation_id=None, extension='json'):
         """Return validations history"""
-        vlogs = ValidationLogs()
+        vlogs = ValidationLogs(self.validation_path)
         logs = (vlogs.get_logfile_by_validation(validation_id)
-                if validation_id else vlogs.get_all_logfiles())
+                if validation_id else vlogs.get_all_logfiles(extension))
 
         values = []
         column_name = ('UUID', 'Validations',
@@ -168,8 +171,8 @@ class ValidationActions(object):
 
         for log in logs:
             vlog = ValidationLog(logfile=log)
-            values.append((vlog.get_uuid, vlog.validation_id,
-                           vlog.get_status, vlog.get_start_time,
-                           vlog.get_duration))
-
+            if vlog.is_valid_format():
+                values.append((vlog.get_uuid, vlog.validation_id,
+                               vlog.get_status, vlog.get_start_time,
+                               vlog.get_duration))
         return (column_name, values)
