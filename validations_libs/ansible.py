@@ -122,7 +122,7 @@ class Ansible(object):
     def _ansible_env_var(self, output_callback, ssh_user, workdir, connection,
                          gathering_policy, module_path, key,
                          extra_env_variables, ansible_timeout,
-                         callback_whitelist):
+                         callback_whitelist, base_dir):
         """Handle Ansible env var for Ansible config execution"""
         cwd = os.getcwd()
         env = os.environ.copy()
@@ -158,7 +158,7 @@ class Ansible(object):
             '{}/library'.format(
                 os.path.join(workdir, 'modules'),
                 os.path.join(cwd, 'modules'),
-                constants.DEFAULT_VALIDATIONS_BASEDIR
+                base_dir
             )
         )
         env['ANSIBLE_LOOKUP_PLUGINS'] = os.path.expanduser(
@@ -169,7 +169,7 @@ class Ansible(object):
             '{}/lookup_plugins'.format(
                 os.path.join(workdir, 'lookup'),
                 os.path.join(cwd, 'lookup'),
-                constants.DEFAULT_VALIDATIONS_BASEDIR
+                base_dir
             )
         )
         env['ANSIBLE_CALLBACK_PLUGINS'] = os.path.expanduser(
@@ -180,7 +180,7 @@ class Ansible(object):
             '{}/callback_plugins'.format(
                 os.path.join(workdir, 'callback'),
                 os.path.join(cwd, 'callback'),
-                constants.DEFAULT_VALIDATIONS_BASEDIR
+                base_dir
             )
         )
         env['ANSIBLE_ACTION_PLUGINS'] = os.path.expanduser(
@@ -191,7 +191,7 @@ class Ansible(object):
             '{}/action_plugins'.format(
                 os.path.join(workdir, 'action'),
                 os.path.join(cwd, 'action'),
-                constants.DEFAULT_VALIDATIONS_BASEDIR
+                base_dir
             )
         )
         env['ANSIBLE_FILTER_PLUGINS'] = os.path.expanduser(
@@ -202,7 +202,7 @@ class Ansible(object):
             '{}/filter_plugins'.format(
                 os.path.join(workdir, 'filter'),
                 os.path.join(cwd, 'filter'),
-                constants.DEFAULT_VALIDATIONS_BASEDIR
+                base_dir
             )
         )
         env['ANSIBLE_ROLES_PATH'] = os.path.expanduser(
@@ -214,7 +214,7 @@ class Ansible(object):
             '{}/roles'.format(
                 os.path.join(workdir, 'roles'),
                 os.path.join(cwd, 'roles'),
-                constants.DEFAULT_VALIDATIONS_BASEDIR
+                base_dir
             )
         )
         env['ANSIBLE_CALLBACK_WHITELIST'] = callback_whitelist
@@ -272,6 +272,7 @@ class Ansible(object):
 
     def run(self, playbook, inventory, workdir, playbook_dir=None,
             connection='smart', output_callback='yaml',
+            base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
             ssh_user='root', key=None, module_path=None,
             limit_hosts=None, tags=None, skip_tags=None,
             verbosity=0, quiet=False, extra_vars=None,
@@ -303,7 +304,7 @@ class Ansible(object):
         env = self._ansible_env_var(output_callback, ssh_user, workdir,
                                     connection, gathering_policy, module_path,
                                     key, extra_env_variables, ansible_timeout,
-                                    callback_whitelist)
+                                    callback_whitelist, base_dir)
         if not ansible_artifact_path:
             ansible_artifact_path = constants.VALIDATION_ANSIBLE_ARTIFACT_PATH
         if 'ANSIBLE_CONFIG' not in env and not ansible_cfg:
