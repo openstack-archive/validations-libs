@@ -41,9 +41,14 @@ class ValidationLog(object):
             full_path = self.get_log_path()
         self.content = self._get_content(full_path)
         self.name = os.path.splitext(os.path.basename(full_path))[0]
+        # if we have a log file then extract uuid, validation_id and timestamp
         if logfile:
-            self.uuid, self.validation_id, self.datetime = \
-                self.name.replace('.{}'.format(self.extension), '').split('_')
+            try:
+                self.uuid, _name = self.name.split('_', 1)
+                self.validation_id, self.datetime = _name.rsplit('_', 1)
+            except ValueError:
+                logging.warning('Wrong log file format, it should be formed '
+                                'such as {uuid}_{validation-id}_{timestamp}')
 
     def _get_content(self, file):
         try:

@@ -37,6 +37,25 @@ class TestValidationLog(TestCase):
         self.assertEquals(val.validation_id, 'foo')
         self.assertEquals(val.datetime, '2020-03-30T13:17:22.447857Z')
 
+    @mock.patch('json.load')
+    @mock.patch('six.moves.builtins.open')
+    def test_validation_underscore_validation_id(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_bar_2020-03-30T13:17:22.447857Z.json')
+        self.assertEquals(val.uuid, '123')
+        self.assertEquals(val.validation_id, 'foo_bar')
+        self.assertEquals(val.datetime, '2020-03-30T13:17:22.447857Z')
+
+    @mock.patch('json.load')
+    @mock.patch('six.moves.builtins.open')
+    def test_validation_wrong_log_file(self, mock_open, mock_json):
+        msg = ('Wrong log file format, it should be formed '
+               'such as {uuid}_{validation-id}_{timestamp}')
+        with mock.patch('logging.Logger.warning') as mock_log:
+            ValidationLog(
+                logfile='/tmp/foo_2020-03-30T13:17:22.447857Z.json')
+            mock_log.assert_called_with(msg)
+
     @mock.patch('glob.glob')
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
