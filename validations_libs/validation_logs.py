@@ -52,6 +52,9 @@ class ValidationLog(object):
         except IOError:
             msg = "log file: {} not found".format(file)
             raise IOError(msg)
+        except ValueError:
+            msg = "bad json format for {}".format(file)
+            raise ValueError(msg)
 
     def get_log_path(self):
         """Return full path of a validation log"""
@@ -59,6 +62,11 @@ class ValidationLog(object):
         return glob.glob("{}/{}_{}_*.{}".format(self.log_path,
                                                 self.uuid, self.validation_id,
                                                 self.extension))[0]
+
+    def is_valid_format(self):
+        """ Return True if the log file is a valid validation format """
+        validation_keys = ['stats', 'validation_output', 'plays']
+        return bool(set(validation_keys).intersection(self.content.keys()))
 
     @property
     def get_logfile_infos(self):
@@ -181,10 +189,11 @@ class ValidationLogs(object):
                                                   validation_id))
         return [self._get_content(log) for log in log_files]
 
-    def get_all_logfiles(self):
+    def get_all_logfiles(self, extension='json'):
         """Return logfiles from logs_path"""
         return [join(self.logs_path, f) for f in os.listdir(self.logs_path) if
-                os.path.isfile(join(self.logs_path, f))]
+                os.path.isfile(join(self.logs_path, f)) and
+                extension in os.path.splitext(join(self.logs_path, f))[1]]
 
     def get_all_logfiles_content(self):
         """Return logfiles content filter by uuid and content"""
