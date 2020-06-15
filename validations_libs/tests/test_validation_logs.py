@@ -136,6 +136,38 @@ class TestValidationLogs(TestCase):
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
     @mock.patch('six.moves.builtins.open')
+    def test_get_all_logfiles_yaml(self, mock_open, mock_json,
+                                   mock_listdir, mock_isfile):
+        mock_listdir.return_value = \
+            ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json',
+             '/tmp/123_foo_2020-03-30T13:17:22.447857Z.yaml']
+        mock_isfile.return_value = True
+        vlogs = ValidationLogs('/tmp/foo')
+        log = vlogs.get_all_logfiles(extension='yaml')
+        self.assertEquals(log,
+                          ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.yaml'])
+
+    @mock.patch('os.path.isfile')
+    @mock.patch('os.listdir')
+    @mock.patch('json.load',
+                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_all_logfiles_bad_name(self, mock_open, mock_json,
+                                       mock_listdir, mock_isfile):
+        mock_listdir.return_value = \
+            ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json',
+             '/tmp/fooo_json.py']
+        mock_isfile.return_value = True
+        vlogs = ValidationLogs('/tmp/foo')
+        log = vlogs.get_all_logfiles()
+        self.assertEquals(log,
+                          ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
+
+    @mock.patch('os.path.isfile')
+    @mock.patch('os.listdir')
+    @mock.patch('json.load',
+                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
     def test_get_all_logfiles_content(self, mock_open, mock_json,
                                       mock_listdir, mock_isfile):
         mock_listdir.return_value = \
