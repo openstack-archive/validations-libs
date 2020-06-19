@@ -187,3 +187,21 @@ class TestValidationLog(TestCase):
             ValidationLog,
             logfile='non-existing.yaml'
         )
+
+    @mock.patch('json.load')
+    @mock.patch('six.moves.builtins.open')
+    def test_log_bad_json(self, mock_open, mock_json):
+        mock_json.side_effect = ValueError()
+        self.assertRaises(
+            ValueError,
+            ValidationLog,
+            logfile='bad.json'
+        )
+
+    @mock.patch('json.load',
+                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_is_valid_format(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        self.assertTrue(val.is_valid_format())
