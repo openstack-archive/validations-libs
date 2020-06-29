@@ -159,7 +159,10 @@ VALIDATIONS_LOGS_CONTENTS_LIST = [{
             'unreachable': 0
         }
     },
-    'validation_output': []
+    'validation_output': [{'task': {
+                               'hosts': {u'foo': {}},
+                               'name': u'Check if iscsi.service is enabled',
+                               'status': u'FAILED'}}]
 }]
 
 VALIDATIONS_DATA = {'Description': 'My Validation One Description',
@@ -169,7 +172,7 @@ VALIDATIONS_DATA = {'Description': 'My Validation One Description',
                     'parameters': {}}
 
 VALIDATIONS_STATS = {'Last execution date': '2019-11-25 13:40:14',
-                     'Number of execution': 'Total: 1, Passed: 1, Failed: 0'}
+                     'Number of execution': 'Total: 1, Passed: 0, Failed: 1'}
 
 FAKE_PLAYBOOK = [{'hosts': 'undercloud',
                   'roles': ['advanced_format_512e_support'],

@@ -224,3 +224,26 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         self.assertTrue(val.is_valid_format())
+
+    @mock.patch('json.load',
+                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_plays(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        plays = val.get_plays
+        self.assertEquals(
+            plays,
+            [fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0]['plays'][0]['play']])
+
+    @mock.patch('json.load',
+                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_tasks_data(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        tasks_data = val.get_tasks_data
+        self.assertEquals(
+            tasks_data,
+            [fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0]
+             ['validation_output'][0]['task']])

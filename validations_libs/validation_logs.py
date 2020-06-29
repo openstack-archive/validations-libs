@@ -150,6 +150,16 @@ class ValidationLog(object):
                       play in self.content['plays']]
         return ', '.join(filter(None, start_time))
 
+    @property
+    def get_plays(self):
+        """Return a list of Playbook data"""
+        return [play['play'] for play in self.content['plays']]
+
+    @property
+    def get_tasks_data(self):
+        """Return a list of task from validation output"""
+        return [output['task'] for output in self.content['validation_output']]
+
 
 class ValidationLogs(object):
 

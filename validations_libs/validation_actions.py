@@ -53,6 +53,11 @@ class ValidationActions(object):
         # Get validation data:
         vlog = ValidationLogs(log_path)
         data = v_utils.get_validations_data(validation, self.validation_path)
+        if not data:
+            msg = "Validation {} not found in the path: {}".format(
+                validation,
+                self.validation_path)
+            raise RuntimeError(msg)
         logfiles = vlog.get_all_logfiles_content()
         format = vlog.get_validations_stats(logfiles)
         data.update(format)
@@ -148,9 +153,10 @@ class ValidationActions(object):
                 f.write(params)
         return params
 
-    def show_history(self, validation_id=None, extension='json'):
+    def show_history(self, validation_id=None, extension='json',
+                     log_path=constants.VALIDATIONS_LOG_BASEDIR):
         """Return validations history"""
-        vlogs = ValidationLogs(self.validation_path)
+        vlogs = ValidationLogs(log_path)
         logs = (vlogs.get_logfile_by_validation(validation_id)
                 if validation_id else vlogs.get_all_logfiles(extension))
 
@@ -158,11 +164,35 @@ class ValidationActions(object):
         column_name = ('UUID', 'Validations',
                        'Status', 'Execution at',
                        'Duration')
-
         for log in logs:
             vlog = ValidationLog(logfile=log)
             if vlog.is_valid_format():
-                values.append((vlog.get_uuid, vlog.validation_id,
-                               vlog.get_status, vlog.get_start_time,
-                               vlog.get_duration))
+                for play in vlog.get_plays:
+                    values.append((play['id'], play['validation_id'],
+                                   vlog.get_status,
+                                   play['duration'].get('start'),
+                                   play['duration'].get('time_elapsed')))
+        return (column_name, values)
+
+    def get_status(self, validation_id=None, uuid=None, status='FAILED',
+                   log_path=constants.VALIDATIONS_LOG_BASEDIR):
+        """Return validations execution details by status"""
+        vlogs = ValidationLogs(log_path)
+        if validation_id:
+            logs = vlogs.get_logfile_by_validation(validation_id)
+        elif uuid:
+            logs = vlogs.get_logfile_by_uuid(uuid)
+        else:
+            raise RuntimeError("You need to provide a validation_id or a uuid")
+
+        values = []
+        column_name = ['name', 'host', 'status', 'task_data']
+        for log in logs:
+            vlog = ValidationLog(logfile=log)
+            if vlog.is_valid_format():
+                for task in vlog.get_tasks_data:
+                    if task['status'] == status:
+                        for host in task['hosts']:
+                            values.append((task['name'], host, task['status'],
+                                           task['hosts'][host]))
         return (column_name, values)

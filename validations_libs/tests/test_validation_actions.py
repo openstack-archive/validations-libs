@@ -154,10 +154,19 @@ class TestValidationActions(TestCase):
                 'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
                 'ID': '512e'}
         data.update({'Last execution date': '2019-11-25 13:40:14',
-                     'Number of execution': 'Total: 1, Passed: 1, Failed: 0'})
+                     'Number of execution': 'Total: 1, Passed: 0, Failed: 1'})
         validations_show = ValidationActions()
         out = validations_show.show_validations('512e')
         self.assertEqual(out, data)
+
+    @mock.patch('os.path.exists', return_value=False)
+    def test_validation_show_not_found(self, mock_exists):
+        validations_show = ValidationActions()
+        self.assertRaises(
+            RuntimeError,
+            validations_show.show_validations,
+            '512e'
+        )
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
                 return_value=fakes.VALIDATIONS_LIST)
@@ -193,11 +202,12 @@ class TestValidationActions(TestCase):
     @mock.patch('six.moves.builtins.open')
     def test_show_history(self, mock_open, mock_load, mock_get_log):
         v_actions = ValidationActions()
-        col, values = v_actions.show_history('foo')
+        col, values = v_actions.show_history('512e')
         self.assertEqual(col, ('UUID', 'Validations',
                                'Status', 'Execution at',
                                'Duration'))
-        self.assertEqual(values, [('123', 'foo', 'PASSED',
+        self.assertEqual(values, [('008886df-d297-1eaa-2a74-000000000008',
+                                   '512e', 'PASSED',
                                    '2019-11-25T13:40:14.404623Z',
                                    '0:00:03.753')])
 
@@ -213,6 +223,24 @@ class TestValidationActions(TestCase):
         self.assertEqual(col, ('UUID', 'Validations',
                                'Status', 'Execution at',
                                'Duration'))
-        self.assertEqual(values, [('123', 'foo', 'PASSED',
+        self.assertEqual(values, [('008886df-d297-1eaa-2a74-000000000008',
+                                   '512e', 'PASSED',
                                    '2019-11-25T13:40:14.404623Z',
                                    '0:00:03.753')])
+
+    @mock.patch('validations_libs.validation_logs.ValidationLogs.'
+                'get_logfile_by_validation',
+                return_value=['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
+    @mock.patch('json.load',
+                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_status(self, mock_open, mock_load, mock_get_log):
+        v_actions = ValidationActions()
+        col, values = v_actions.get_status('foo')
+        self.assertEqual(col, ['name', 'host', 'status', 'task_data'])
+        self.assertEqual(values, [('Check if iscsi.service is enabled', 'foo',
+                                  'FAILED', {})])
+
+    def test_get_status_no_param(self):
+        v_actions = ValidationActions()
+        self.assertRaises(RuntimeError, v_actions.get_status)
