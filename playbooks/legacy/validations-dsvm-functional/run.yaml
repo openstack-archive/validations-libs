@@ -1,0 +1,37 @@
+---
+- hosts: primary
+  name: validations-dsvm-functional
+  tasks:
+    - name: Ensure legacy workspace directory
+      file:
+        path: '{{ ansible_user_dir }}/workspace'
+        state: directory
+
+    - name: Set fact for validation src directory
+      set_fact:
+        src_dir: '/home/zuul/src/opendev.org/openstack'
+
+    - name: Set fact for validation executable
+      set_fact:
+        val_exec: "python {{ src_dir }}/validations-common/validations_common/validation.py"
+
+    - include: setup.yaml src_dir="{{ src_dir }}" log_dir="/var/log/validations"
+
+    - include: validations.yaml validation_command="{{ item.command }}" val_output="{{ item.output }}" src_dir="{{ src_dir }}"
+      with_items:
+        - { output: "{{ src_dir }}/run.log", command: "{{ val_exec }} run --validation  check-ftype,512e \
+           --validation-dir {{ src_dir }}/validations-common/validations_common/playbooks \
+           --ansible-base-dir {{ src_dir }}/validations-common/validations_common \
+           --output-log {{ src_dir }}/run.log" }
+        - { output: "{{ src_dir }}/run-group.log", command: "{{ val_exec }} run --group prep \
+           --validation-dir {{ src_dir }}/validations-common/validations_common/playbooks \
+           --ansible-base-dir {{ src_dir }}/validations-common/validations_common \
+           --output-log {{ src_dir }}/run-group.log" }
+        - { output: "{{ src_dir }}/list.log", command: "{{ val_exec }} list \
+           --validation-dir {{ src_dir }}/validations-common/validations_common/playbooks \
+           --ansible-base-dir {{ src_dir }}/validations-common/validations_common \
+           --output-log {{ src_dir }}/list.log" }
+        - { output: "{{ src_dir }}/show.log", command: "{{ val_exec }} show \
+           --validation-dir {{ src_dir }}/validations-common/validations_common/playbooks \
+           --ansible-base-dir {{ src_dir }}/validations-common/validations_common \
+           --output-log {{ src_dir }}/show.log" }

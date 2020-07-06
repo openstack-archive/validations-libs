@@ -1,0 +1,60 @@
+- name: Instal python pip
+  ignore_errors: yes
+  become: yes
+  package:
+    name:
+      - python3-pip
+      - python-pip
+    state: present
+
+- name: Install validations deps
+  ignore_errors: yes
+  shell:
+    cmd: |
+      sudo pip3 install prettytable
+      sudo pip3 install setuptools
+      sudo pip3 install ansible
+
+- name: Install validations deps
+  shell:
+    cmd: |
+      sudo pip install prettytable
+      sudo pip install setuptools
+      sudo pip3 install ansible
+
+- name: Install validations-libs
+  ignore_errors: yes
+  shell:
+    cmd: |
+      sudo pip install -r requirements.txt
+      sudo python setup.py install
+    executable: /bin/bash
+    chdir: '{{ src_dir }}/validations-libs'
+
+- name: Install validations-common
+  ignore_errors: yes
+  shell:
+    cmd: |
+      sudo pip install -r requirements.txt
+      sudo python setup.py install
+    executable: /bin/bash
+    chdir: '{{ src_dir }}/validations-common'
+
+- name: Make sure Validations Log dir exists
+  become: yes
+  file:
+    path: '{{ log_dir }}'
+    state: directory
+    mode: '0755'
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+    recurse: yes
+
+- name: Make validation script executable
+  register: output
+  shell:
+    cmd: |
+      chmod +x validations_common/validation.py
+    executable: /bin/bash
+    chdir: '{{ src_dir }}/validations-common'
+  environment: '{{ zuul | zuul_legacy_vars }}'
