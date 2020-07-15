@@ -1,13 +1,15 @@
 - job:
-    name: validations-dsvm-functional
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/validations-dsvm-functional/run.yaml
-    post-run: playbooks/legacy/validations-dsvm-functional/post.yaml
+    name: validations-libs-functional
+    parent: devstack
+    run: playbooks/validations-libs-functional.yaml
+    post-run: playbooks/post.yaml
     timeout: 7200
     required-projects:
-      - openstack/devstack-gate
       - openstack/validations-libs
       - openstack/validations-common
+    vars:
+      devstack_localrc:
+        USE_PYTHON3: true
     irrelevant-files:
       - ^.*\.rst$
       - ^doc/.*$
@@ -20,8 +22,8 @@
       - openstack-python3-victoria-jobs
     check:
       jobs:
-        - validations-dsvm-functional
+        - validations-libs-functional
     gate:
       jobs:
         - openstack-tox-linters
-        - validations-dsvm-functional
+        - validations-libs-functional
