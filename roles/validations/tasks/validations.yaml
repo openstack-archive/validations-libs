@@ -1,10 +1,12 @@
 - name: Execute validation commands
-  shell: "{{ validation_command }}"
+  shell:
+    cmd: "{{ validation_command }}"
+    executable: /bin/bash
 
 - name: Get run results
   register: result
   shell:
-    cmd: "cat {{val_output}}"
+    cmd: "cat {{ val_output }}"
     executable: /bin/bash
 
 - name: Get json data
