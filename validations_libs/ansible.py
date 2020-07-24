@@ -279,7 +279,8 @@ class Ansible(object):
             gathering_policy='smart',
             extra_env_variables=None, parallel_run=False,
             callback_whitelist=None, ansible_cfg=None,
-            ansible_timeout=30, ansible_artifact_path=None, run_async=False):
+            ansible_timeout=30, ansible_artifact_path=None,
+            log_path=None, run_async=False):
 
         if not playbook_dir:
             playbook_dir = workdir
@@ -317,6 +318,9 @@ class Ansible(object):
             env['ANSIBLE_CONFIG'] = ansible_cfg
         elif 'ANSIBLE_CONFIG' not in env and ansible_cfg:
             env['ANSIBLE_CONFIG'] = ansible_cfg
+
+        if log_path:
+            env['VALIDATIONS_LOG_DIR'] = log_path
 
         envvars = self._encode_envvars(env=env)
         r_opts = {
