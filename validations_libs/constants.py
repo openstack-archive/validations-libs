@@ -12,9 +12,9 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
-DEFAULT_VALIDATIONS_BASEDIR = '/usr/share/validations-common'
+DEFAULT_VALIDATIONS_BASEDIR = '/usr/share/ansible/'
 
-ANSIBLE_VALIDATION_DIR = '/usr/share/validations-common/playbooks'
+ANSIBLE_VALIDATION_DIR = '/usr/share/ansible/validation-playbooks'
 
 VALIDATION_GROUPS_INFO = '%s/groups.yaml' % DEFAULT_VALIDATIONS_BASEDIR
 
