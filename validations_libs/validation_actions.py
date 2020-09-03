@@ -68,7 +68,7 @@ class ValidationActions(object):
                         extra_env_vars=None, ansible_cfg=None, quiet=True,
                         workdir=None, limit_hosts=None, run_async=False,
                         base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
-                        log_path=None):
+                        log_path=None, python_interpreter=None):
         self.log = logging.getLogger(__name__ + ".run_validations")
         playbooks = []
         validations_dir = (validations_dir if validations_dir
@@ -115,7 +115,8 @@ class ValidationActions(object):
                 gathering_policy='explicit',
                 ansible_artifact_path=artifacts_dir,
                 log_path=log_path,
-                run_async=run_async)
+                run_async=run_async,
+                python_interpreter=python_interpreter)
             results.append({'playbook': _playbook,
                             'rc_code': _rc,
                             'status': _status,
