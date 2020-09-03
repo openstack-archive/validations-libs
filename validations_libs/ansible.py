@@ -122,7 +122,7 @@ class Ansible(object):
     def _ansible_env_var(self, output_callback, ssh_user, workdir, connection,
                          gathering_policy, module_path, key,
                          extra_env_variables, ansible_timeout,
-                         callback_whitelist, base_dir):
+                         callback_whitelist, base_dir, python_interpreter):
         """Handle Ansible env var for Ansible config execution"""
         cwd = os.getcwd()
         env = os.environ.copy()
@@ -226,7 +226,9 @@ class Ansible(object):
         if self.uuid:
             env['ANSIBLE_UUID'] = self.uuid
 
-        if connection == 'local':
+        if python_interpreter:
+            env['ANSIBLE_PYTHON_INTERPRETER'] = python_interpreter
+        elif connection == 'local':
             env['ANSIBLE_PYTHON_INTERPRETER'] = sys.executable
 
         if gathering_policy in ('smart', 'explicit', 'implicit'):
@@ -280,7 +282,7 @@ class Ansible(object):
             extra_env_variables=None, parallel_run=False,
             callback_whitelist=None, ansible_cfg=None,
             ansible_timeout=30, ansible_artifact_path=None,
-            log_path=None, run_async=False):
+            log_path=None, run_async=False, python_interpreter=None):
 
         if not playbook_dir:
             playbook_dir = workdir
@@ -305,7 +307,8 @@ class Ansible(object):
         env = self._ansible_env_var(output_callback, ssh_user, workdir,
                                     connection, gathering_policy, module_path,
                                     key, extra_env_variables, ansible_timeout,
-                                    callback_whitelist, base_dir)
+                                    callback_whitelist, base_dir,
+                                    python_interpreter)
         if not ansible_artifact_path:
             ansible_artifact_path = constants.VALIDATION_ANSIBLE_ARTIFACT_PATH
         if 'ANSIBLE_CONFIG' not in env and not ansible_cfg:
