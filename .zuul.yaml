@@ -22,8 +22,17 @@
       - openstack-python3-victoria-jobs
     check:
       jobs:
+        - openstack-tox-linters
+        - openstack-tox-docs: &tripleo-docs
+            files:
+              - ^doc/.*
+              - ^README.rst
         - validations-libs-functional
     gate:
       jobs:
         - openstack-tox-linters
+        - openstack-tox-docs: *tripleo-docs
         - validations-libs-functional
+    promote:
+      jobs:
+        - promote-openstack-tox-docs: *tripleo-docs
