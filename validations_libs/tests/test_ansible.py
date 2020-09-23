@@ -151,3 +151,41 @@ class TestAnsible(TestCase):
         )
         self.assertEquals((_playbook, _rc, _status),
                           ('existing.yaml', None, 'unstarted'))
+
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('os.path.exists', return_value=True)
+    @mock.patch('os.makedirs')
+    @mock.patch.object(Runner, 'run',
+                       return_value=fakes.fake_ansible_runner_run_return(rc=0))
+    @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
+                return_value="/foo/inventory.yaml")
+    @mock.patch('ansible_runner.runner_config.RunnerConfig')
+    @mock.patch('validations_libs.ansible.Ansible._ansible_env_var',
+                return_value={'ANSIBLE_STDOUT_CALLBACK': 'fake.py'})
+    def test_run_specific_log_path(self, mock_env_var, mock_config,
+                                   mock_dump_artifact, mock_run, mock_mkdirs,
+                                   mock_exists, mock_open):
+        _playbook, _rc, _status = self.run.run(
+            playbook='existing.yaml',
+            inventory='localhost,',
+            workdir='/tmp',
+            log_path='/tmp/foo'
+        )
+        opt = {
+            'artifact_dir': '/tmp',
+            'envvars': {
+                'ANSIBLE_STDOUT_CALLBACK': 'fake.py',
+                'ANSIBLE_CONFIG': '/tmp/foo/artifacts/ansible.cfg',
+                'VALIDATIONS_LOG_DIR': '/tmp/foo'},
+            'extravars': {},
+            'fact_cache': '/tmp/foo/artifacts/',
+            'fact_cache_type': 'jsonfile',
+            'ident': '',
+            'inventory': 'localhost,',
+            'playbook': 'existing.yaml',
+            'private_data_dir': '/tmp',
+            'project_dir': '/tmp',
+            'quiet': False,
+            'rotate_artifacts': 256,
+            'verbosity': 0}
+        mock_config.assert_called_with(**opt)

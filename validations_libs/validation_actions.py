@@ -245,7 +245,7 @@ class ValidationActions(object):
         results = []
         for playbook in playbooks:
             validation_uuid, artifacts_dir = v_utils.create_artifacts_dir(
-                prefix=os.path.basename(playbook))
+                dir_path=log_path, prefix=os.path.basename(playbook))
             run_ansible = v_ansible(validation_uuid)
             _playbook, _rc, _status = run_ansible.run(
                 workdir=artifacts_dir,

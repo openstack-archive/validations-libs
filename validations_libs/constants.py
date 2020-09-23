@@ -23,4 +23,5 @@ VALIDATION_GROUPS = ['no-op',
                      'post']
 
 VALIDATIONS_LOG_BASEDIR = '/var/log/validations/'
-VALIDATION_ANSIBLE_ARTIFACT_PATH = '/var/log/validations/artifacts/'
+VALIDATION_ANSIBLE_ARTIFACT_PATH = '{}/artifacts/'.format(
+    VALIDATIONS_LOG_BASEDIR)
