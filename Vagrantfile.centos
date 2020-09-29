@@ -1,0 +1,28 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/8"
+  config.vm.box_version = "1905.1"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+  end
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "export TERM=xterm">>/home/vagrant/.bashrc
+    echo "export TERM=xterm">>/root/.bashrc
+    dnf update -y
+    dnf install -y epel-release
+    yum-config-manager --disable epel
+    dnf install -y python3-devel gcc git vim
+    dnf install -y --enablerepo epel ansible
+    git clone https://opendev.org/openstack/validations-libs
+    git clone https://opendev.org/openstack/validations-common
+    pushd validations-libs
+    sudo -u vagrant pip3 install --user -r requirements.txt
+    python3 setup.py install
+    popd
+    pushd validations-common
+    sudo -u vagrant pip3 install --user -r requirements.txt
+    python3 setup.py install
+    popd
+    ln -s /usr/local/share/ansible/validations-playbooks /usr/share/ansible/validations-playbooks
+    mkdir -p /var/log/validations
+  SHELL
+end
