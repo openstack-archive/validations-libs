@@ -152,7 +152,8 @@ class TestValidationActions(TestCase):
                              mock_parse_validation, mock_data, mock_log):
         data = {'Name': 'Advanced Format 512e Support',
                 'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
-                'ID': '512e'}
+                'ID': '512e',
+                'Parameters': {}}
         data.update({'Last execution date': '2019-11-25 13:40:14',
                      'Number of execution': 'Total: 1, Passed: 0, Failed: 1'})
         validations_show = ValidationActions()

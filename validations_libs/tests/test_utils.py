@@ -37,7 +37,8 @@ class TestUtils(TestCase):
     def test_get_validations_data(self, mock_exists, mock_open, mock_data):
         output = {'Name': 'Advanced Format 512e Support',
                   'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
-                  'ID': '512e'}
+                  'ID': '512e',
+                  'Parameters': {}}
         res = utils.get_validations_data('512e')
         self.assertEqual(res, output)
 
