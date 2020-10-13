@@ -58,7 +58,7 @@ class ValidationActions(object):
                 validation,
                 self.validation_path)
             raise RuntimeError(msg)
-        logfiles = vlog.get_all_logfiles_content()
+        logfiles = vlog.get_logfile_content_by_validation(validation)
         format = vlog.get_validations_stats(logfiles)
         data.update(format)
         return data

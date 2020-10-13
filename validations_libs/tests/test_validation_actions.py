@@ -144,7 +144,7 @@ class TestValidationActions(TestCase):
     @mock.patch('validations_libs.validation.Validation._get_content',
                 return_value=fakes.FAKE_PLAYBOOK[0])
     @mock.patch('validations_libs.validation_logs.ValidationLogs.'
-                'get_all_logfiles_content',
+                'get_logfile_content_by_validation',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
     @mock.patch('six.moves.builtins.open')
     @mock.patch('os.path.exists', return_value=True)
