@@ -14,6 +14,8 @@
 #
 import logging
 import os
+import json
+import yaml
 
 from validations_libs.ansible import Ansible as v_ansible
 from validations_libs.group import Group
@@ -152,9 +154,31 @@ class ValidationActions(object):
         params = v_utils.get_validations_parameters(validations, validation,
                                                     group, format)
         if download_file:
+            params_only = {}
+            ext = os.splitext(download_file)[1][1:]
             with open(download_file, 'w') as f:
-                f.write(params)
-        return params
+                for val_name in params.keys():
+                    for k, v in params[val_name].get('parameters').items():
+                        params_only[k] = v
+
+                if ext == 'json':
+                    f.write(json.dumps(params_only,
+                                       indent=4,
+                                       sort_keys=True))
+                else:
+                    f.write(yaml.safe_dump(params_only,
+                                           allow_unicode=True,
+                                           default_flow_style=False,
+                                           indent=2))
+        if format == 'json':
+            return json.dumps(params,
+                              indent=4,
+                              sort_keys=True)
+        else:
+            return yaml.safe_dump(params,
+                                  allow_unicode=True,
+                                  default_flow_style=False,
+                                  indent=2)
 
     def show_history(self, validation_id=None, extension='json',
                      log_path=constants.VALIDATIONS_LOG_BASEDIR):

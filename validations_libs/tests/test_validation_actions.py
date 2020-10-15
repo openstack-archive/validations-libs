@@ -17,6 +17,9 @@ try:
     from unittest import mock
 except ImportError:
     import mock
+
+import json
+
 from unittest import TestCase
 
 from validations_libs.tests import fakes
@@ -193,7 +196,8 @@ class TestValidationActions(TestCase):
                                        {'parameters': fakes.FAKE_METADATA}}
         v_actions = ValidationActions()
         result = v_actions.show_validations_parameters('foo')
-        self.assertEqual(result, {'foo': {'parameters': fakes.FAKE_METADATA}})
+        self.assertEqual(result, json.dumps(mock_get_param.return_value,
+                                            indent=4, sort_keys=True))
 
     @mock.patch('validations_libs.validation_logs.ValidationLogs.'
                 'get_logfile_by_validation',
