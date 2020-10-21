@@ -11,4 +11,5 @@
     - role: ensure-if-python
       vars:
         zuul_work_dir: "src/opendev.org/openstack/validations-common"
-    - role: validations
+    - role: "src/opendev.org/openstack/validations-common/roles/validations"
+    - role: "src/opendev.org/openstack/validations-common/roles/fetch_validations"

@@ -1,9 +1,8 @@
-- hosts: all
+- hosts: tempest
   vars:
     tox_envlist: functional
   roles:
     - fetch-subunit-output
     - fetch-devstack-log-dir
     - fetch-output
-    - fetch-validations
     - fetch-python-sdist-output
