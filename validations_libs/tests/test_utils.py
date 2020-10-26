@@ -13,8 +13,6 @@
 #   under the License.
 #
 
-import json
-import yaml
 try:
     from unittest import mock
 except ImportError:
@@ -84,7 +82,8 @@ class TestUtils(TestCase):
         mock_listdir.return_value = ['foo.yaml']
         mock_isfile.return_value = True
         result = utils.get_validations_playbook('/foo/playbook', 'foo', 'prep')
-        self.assertEqual(result, ['/foo/playbook/foo.yaml'])
+        self.assertEqual(result, ['/foo/playbook/foo.yaml',
+                                  '/foo/playbook/foo.yaml'])
 
     @mock.patch('os.path.isfile')
     @mock.patch('os.listdir')
@@ -96,7 +95,7 @@ class TestUtils(TestCase):
                                                       mock_isfile):
         mock_listdir.return_value = ['foo.yaml']
         mock_isfile.return_value = True
-        result = utils.get_validations_playbook('/foo/playbook', 'foo',
+        result = utils.get_validations_playbook('/foo/playbook',
                                                 'no_group')
         self.assertEqual(result, [])
 
@@ -139,7 +138,7 @@ class TestUtils(TestCase):
         result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
                                                   'foo')
         output = {'foo': {'parameters': {'foo': 'bar'}}}
-        self.assertEqual(result, json.dumps(output, indent=4, sort_keys=True))
+        self.assertEqual(result, output)
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
     @mock.patch('six.moves.builtins.open')
@@ -150,10 +149,7 @@ class TestUtils(TestCase):
             validation_name='foo',
             format='yaml')
         output = {'foo': {'parameters': {'foo': 'bar'}}}
-        self.assertEqual(result, yaml.safe_dump(output,
-                                                allow_unicode=True,
-                                                default_flow_style=False,
-                                                indent=2))
+        self.assertEqual(result, output)
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
     @mock.patch('six.moves.builtins.open')
@@ -171,7 +167,7 @@ class TestUtils(TestCase):
         result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
                                                   [], ['prep'])
         output = {'foo': {'parameters': {'foo': 'bar'}}}
-        self.assertEqual(result, json.dumps(output, indent=4, sort_keys=True))
+        self.assertEqual(result, output)
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
@@ -179,4 +175,4 @@ class TestUtils(TestCase):
 
         result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
                                                   [], [])
-        self.assertEqual(result, json.dumps({}))
+        self.assertEqual(result, {})

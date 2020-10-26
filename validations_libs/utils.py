@@ -14,12 +14,10 @@
 #
 import datetime
 import glob
-import json
 import logging
 import os
 import six
 import uuid
-import yaml
 
 from os.path import join
 from validations_libs import constants
@@ -66,10 +64,30 @@ def parse_all_validations_on_disk(path, groups=None):
     return results
 
 
-def get_validations_playbook(path, validation_id, groups=None):
+def get_validations_playbook(path, validation_id=None, groups=None):
     """
-        Return a list of validations playbook
-        Can be sorted by Groups
+    Get a list of validations playbooks paths either by their names
+    or their groups
+
+    :param path: Path of the validations playbooks
+    :type path: `string`
+
+    :param validation_id: List of validation name
+    :type validation_id: `list`
+
+    :param groups: List of validation group
+    :type groups: `list`
+
+    :return: A list of absolute validations playbooks path
+
+    :exemple:
+
+    >>> path = '/usr/share/validation-playbooks'
+    >>> validation_id = ['512e','check-cpu']
+    >>> groups = None
+    >>> get_validations_playbook(path, validation_id, groups)
+    ['/usr/share/ansible/validation-playbooks/512e.yaml',
+     '/usr/share/ansible/validation-playbooks/check-cpu.yaml',]
     """
     if isinstance(groups, six.string_types):
         groups = [groups]
@@ -77,9 +95,12 @@ def get_validations_playbook(path, validation_id, groups=None):
     for f in os.listdir(path):
         pl_path = join(path, f)
         if os.path.isfile(pl_path):
-            if os.path.splitext(f)[0] in validation_id:
+            if validation_id:
+                if os.path.splitext(f)[0] in validation_id:
+                    pl.append(pl_path)
+            if groups:
                 val = Validation(pl_path)
-                if not groups or set(groups).intersection(val.groups):
+                if set(groups).intersection(val.groups):
                     pl.append(pl_path)
     return pl
 
@@ -142,8 +163,5 @@ def get_validations_parameters(validations_data, validation_name=[],
     if format not in ['json', 'yaml']:
         msg = 'Invalid output format, {} is not supported'.format(format)
         raise RuntimeError(msg)
-    elif format == 'json':
-        return json.dumps(params, indent=4, sort_keys=True)
-    else:
-        return yaml.safe_dump(params, allow_unicode=True,
-                              default_flow_style=False, indent=2)
+
+    return params
