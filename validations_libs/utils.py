@@ -91,12 +91,15 @@ def get_validations_playbook(path, validation_id=None, groups=None):
     """
     if isinstance(groups, six.string_types):
         groups = [groups]
+    if isinstance(validation_id, six.string_types):
+        validation_id = [validation_id]
     pl = []
     for f in os.listdir(path):
         pl_path = join(path, f)
         if os.path.isfile(pl_path):
             if validation_id:
-                if os.path.splitext(f)[0] in validation_id:
+                if os.path.splitext(f)[0] in validation_id or \
+                        os.path.basename(f) in validation_id:
                     pl.append(pl_path)
             if groups:
                 val = Validation(pl_path)
