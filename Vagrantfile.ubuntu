@@ -1,0 +1,25 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/focal64"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+  end
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "export TERM=xterm">>/home/vagrant/.bashrc
+    echo "export TERM=xterm">>/root/.bashrc
+    apt-get -y update
+    apt-get -y upgrade
+    apt-get -y install ansible git python3-pip vim
+    git clone https://opendev.org/openstack/validations-libs
+    git clone https://opendev.org/openstack/validations-common
+    pushd validations-libs
+    pip3 install -r requirements.txt
+    python3 setup.py install
+    popd
+    pushd validations-common
+    pip3 install -r requirements.txt
+    python3 setup.py install
+    popd
+    ln -s /usr/local/share/validations-common /usr/share/validations-common
+    mkdir -p /var/log/validations
+  SHELL
+end
