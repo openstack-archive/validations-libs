@@ -199,6 +199,13 @@ class TestValidationActions(TestCase):
         self.assertEqual(result, json.dumps(mock_get_param.return_value,
                                             indent=4, sort_keys=True))
 
+    @mock.patch('six.moves.builtins.open')
+    def test_show_validations_parameters_non_supported_format(self, mock_open):
+        v_actions = ValidationActions()
+        self.assertRaises(RuntimeError,
+                          v_actions.show_validations_parameters,
+                          validation='foo', format='bar')
+
     @mock.patch('validations_libs.validation_logs.ValidationLogs.'
                 'get_logfile_by_validation',
                 return_value=['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])

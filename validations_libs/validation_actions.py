@@ -158,22 +158,70 @@ class ValidationActions(object):
         column_name = ("Groups", "Description", "Number of Validations")
         return (column_name, group_info)
 
-    def show_validations_parameters(self, validation, group=None,
+    def show_validations_parameters(self, validation=None, group=None,
                                     format='json', download_file=None):
-        """Return Validations Parameters"""
+        """
+        Return Validations Parameters for one or several validations by their
+        names or their groups.
+
+        :param validation: List of validation name(s)
+        :type validation: `list`
+
+        :param group: List of validation group(s)
+        :type group: `list`
+
+        :param format: Output format (Supported format are JSON or YAML)
+        :type format: `string`
+
+        :param download_file: Path of a file in which the parameters will be
+                              stored
+        :type download_file: `string`
+
+        :return: A JSON or a YAML dump (By default, JSON).
+                 if `download_file` is used, a file containing only the
+                 parameters will be created in the file system.
+        :exemple:
+
+        >>> validation = ['check-cpu', 'check-ram']
+        >>> group = None
+        >>> format = 'json'
+        >>> show_validations_parameters(validation, group, format)
+        {
+            "check-cpu": {
+                "parameters": {
+                    "minimal_cpu_count": 8
+                }
+            },
+            "check-ram": {
+                "parameters": {
+                    "minimal_ram_gb": 24
+                }
+            }
+        }
+        """
+        if not validation:
+            validation = []
+
+        if not group:
+            group = []
+
+        supported_format = ['json', 'yaml']
+
+        if format not in supported_format:
+            raise RuntimeError("{} format not supported".format(format))
+
         validations = v_utils.get_validations_playbook(
             self.validation_path, validation, group)
         params = v_utils.get_validations_parameters(validations, validation,
                                                     group, format)
         if download_file:
             params_only = {}
-            ext = os.splitext(download_file)[1][1:]
             with open(download_file, 'w') as f:
                 for val_name in params.keys():
                     for k, v in params[val_name].get('parameters').items():
                         params_only[k] = v
 
-                if ext == 'json':
+                if format == 'json':
                     f.write(json.dumps(params_only,
                                        indent=4,
                                        sort_keys=True))

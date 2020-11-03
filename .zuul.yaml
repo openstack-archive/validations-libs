@@ -27,6 +27,7 @@
             files:
               - ^doc/.*
               - ^README.rst
+              - ^validations_libs/.*
         - validations-libs-functional
     gate:
       jobs:
