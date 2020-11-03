@@ -70,8 +70,23 @@ class TestUtils(TestCase):
                                             mock_listdir, mock_isfile):
         mock_listdir.return_value = ['foo.yaml']
         mock_isfile.return_value = True
-        result = utils.get_validations_playbook('/foo/playbook', 'foo')
+        result = utils.get_validations_playbook('/foo/playbook',
+                                                validation_id='foo')
         self.assertEqual(result, ['/foo/playbook/foo.yaml'])
+
+    @mock.patch('os.path.isfile')
+    @mock.patch('os.listdir')
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_playbook_by_string_id(self, mock_open, mock_load,
+                                                   mock_listdir, mock_isfile):
+        validation_id = "foo,foo2,foo3"
+        mock_listdir.return_value = ['foo.yaml', 'foo2.yaml', 'foo3.yaml']
+        mock_isfile.return_value = True
+        result = utils.get_validations_playbook('/foo/playbook', validation_id)
+        self.assertEqual(result, ['/foo/playbook/foo.yaml',
+                                  '/foo/playbook/foo2.yaml',
+                                  '/foo/playbook/foo3.yaml'])
 
     @mock.patch('os.path.isfile')
     @mock.patch('os.listdir')
@@ -176,3 +191,41 @@ class TestUtils(TestCase):
         result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
                                                   [], [])
         self.assertEqual(result, {})
+
+    @mock.patch('six.moves.builtins.open')
+    def test_convert_data(self, mock_open):
+        data_string = "check-cpu,check-ram,check-disk-space"
+        data_list = ["check-cpu", "check-ram", "check-disk-space"]
+        result = utils.convert_data(data_string)
+        self.assertEqual(result, data_list)
+
+    @mock.patch('six.moves.builtins.open')
+    def test_convert_data_with_spaces(self, mock_open):
+        data_string = "check-cpu, check-ram , check-disk-space"
+        data_list = ["check-cpu", "check-ram", "check-disk-space"]
+        result = utils.convert_data(data_string)
+        self.assertEqual(result, data_list)
+
+    @mock.patch('six.moves.builtins.open')
+    def test_convert_data_with_comma_at_end(self, mock_open):
+        data_string = "check-cpu,"
+        data_list = ["check-cpu"]
+        result = utils.convert_data(data_string)
+        self.assertEqual(result, data_list)
+
+    @mock.patch('six.moves.builtins.open')
+    def test_convert_data_with_list(self, mock_open):
+        data_list = ["check-cpu", "check-ram", "check-disk-space"]
+        result = utils.convert_data(data_list)
+        self.assertEqual(result, data_list)
+
+    @mock.patch('six.moves.builtins.open')
+    def test_convert_data_with_non_list(self, mock_open):
+        data_dict = {
+            "val1": "check-cpu",
+            "val2": "check-ram",
+            "val3": "check-disk-space"
+        }
+        self.assertRaises(TypeError,
+                          utils.convert_data,
+                          data=data_dict)

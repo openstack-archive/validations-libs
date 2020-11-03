@@ -15,7 +15,6 @@
 import logging
 import os
 import json
-import six
 import yaml
 
 from validations_libs.ansible import Ansible as v_ansible
@@ -86,8 +85,7 @@ class ValidationActions(object):
             except Exception as e:
                 raise(e)
         elif validation_name:
-            if isinstance(validation_name, six.string_types):
-                validation_name = [validation_name]
+            validation_name = v_utils.convert_data(validation_name)
 
             playbooks = v_utils.get_validations_playbook(validations_dir,
                                                          validation_name,

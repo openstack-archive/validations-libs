@@ -53,9 +53,12 @@ def parse_all_validations_on_disk(path, groups=None):
         Can be sorted by Groups
     """
     results = []
+    if not groups:
+        groups = []
+    else:
+        groups = convert_data(groups)
+
     validations_abspath = glob.glob("{path}/*.yaml".format(path=path))
-    if isinstance(groups, six.string_types):
-        groups = [groups]
 
     for pl in validations_abspath:
         val = Validation(pl)
@@ -73,10 +76,10 @@ def get_validations_playbook(path, validation_id=None, groups=None):
     :type path: `string`
 
     :param validation_id: List of validation name
-    :type validation_id: `list`
+    :type validation_id: `list` or a `string` of comma-separated validations
 
     :param groups: List of validation group
-    :type groups: `list`
+    :type groups: `list` or a `string` of comma-separated groups
 
     :return: A list of absolute validations playbooks path
 
@@ -89,10 +92,16 @@ def get_validations_playbook(path, validation_id=None, groups=None):
     ['/usr/share/ansible/validation-playbooks/512e.yaml',
      '/usr/share/ansible/validation-playbooks/check-cpu.yaml',]
     """
-    if isinstance(groups, six.string_types):
-        groups = [groups]
-    if isinstance(validation_id, six.string_types):
-        validation_id = [validation_id]
+    if not validation_id:
+        validation_id = []
+    else:
+        validation_id = convert_data(validation_id)
+
+    if not groups:
+        groups = []
+    else:
+        groups = convert_data(groups)
+
     pl = []
     for f in os.listdir(path):
         pl_path = join(path, f)
@@ -168,3 +177,43 @@ def get_validations_parameters(validations_data, validation_name=[],
         raise RuntimeError(msg)
 
     return params
+
+
+def convert_data(data=''):
+    """
+    Transform a string containing comma-separated validation or group name
+    into a list. If `data` is already a list, it will simply return `data`.
+
+    It will raise an exception if `data` is not a list or a string.
+
+    :param data: A string or a list
+    :type data: `string` or `list`
+
+    :return: A list of data
+
+    :exemple:
+
+    >>> data = "check-cpu,check-ram,check-disk-space"
+    >>> convert_data(data)
+    ['check-cpu', 'check-ram', 'check-disk-space']
+
+    >>> data = "check-cpu , check-ram , check-disk-space"
+    >>> convert_data(data)
+    ['check-cpu', 'check-ram', 'check-disk-space']
+
+    >>> data = "check-cpu,"
+    >>> convert_data(data)
+    ['check-cpu']
+
+    >>> data = ['check-cpu', 'check-ram', 'check-disk-space']
+    >>> convert_data(data)
+    ['check-cpu', 'check-ram', 'check-disk-space']
+    """
+    if isinstance(data, six.string_types):
+        return [
+            conv_data.strip() for conv_data in data.split(',') if conv_data
+        ]
+    elif not isinstance(data, list):
+        raise TypeError("The input data should be either a List or a String")
+    else:
+        return data
