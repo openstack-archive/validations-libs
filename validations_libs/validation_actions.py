@@ -134,7 +134,8 @@ class ValidationActions(object):
                         extra_env_vars=None, ansible_cfg=None, quiet=True,
                         workdir=None, limit_hosts=None, run_async=False,
                         base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
-                        log_path=None, python_interpreter=None):
+                        log_path=None, python_interpreter=None,
+                        output_callback='validation_stdout'):
         """Run one or multiple validations by name(s) or by group(s)
 
         :param validation_name: A list of validation names
@@ -177,6 +178,9 @@ class ValidationActions(object):
                                    ``auto_silent`` or the default one
                                    ``auto_legacy``)
         :type python_interpreter: ``string``
+        :param output_callback: The Callback plugin to use.
+                                (Defaults to 'validation_stdout')
+        :type output_callback: ``string``
 
         :return: A list of dictionary containing the informations of the
                  validations executions (Validations, Duration, Host_Group,
@@ -254,7 +258,7 @@ class ValidationActions(object):
                 playbook_dir=validations_dir,
                 parallel_run=True,
                 inventory=inventory,
-                output_callback='validation_json',
+                output_callback=output_callback,
                 quiet=quiet,
                 extra_vars=extra_vars,
                 limit_hosts=limit_hosts,

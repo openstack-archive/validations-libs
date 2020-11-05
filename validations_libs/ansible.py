@@ -111,22 +111,26 @@ class Ansible(object):
                     extravars.update(yaml.safe_load(f.read()))
         return extravars
 
-    def _callback_whitelist(self, callback_whitelist, output_callback):
-        """Set callback whitelist"""
-        if callback_whitelist:
-            callback_whitelist = ','.join([callback_whitelist,
-                                          output_callback])
-        else:
-            callback_whitelist = output_callback
-        return ','.join([callback_whitelist, 'profile_tasks'])
+    def _callbacks(self, callback_whitelist, output_callback, envvars={},
+                   env={}):
+        """Set callbacks"""
+        # if output_callback is exported in env, then use it
+        if isinstance(envvars, dict):
+            env.update(envvars)
+        output_callback = env.get('ANSIBLE_STDOUT_CALLBACK', output_callback)
+        callback_whitelist = ','.join(filter(None, [callback_whitelist,
+                                                    output_callback,
+                                                    'validation_json',
+                                                    'profile_tasks']))
+        return callback_whitelist, output_callback
 
     def _ansible_env_var(self, output_callback, ssh_user, workdir, connection,
                          gathering_policy, module_path, key,
                          extra_env_variables, ansible_timeout,
-                         callback_whitelist, base_dir, python_interpreter):
+                         callback_whitelist, base_dir, python_interpreter,
+                         env={}):
         """Handle Ansible env var for Ansible config execution"""
         cwd = os.getcwd()
-        env = os.environ.copy()
         env['ANSIBLE_SSH_ARGS'] = (
             '-o UserKnownHostsFile={} '
             '-o StrictHostKeyChecking=no '
@@ -274,7 +278,7 @@ class Ansible(object):
             return env
 
     def run(self, playbook, inventory, workdir, playbook_dir=None,
-            connection='smart', output_callback='yaml',
+            connection='smart', output_callback=None,
             base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
             ssh_user='root', key=None, module_path=None,
             limit_hosts=None, tags=None, skip_tags=None,
@@ -384,17 +388,24 @@ class Ansible(object):
             )
         )
 
-        # ansible_fact_path = self._creates_ansible_fact_dir()
+        # Get env variables:
+        env = {}
+        env = os.environ.copy()
         extravars = self._get_extra_vars(extra_vars)
-        callback_whitelist = self._callback_whitelist(callback_whitelist,
-                                                      output_callback)
-
+        callback_whitelist, output_callback = self._callbacks(
+            callback_whitelist,
+            output_callback,
+            extra_env_variables,
+            env)
         # Set ansible environment variables
-        env = self._ansible_env_var(output_callback, ssh_user, workdir,
-                                    connection, gathering_policy, module_path,
-                                    key, extra_env_variables, ansible_timeout,
-                                    callback_whitelist, base_dir,
-                                    python_interpreter)
+        env.update(self._ansible_env_var(output_callback, ssh_user, workdir,
+                                         connection, gathering_policy,
+                                         module_path, key, extra_env_variables,
+                                         ansible_timeout, callback_whitelist,
+                                         base_dir, python_interpreter))
+
+        if not ansible_artifact_path:
+            ansible_artifact_path = constants.VALIDATION_ANSIBLE_ARTIFACT_PATH
         if 'ANSIBLE_CONFIG' not in env and not ansible_cfg:
             ansible_cfg = os.path.join(ansible_artifact_path, 'ansible.cfg')
             config = configparser.ConfigParser()

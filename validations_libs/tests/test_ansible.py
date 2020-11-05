@@ -169,7 +169,8 @@ class TestAnsible(TestCase):
     @mock.patch('ansible_runner.runner_config.RunnerConfig')
     @mock.patch('validations_libs.ansible.Ansible._ansible_env_var',
                 return_value={'ANSIBLE_STDOUT_CALLBACK': 'fake.py'})
-    def test_run_specific_log_path(self, mock_env_var, mock_config,
+    @mock.patch('os.environ.copy', return_value={})
+    def test_run_specific_log_path(self, mock_env, mock_env_var, mock_config,
                                    mock_dump_artifact, mock_run, mock_mkdirs,
                                    mock_exists, mock_open):
         _playbook, _rc, _status = self.run.run(
