@@ -160,7 +160,7 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
 
 
 def get_validations_parameters(validations_data, validation_name=[],
-                               groups=[], format='json'):
+                               groups=[]):
     """
     Return parameters for a list of validations
     The return format can be in json or yaml
@@ -172,9 +172,6 @@ def get_validations_parameters(validations_data, validation_name=[],
             params[v.id] = {
                 'parameters': v.get_vars
             }
-    if format not in ['json', 'yaml']:
-        msg = 'Invalid output format, {} is not supported'.format(format)
-        raise RuntimeError(msg)
 
     return params
 

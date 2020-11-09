@@ -157,26 +157,6 @@ class TestUtils(TestCase):
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
     @mock.patch('six.moves.builtins.open')
-    def test_get_validations_parameters_yaml(self, mock_open, mock_load):
-
-        result = utils.get_validations_parameters(
-            validations_data=['/foo/playbook/foo.yaml'],
-            validation_name='foo',
-            format='yaml')
-        output = {'foo': {'parameters': {'foo': 'bar'}}}
-        self.assertEqual(result, output)
-
-    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
-    @mock.patch('six.moves.builtins.open')
-    def test_get_validations_parameters_wrong_format(self, mock_open,
-                                                     mock_load):
-        self.assertRaises(RuntimeError, utils.get_validations_parameters,
-                          validations_data=['/foo/playbook/foo.yaml'],
-                          validation_name='foo',
-                          format='wrong')
-
-    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
-    @mock.patch('six.moves.builtins.open')
     def test_get_validations_parameters_no_val(self, mock_open, mock_load):
 
         result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],

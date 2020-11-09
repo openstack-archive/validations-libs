@@ -211,7 +211,7 @@ class ValidationActions(object):
         validations = v_utils.get_validations_playbook(
             self.validation_path, validation, group)
         params = v_utils.get_validations_parameters(validations, validation,
-                                                    group, format)
+                                                    group)
         if download_file:
             params_only = {}
             with open(download_file, 'w') as f:
