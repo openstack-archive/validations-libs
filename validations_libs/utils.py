@@ -33,7 +33,15 @@ def current_time():
 
 
 def create_artifacts_dir(dir_path=None, prefix=None):
-    """Create Ansible artifacts directory"""
+    """Create Ansible artifacts directory
+
+    :param dir_path: Directory asbolute path
+    :type dir_path: `string`
+    :param prefix: Playbook name
+    :type prefix: `string`
+    :return: The UUID of the validation and the absolute Path of the log file
+    :rtype: `string`, `string`
+    """
     dir_path = (dir_path if dir_path else
                 constants.VALIDATION_ANSIBLE_ARTIFACT_PATH)
     validation_uuid = str(uuid.uuid4())
@@ -48,9 +56,27 @@ def create_artifacts_dir(dir_path=None, prefix=None):
 
 
 def parse_all_validations_on_disk(path, groups=None):
-    """
-        Return a list of validations metadata
-        Can be sorted by Groups
+    """Return a list of validations metadata which can be sorted by Groups
+
+    :param path: The absolute path of the validations directory
+    :type path: `string`
+    :param groups: Groups of validations. Could be a `list` or a
+                   comma-separated `string` of groups
+    :return: A list of validations metadata.
+    :rtype: `list`
+
+    :Example:
+
+    >>> path = '/foo/bar'
+    >>> parse_all_validations_on_disk(path)
+    [{'description': 'Detect whether the node disks use Advanced Format.',
+      'groups': ['prep', 'pre-deployment'],
+      'id': '512e',
+      'name': 'Advanced Format 512e Support'},
+     {'description': 'Make sure that the server has enough CPU cores.',
+      'groups': ['prep', 'pre-introspection'],
+      'id': 'check-cpu',
+      'name': 'Verify if the server fits the CPU core requirements'}]
     """
     results = []
     if not groups:
@@ -68,22 +94,19 @@ def parse_all_validations_on_disk(path, groups=None):
 
 
 def get_validations_playbook(path, validation_id=None, groups=None):
-    """
-    Get a list of validations playbooks paths either by their names
+    """Get a list of validations playbooks paths either by their names
     or their groups
 
     :param path: Path of the validations playbooks
     :type path: `string`
-
     :param validation_id: List of validation name
     :type validation_id: `list` or a `string` of comma-separated validations
-
     :param groups: List of validation group
     :type groups: `list` or a `string` of comma-separated groups
-
     :return: A list of absolute validations playbooks path
+    :rtype: `list`
 
-    :exemple:
+    :Example:
 
     >>> path = '/usr/share/validation-playbooks'
     >>> validation_id = ['512e','check-cpu']
@@ -123,21 +146,66 @@ def get_validation_parameters(validation):
 
 
 def read_validation_groups_file(groups_path=None):
-    """Load groups.yaml file and return a dictionary with its contents"""
+    """Load groups.yaml file and return a dictionary with its contents
+
+    :params groups_path: The path the groups.yaml file
+    :type groups_path: `string`
+    :return: The group list with their descriptions
+    :rtype: `dict`
+
+    :Example:
+
+    >>> read_validation_groups_file()
+    {'group1': [{'description': 'Group1 description.'}],
+     'group2': [{'description': 'Group2 description.'}]}
+    """
     gp = Group((groups_path if groups_path else
                 constants.VALIDATION_GROUPS_INFO))
     return gp.get_data
 
 
 def get_validation_group_name_list(groups_path=None):
-    """Get the validation group name list only"""
+    """Get the validation group name list only
+
+    :params groups_path: The path the groups.yaml file
+    :type groups_path: `string`
+    :return: The group name list
+    :rtype: `list`
+
+    :Example:
+
+    >>> get_validation_group_name_list()
+    ['group1',
+     'group2',
+     'group3',
+     'group4']
+    """
     gp = Group((groups_path if groups_path else
                 constants.VALIDATION_GROUPS_INFO))
     return gp.get_groups_keys_list
 
 
 def get_validations_details(validation):
-    """Return validations information"""
+    """Return information details for a validation
+
+    :param validation: Name of the validation
+    :type validation: `string`
+    :return: The information of the validation
+    :rtype: `dict`
+    :raises: a `TypeError` exception if `validation` is not a string
+
+    :Example:
+
+    >>> validation = "check-something"
+    >>> get_validations_details(validation)
+    {'description': 'Verify that the server has enough something.',
+     'groups': ['group1', 'group2'],
+     'id': 'check-something',
+     'name': 'Verify the server fits the something requirements'}
+    """
+    if not isinstance(validation, six.string_types):
+        raise TypeError("The input data should be a String")
+
     results = parse_all_validations_on_disk(constants.ANSIBLE_VALIDATION_DIR)
     for r in results:
         if r['id'] == validation:
@@ -146,10 +214,32 @@ def get_validations_details(validation):
 
 
 def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
+    """Return validation data with format:
+
+    ID, Name, Description, Groups, Parameters
+
+    :param validation: Name of the validation without the `yaml` extension.
+                       Defaults to `constants.ANSIBLE_VALIDATION_DIR`
+    :type validation: `string`
+    :param path: The path to the validations directory
+    :type path: `string`
+    :return: The validation data with the format
+             (ID, Name, Description, Groups, Parameters)
+    :rtype: `dict`
+
+    :Example:
+
+    >>> validation = 'check-something'
+    >>> get_validations_data(validation)
+    {'Description': 'Verify that the server has enough something',
+     'Groups': ['group1', 'group2'],
+     'ID': 'check-something',
+     'Name': 'Verify the server fits the something requirements',
+     'Parameters': {'param1': 24}}
     """
-    Return validations data with format:
-    ID, Name, Description, Groups, Other param
-    """
+    if not isinstance(validation, six.string_types):
+        raise TypeError("The input data should be a String")
+
     data = {}
     val_path = "{}/{}.yaml".format(path, validation)
     if os.path.exists(val_path):
@@ -161,9 +251,27 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
 
 def get_validations_parameters(validations_data, validation_name=[],
                                groups=[]):
-    """
-    Return parameters for a list of validations
-    The return format can be in json or yaml
+    """Return parameters for a list of validations
+
+
+    :param validations_data: A list of absolute validations playbooks path
+    :type validations_data: `list`
+    :param validation_name: A list of validation name
+    :type validation_name: `list`
+    :param groups: A list of validation groups
+    :type groups: `list`
+    :return: a dictionary containing the current parameters for
+             each `validation_name` or `groups`
+    :rtype: `dict`
+
+    :Example:
+
+    >>> validations_data = ['/foo/bar/check-ram.yaml',
+                            '/foo/bar/check-cpu.yaml']
+    >>> validation_name = ['check-ram', 'check-cpu']
+    >>> get_validations_parameters(validations_data, validation_name)
+    {'check-cpu': {'parameters': {'minimal_cpu_count': 8}},
+     'check-ram': {'parameters': {'minimal_ram_gb': 24}}}
     """
     params = {}
     for val in validations_data:
@@ -177,31 +285,29 @@ def get_validations_parameters(validations_data, validation_name=[],
 
 
 def convert_data(data=''):
-    """
-    Transform a string containing comma-separated validation or group name
+    """Transform a string containing comma-separated validation or group name
     into a list. If `data` is already a list, it will simply return `data`.
-
-    It will raise an exception if `data` is not a list or a string.
 
     :param data: A string or a list
     :type data: `string` or `list`
-
     :return: A list of data
+    :rtype: `list`
+    :raises: a `TypeError` exception if `data` is not a list or a string
 
-    :exemple:
+    :Example:
 
     >>> data = "check-cpu,check-ram,check-disk-space"
     >>> convert_data(data)
     ['check-cpu', 'check-ram', 'check-disk-space']
-
+    ...
     >>> data = "check-cpu , check-ram , check-disk-space"
     >>> convert_data(data)
     ['check-cpu', 'check-ram', 'check-disk-space']
-
+    ...
     >>> data = "check-cpu,"
     >>> convert_data(data)
     ['check-cpu']
-
+    ...
     >>> data = ['check-cpu', 'check-ram', 'check-disk-space']
     >>> convert_data(data)
     ['check-cpu', 'check-ram', 'check-disk-space']

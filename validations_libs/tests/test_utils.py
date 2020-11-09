@@ -40,6 +40,13 @@ class TestUtils(TestCase):
         res = utils.get_validations_data('512e')
         self.assertEqual(res, output)
 
+    @mock.patch('os.path.exists', return_value=True)
+    def test_get_validations_data_wrong_type(self, mock_exists):
+        validation = ['val1']
+        self.assertRaises(TypeError,
+                          utils.get_validations_data,
+                          validation)
+
     @mock.patch('validations_libs.utils.current_time',
                 return_value='2020-04-02T06:58:20.352272Z')
     @mock.patch('os.makedirs')
@@ -145,6 +152,13 @@ class TestUtils(TestCase):
 
         result = utils.get_validations_details('foo')
         self.assertEqual(result, fakes.FAKE_METADATA)
+
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_details_wrong_type(self, mock_open):
+        validation = ['foo']
+        self.assertRaises(TypeError,
+                          utils.get_validations_details,
+                          validation=validation)
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
     @mock.patch('six.moves.builtins.open')
