@@ -22,6 +22,52 @@ LOG = logging.getLogger(__name__ + ".validation")
 
 
 class Validation(object):
+    """An object for encapsulating a validation
+
+    Each validation is an `Ansible` playbook. Each playbook have some
+    ``metadata``. Here is what a minimal validation would look like:
+
+    .. code-block:: yaml
+
+        - hosts: webserver
+          vars:
+            metadata:
+              name: Hello World
+              description: This validation prints Hello World!
+          roles:
+          - hello-world
+
+    As shown here, the validation playbook requires three top-level
+    directives:
+
+    ``hosts``, ``vars -> metadata`` and ``roles``
+
+    ``hosts`` specify which nodes to run the validation on.
+
+    The ``vars`` section serves for storing variables that are going to be
+    available to the `Ansible` playbook. The validations API uses the
+    ``metadata`` section to read validation's name and description. These
+    values are then reported by the API.
+
+    The validations can be grouped together by specifying a ``groups``
+    metadata. Groups function similar to tags and a validation can thus be part
+    of many groups. Here is, for example, how to have a validation be part of
+    the `pre-deployment` and `hardware` groups.
+
+    .. code-block:: yaml
+
+        - hosts: webserver
+          vars:
+            metadata:
+              name: Hello World
+              description: This validation prints Hello World!
+            groups:
+              - pre-deployment
+              - hardware
+          roles:
+          - hello-world
+
+    """
 
     _col_keys = ['ID', 'Name', 'Description', 'Groups']
 
@@ -37,47 +83,210 @@ class Validation(object):
             raise IOError("Validation playbook not found")
 
     @property
+    def has_vars_dict(self):
+        """Check the presence of the vars dictionary
+
+        .. code-block:: yaml
+
+            - hosts: webserver
+              vars:                    <====
+                metadata:
+                  name: hello world
+                  description: this validation prints hello world!
+                groups:
+                  - pre-deployment
+                  - hardware
+              roles:
+              - hello-world
+
+        :return: `true` if `vars` is found, `false` if not.
+        :rtype: `boolean`
+        """
+        return 'vars' in self.dict.keys()
+
+    @property
+    def has_metadata_dict(self):
+        """Check the presence of the metadata dictionary
+
+        .. code-block:: yaml
+
+            - hosts: webserver
+              vars:
+                metadata:             <====
+                  name: hello world
+                  description: this validation prints hello world!
+                groups:
+                  - pre-deployment
+                  - hardware
+              roles:
+              - hello-world
+
+        :return: `true` if `vars` and metadata are found, `false` if not.
+        :rtype: `boolean`
+        """
+        return self.has_vars_dict and 'metadata' in self.dict['vars'].keys()
+
+    @property
     def get_metadata(self):
-        if self.dict['vars'].get('metadata'):
+        """Get the metadata of a validation
+
+        :return: The validation metadata
+        :rtype: `dict` or `None` if no metadata has been found
+        :raise: A `NameError` exception if no metadata has been found in the
+                playbook
+
+        :Example:
+
+        >>> pl = '/foo/bar/val1.yaml'
+        >>> val = Validation(pl)
+        >>> print(val.get_metadata)
+        {'description': 'Val1 desc.',
+         'groups': ['group1', 'group2'],
+         'id': 'val1',
+         'name': 'The validation val1\'s name'}
+        """
+        if self.has_metadata_dict:
             self.metadata = {'id': self.id}
             self.metadata.update(self.dict['vars'].get('metadata'))
-        return self.metadata
+            return self.metadata
+        else:
+            raise NameError(
+                "No metadata found in validation {}".format(self.id)
+            )
 
     @property
     def get_vars(self):
-        vars = self.dict['vars'].copy()
-        if vars.get('metadata'):
+        """Get only the variables of a validation
+
+        :return: All the variables belonging to a validation
+        :rtype: `dict` or `None` if no metadata has been found
+        :raise: A `NameError` exception if no metadata has been found in the
+                playbook
+
+        :Example:
+
+        >>> pl = '/foo/bar/val.yaml'
+        >>> val = Validation(pl)
+        >>> print(val.get_vars)
+        {'var_name1': 'value1',
+         'var_name2': 'value2'}
+        """
+        if self.has_metadata_dict:
+            vars = self.dict['vars'].copy()
             vars.pop('metadata')
-        return vars
+            return vars
+        else:
+            raise NameError(
+                "No metadata found in validation {}".format(self.id)
+            )
 
     @property
     def get_data(self):
+        """Get the full contents of a validation playbook
+
+        :return: The full content of the playbook
+        :rtype: `dict`
+
+        :Example:
+
+        >>> pl = '/foo/bar/val.yaml'
+        >>> val = Validation(pl)
+        >>> print(val.get_data)
+        {'gather_facts': True,
+         'hosts': 'all',
+         'roles': ['val_role'],
+         'vars': {'metadata': {'description': 'description of val ',
+                               'groups': ['group1', 'group2'],
+                               'name': 'validation one'},
+                               'var_name1': 'value1'}}
+        """
         return self.dict
 
     @property
     def groups(self):
-        return self.dict['vars']['metadata'].get('groups')
+        """Get the validation list of groups
+
+        :return: A list of groups for the validation
+        :rtype: `list` or `None` if no metadata has been found
+        :raise: A `NameError` exception if no metadata has been found in the
+                playbook
+
+        :Example:
+
+        >>> pl = '/foo/bar/val.yaml'
+        >>> val = Validation(pl)
+        >>> print(val.groups)
+        ['group1', 'group2']
+        """
+        if self.has_metadata_dict:
+            groups = self.dict['vars']['metadata'].get('groups')
+            if groups:
+                return groups
+            else:
+                return []
+        else:
+            raise NameError(
+                "No metadata found in validation {}".format(self.id)
+            )
 
     @property
     def get_id(self):
+        """Get the validation id
+
+        :return: The validation id
+        :rtype: `string`
+
+        :Example:
+
+        >>> pl = '/foo/bar/check-cpu.yaml'
+        >>> val = Validation(pl)
+        >>> print(val.id)
+        'check-cpu'
+        """
         return self.id
 
     @property
     def get_ordered_dict(self):
+        """Get the full ordered content of a validation
+
+        :return: An `OrderedDict` with the full data of a validation
+        :rtype: `OrderedDict`
+        """
         data = OrderedDict()
         data.update(self.dict)
         return data
 
     @property
     def get_formated_data(self):
+        """Get basic information from a validation for output display
+
+        :return: Basic information of a validation including the `Description`,
+                 the list of `Groups`, the `ID` and the `Name`.
+        :rtype: `dict`
+        :raise: A `NameError` exception if no metadata has been found in the
+                playbook
+
+        :Example:
+
+        >>> pl = '/foo/bar/val.yaml'
+        >>> val = Validation(pl)
+        >>> print(val.get_data)
+        {'Description': 'description of val',
+         'Groups': ['group1', 'group2'],
+         'ID': 'val',
+         'Name': 'validation one'}
+        """
         data = {}
-        for key in self.get_metadata.keys():
-            if key in map(str.lower, self._col_keys):
-                for k in self._col_keys:
-                    if key == k.lower():
-                        output_key = k
-                data[output_key] = self.get_metadata.get(key)
-            else:
-                # Get all other values:
-                data[key] = self.get_metadata.get(key)
+        metadata = self.get_metadata
+        if metadata:
+            for key in metadata.keys():
+                if key in map(str.lower, self._col_keys):
+                    for k in self._col_keys:
+                        if key == k.lower():
+                            output_key = k
+                    data[output_key] = self.get_metadata.get(key)
+                else:
+                    # Get all other values:
+                    data[key] = self.get_metadata.get(key)
+
         return data

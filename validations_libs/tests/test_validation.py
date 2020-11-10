@@ -42,6 +42,36 @@ class TestValidation(TestCase):
         data = val.get_metadata
         self.assertEquals(data, fakes.FAKE_METADATA)
 
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_metadata_wrong_playbook(self, mock_open, mock_yaml):
+        with self.assertRaises(NameError) as exc_mgr:
+            Validation('/tmp/foo').get_metadata
+        self.assertEqual('No metadata found in validation foo',
+                         str(exc_mgr.exception))
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_vars(self, mock_open, mock_yaml):
+        val = Validation('/tmp/foo')
+        data = val.get_vars
+        self.assertEquals(data, fakes.FAKE_VARS)
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_vars_no_vars(self, mock_open, mock_yaml):
+        val = Validation('/tmp/foo')
+        data = val.get_vars
+        self.assertEquals(data, {})
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_vars_no_metadata(self, mock_open, mock_yaml):
+        with self.assertRaises(NameError) as exc_mgr:
+            Validation('/tmp/foo').get_vars
+        self.assertEqual('No metadata found in validation foo',
+                         str(exc_mgr.exception))
+
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     def test_get_id(self, mock_open, mock_yaml):
@@ -58,6 +88,21 @@ class TestValidation(TestCase):
         groups = val.groups
         self.assertEquals(groups, ['prep', 'pre-deployment'])
 
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_groups_with_no_metadata(self, mock_open, mock_yaml):
+        with self.assertRaises(NameError) as exc_mgr:
+            Validation('/tmp/foo').groups
+        self.assertEqual('No metadata found in validation foo',
+                         str(exc_mgr.exception))
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK3)
+    @mock.patch('six.moves.builtins.open')
+    def test_groups_with_no_existing_groups(self, mock_open, mock_yaml):
+        val = Validation('/tmp/foo')
+        groups = val.groups
+        self.assertEquals(groups, [])
+
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     def test_get_ordered_dict(self, mock_open, mock_yaml):
@@ -71,6 +116,14 @@ class TestValidation(TestCase):
         val = Validation('/tmp/foo')
         data = val.get_formated_data
         self.assertEquals(data, fakes.FORMATED_DATA)
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_formated_data_no_metadata(self, mock_open, mock_yaml):
+        with self.assertRaises(NameError) as exc_mgr:
+            Validation('/tmp/foo').get_formated_data
+        self.assertEqual('No metadata found in validation foo',
+                         str(exc_mgr.exception))
 
     @mock.patch('six.moves.builtins.open')
     def test_validation_not_found(self, mock_open):
