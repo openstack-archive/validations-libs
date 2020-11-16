@@ -25,22 +25,51 @@ LOG = logging.getLogger(__name__ + ".validation_logs")
 
 
 class ValidationLog(object):
+    """An object for encapsulating a Validation Log file"""
 
     def __init__(self, uuid=None, validation_id=None, logfile=None,
                  log_path=constants.VALIDATIONS_LOG_BASEDIR,
                  extension='json'):
+        """Wrap the Validation Log file
+
+        :param uuid: The uuid of the validation execution
+        :type uuid: ``string``
+        :param validation_id: The ID of the validation
+        :type validation_id: ``string``
+        :param logfile: The absolute path of the log file
+        :type logfile: ``string`
+        :param log_path: The absolute path of the logs directory
+        :type log_path: ``string``
+        :param extension: The file extension (Default to 'json')
+        :type extension: ````
+        """
         # Set properties
         self.uuid = uuid
         self.validation_id = validation_id
         self.log_path = log_path
         self.extension = extension
+        self.content = {}
+        self.name = None
+        self.datetime = None
+
+        if not logfile and (not uuid or not validation_id):
+            raise Exception(
+                'When not using logfile argument, the uuid and '
+                'validation_id have to be set'
+            )
+
         # Get full path and content
         if logfile:
             full_path = logfile
         else:
-            full_path = self.get_log_path()
-        self.content = self._get_content(full_path)
-        self.name = os.path.splitext(os.path.basename(full_path))[0]
+            if uuid and validation_id:
+                full_path = self.get_log_path()
+
+        if full_path:
+            self.content = self._get_content(full_path)
+            self.name = os.path.splitext(os.path.basename(full_path))[0]
+            self.datetime = self.name.rsplit('_', 1)[-1]
+
         # if we have a log file then extract uuid, validation_id and timestamp
         if logfile:
             try:
@@ -69,44 +98,94 @@ class ValidationLog(object):
                                                 self.extension))[0]
 
     def is_valid_format(self):
-        """ Return True if the log file is a valid validation format """
+        """Return True if the log file is a valid validation format
+
+        The validation log file has to contain three level of data.
+
+        - ``plays`` will contain the Ansible execution logs of the playbooks
+        - ``stat`` will contain the statistics for each targeted hosts
+        - ``validation_output`` will contain only the warning or failed tasks
+
+        .. code:: bash
+
+            {
+              'plays': [],
+              'stats': {},
+              'validation_output': []
+            }
+
+        :return: ``True`` if the log file is valid, ``False`` if not.
+        :rtype: ``boolean``
+        """
         validation_keys = ['stats', 'validation_output', 'plays']
         return bool(set(validation_keys).intersection(self.content.keys()))
 
     @property
     def get_logfile_infos(self):
-        """
-            Return log file information:
-            uuid,
-            validation_id,
-            datetime
+        """Return log file information from the log file basename
+
+        :return: A list with the UUID, the validation name and the
+                 datetime of the log file
+        :rtype: ``list``
+
+        :Example:
+
+        >>> logfile = '/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'
+        >>> val = ValidationLog(logfile=logfile)
+        >>> print(val.get_logfile_infos)
+        ['123', 'foo', '2020-03-30T13:17:22.447857Z']
         """
         return self.name.replace('.{}'.format(self.extension), '').split('_')
 
     @property
     def get_logfile_datetime(self):
-        """Return log file datetime from a UUID and a validation ID"""
+        """Return log file datetime from a UUID and a validation ID
+
+        :return: The datetime of the log file
+        :rtype: ``list``
+
+        :Example:
+
+        >>> logfile = '/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'
+        >>> val = ValidationLog(logfile=logfile)
+        >>> print(val.get_logfile_datetime)
+        ['2020-03-30T13:17:22.447857Z']
+        """
         return self.name.replace('.{}'.format(self.extension),
                                  '').split('_')[2]
 
     @property
     def get_logfile_content(self):
-        """Return logfile content as a dict"""
+        """Return logfile content
+
+        :rtype: ``dict``
+        """
         return self.content
 
     @property
     def get_uuid(self):
-        """Return log uuid"""
+        """Return log uuid
+
+        :rtype: ``string``
+        """
         return self.uuid
 
     @property
     def get_validation_id(self):
-        """Return validation id"""
+        """Return validation id
+
+        :rtype: ``string``
+        """
         return self.validation_id
 
     @property
     def get_status(self):
-        """Return validation status"""
+        """Return validation status
+
+        :return: 'FAILED' if there is failure(s), 'PASSED' if not.
+                 If no tasks have been executed, it returns 'NOT_RUN'.
+        :rtype: ``string``
+        """
         failed = 0
         for h in self.content['stats'].keys():
             if self.content['stats'][h].get('failures'):
@@ -115,13 +194,28 @@ class ValidationLog(object):
 
     @property
     def get_host_group(self):
-        """Return host group"""
+        """Return host group
+
+        :return: A comma-separated list of host(s)
+        :rtype: ``string``
+        """
         return ', '.join([play['play'].get('host') for
                           play in self.content['plays']])
 
     @property
     def get_hosts_status(self):
-        """Return hosts status"""
+        """Return status by host(s)
+
+        :return: A comma-separated string of host with its status
+        :rtype: ``string``
+
+        :Example:
+
+        >>> logfile = '/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'
+        >>> val = ValidationLog(logfile=logfile)
+        >>> print(val.get_hosts_status)
+        'localhost,PASSED, webserver1,FAILED, webserver2,PASSED'
+        """
         hosts = []
         for h in self.content['stats'].keys():
             if self.content['stats'][h].get('failures'):
@@ -132,20 +226,53 @@ class ValidationLog(object):
 
     @property
     def get_unreachable_hosts(self):
-        """Return unreachable hosts"""
+        """Return unreachable hosts
+
+        :return: A list of unreachable host(s)
+        :rtype: ``string``
+
+        :Example:
+
+        - Multiple unreachable hosts
+
+        >>> logfile = '/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'
+        >>> val = ValidationLog(logfile=logfile)
+        >>> print(val.get_unreachable_hosts)
+        'localhost, webserver2'
+
+        - Only one unreachable host
+
+        >>> logfile = '/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'
+        >>> val = ValidationLog(logfile=logfile)
+        >>> print(val.get_unreachable_hosts)
+        'localhost'
+
+        - No unreachable host
+
+        >>> logfile = '/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'
+        >>> val = ValidationLog(logfile=logfile)
+        >>> print(val.get_unreachable_hosts)
+        ''
+        """
         return ', '.join(h for h in self.content['stats'].keys()
                          if self.content['stats'][h].get('unreachable'))
 
     @property
     def get_duration(self):
-        """Return duration of Ansible runtime"""
+        """Return duration of Ansible runtime
+
+        :rtype: ``string``
+        """
         duration = [play['play']['duration'].get('time_elapsed') for
                     play in self.content['plays']]
         return ', '.join(filter(None, duration))
 
     @property
     def get_start_time(self):
-        """Return Ansible  start time"""
+        """Return Ansible start time
+
+        :rtype: ``string``
+        """
         start_time = [play['play']['duration'].get('start') for
                       play in self.content['plays']]
         return ', '.join(filter(None, start_time))
@@ -162,6 +289,7 @@ class ValidationLog(object):
 
 
 class ValidationLogs(object):
+    """An object for encapsulating the Validation Log files"""
 
     def __init__(self, logs_path=constants.VALIDATIONS_LOG_BASEDIR):
         self.logs_path = logs_path
@@ -175,51 +303,113 @@ class ValidationLogs(object):
             raise IOError(msg)
 
     def get_logfile_by_validation(self, validation_id):
-        """Return logfiles by validation_id"""
+        """Return logfiles by validation_id
+
+        :param validation_id: The ID of the validation
+        :type validation_id: ``string``
+
+        :return: The list of the log files for a validation
+        :rtype: ``list``
+        """
         return glob.glob("{}/*_{}_*".format(self.logs_path, validation_id))
 
     def get_logfile_content_by_validation(self, validation_id):
-        """Return logfiles content by validation_id"""
+        """Return logfiles content by validation_id
+
+        :param validation_id: The ID of the validation
+        :type validation_id: ``string``
+
+        :return: The list of the log files contents for a validation
+        :rtype: ``list``
+        """
         log_files = glob.glob("{}/*_{}_*".format(self.logs_path,
                                                  validation_id))
         return [self._get_content(log) for log in log_files]
 
     def get_logfile_by_uuid(self, uuid):
-        """Return logfiles by uuid"""
+        """Return logfiles by uuid
+
+        :param uuid: The UUID of the validation execution
+        :type uuid: ``string``
+
+        :return: The list of the log files by UUID
+        :rtype: ``list``
+        """
         return glob.glob("{}/{}_*".format(self.logs_path, uuid))
 
     def get_logfile_content_by_uuid(self, uuid):
-        """Return logfiles content by uuid"""
+        """Return logfiles content by uuid
+
+        :param uuid: The UUID of the validation execution
+        :type uuid: ``string``
+
+        :return: The list of the log files contents by UUID
+        :rtype: ``list``
+        """
         log_files = glob.glob("{}/{}_*".format(self.logs_path, uuid))
         return [self._get_content(log) for log in log_files]
 
     def get_logfile_by_uuid_validation_id(self, uuid, validation_id):
-        """Return logfiles by uuid"""
+        """Return logfiles by uuid and validation_id
+
+        :param uuid: The UUID of the validation execution
+        :type uuid: ``string``
+        :param validation_id: The ID of the validation
+        :type validation_id: ``string``
+
+        :return: A list of the log files by UUID and validation_id
+        :rtype: ``list``
+        """
         return glob.glob("{}/{}_{}_*".format(self.logs_path, uuid,
                                              validation_id))
 
     def get_logfile_content_by_uuid_validation_id(self, uuid, validation_id):
-        """Return logfiles content filter by uuid and content"""
+        """Return logfiles content filter by uuid and validation_id
+
+        :param uuid: The UUID of the validation execution
+        :type uuid: ``string``
+        :param validation_id: The ID of the validation
+        :type validation_id: ``string``
+
+        :return: A list of the log files content by UUID and validation_id
+        :rtype: ``list``
+        """
         log_files = glob.glob("{}/{}_{}_*".format(self.logs_path, uuid,
                                                   validation_id))
         return [self._get_content(log) for log in log_files]
 
     def get_all_logfiles(self, extension='json'):
-        """Return logfiles from logs_path"""
+        """Return logfiles from logs_path
+
+        :param extension: The extension file (Defaults to 'json')
+        :type extension: ``string``
+
+        :return: A list of the absolute path log files
+        :rtype: ``list``
+        """
         return [join(self.logs_path, f) for f in os.listdir(self.logs_path) if
                 os.path.isfile(join(self.logs_path, f)) and
                 extension in os.path.splitext(join(self.logs_path, f))[1]]
 
     def get_all_logfiles_content(self):
-        """Return logfiles content filter by uuid and content"""
+        """Return logfiles content
+
+        :return: A list of the contents of every log files available
+        :rtype: ``list``
+        """
         return [self._get_content(join(self.logs_path, f))
                 for f in os.listdir(self.logs_path)
                 if os.path.isfile(join(self.logs_path, f))]
 
     def get_validations_stats(self, logs):
-        """
-            Return validations stats from log files
-            logs: list of dict
+        """Return validations stats from log files
+
+        :param logs: A list of log file contents
+        :type logs: ``list``
+
+        :return: Information about validation statistics.
+                 ``last execution date`` and ``number of execution``
+        :rtype: ``dict``
         """
         if not isinstance(logs, list):
             logs = [logs]
@@ -252,9 +442,29 @@ class ValidationLogs(object):
                                                            failed_number)}
 
     def get_results(self, uuid, validation_id=None):
-        """
-            Return a list of validation results by uuid
-            Can be filter by validation_id
+        """Return a list of validation results by uuid
+        Can be filter by validation_id
+
+        :param uuid: The UUID of the validation execution
+        :type uuid: ``string` or ``list``
+        :param validation_id: The ID of the validation
+        :type validation_id: ``string``
+
+        :return: A list of the log files content by UUID and validation_id
+        :rtype: ``list``
+
+        :Example:
+
+        >>> v_logs = ValidationLogs()
+        >>> uuid = '78df1c3f-dfc3-4a1f-929e-f51762e67700'
+        >>> print(v_logs.get_results(uuid=uuid)
+        [{'Duration': '0:00:00.514',
+          'Host_Group': 'undercloud,Controller',
+          'Status': 'FAILED',
+          'Status_by_Host': 'undercloud,FAILED, underclou1d,FAILED',
+          'UUID': '78df1c3f-dfc3-4a1f-929e-f51762e67700',
+          'Unreachable_Hosts': 'undercloud',
+          'Validations': 'check-cpu'}]
         """
         if isinstance(uuid, list):
             results = []

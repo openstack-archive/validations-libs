@@ -39,6 +39,24 @@ class TestValidationLog(TestCase):
 
     @mock.patch('json.load')
     @mock.patch('six.moves.builtins.open')
+    def test_validation_uuid_wo_validation_id(self, mock_open, mock_json):
+        with self.assertRaises(Exception) as exc_mgr:
+            ValidationLog(uuid='123')
+        self.assertEqual('When not using logfile argument, the uuid and '
+                         'validation_id have to be set',
+                         str(exc_mgr.exception))
+
+    @mock.patch('json.load')
+    @mock.patch('six.moves.builtins.open')
+    def test_validation_validation_id_wo_uuid(self, mock_open, mock_json):
+        with self.assertRaises(Exception) as exc_mgr:
+            ValidationLog(validation_id='foo')
+        self.assertEqual('When not using logfile argument, the uuid and '
+                         'validation_id have to be set',
+                         str(exc_mgr.exception))
+
+    @mock.patch('json.load')
+    @mock.patch('six.moves.builtins.open')
     def test_validation_underscore_validation_id(self, mock_open, mock_json):
         val = ValidationLog(
             logfile='/tmp/123_foo_bar_2020-03-30T13:17:22.447857Z.json')
