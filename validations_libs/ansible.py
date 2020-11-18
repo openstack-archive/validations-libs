@@ -45,6 +45,7 @@ except pkg_resources.DistributionNotFound:
 
 
 class Ansible(object):
+    """An Object for encapsulating an Ansible execution"""
 
     def __init__(self, uuid=None):
         self.log = logging.getLogger(__name__ + ".Ansible")
@@ -283,7 +284,85 @@ class Ansible(object):
             callback_whitelist=None, ansible_cfg=None,
             ansible_timeout=30, ansible_artifact_path=None,
             log_path=None, run_async=False, python_interpreter=None):
+        """Execute one or multiple Ansible playbooks
 
+        :param playbook: The Absolute path of the Ansible playbook
+        :type playbook: ``string``
+        :param inventory: Either proper inventory file or a
+                          comma-separated list
+        :type inventory: ``string``
+        :param workdir: The absolute path of the Ansible-runner
+                        artifacts directory
+        :type workdir: ``string``
+        :param playbook_dir: The absolute path of the Validations playbooks
+                             directory
+        :type playbook_dir: ``string``
+        :param connection: Connection type (local, smart, etc).
+                        (efaults to 'smart')
+        :type connection: String
+        :param output_callback: Callback for output format. Defaults to
+                                'yaml'.
+        :type output_callback: ``string``
+        :param base_dir: The absolute path of the default validations base
+                         directory
+        :type base_dir: ``string``
+        :param ssh_user: User for the ssh connection (Defaults to 'root')
+        :type ssh_user: ``string``
+        :param key: Private key to use for the ssh connection.
+        :type key: ``string``
+        :param module_path: Location of the ansible module and library.
+        :type module_path: ``string``
+        :param limit_hosts: Limit the execution to the hosts.
+        :type limit_hosts: ``string``
+        :param tags: Run specific tags.
+        :type tags: ``string``
+        :param skip_tags: Skip specific tags.
+        :type skip_tags: ``string``
+        :param verbosity: Verbosity level for Ansible execution.
+        :type verbosity: ``integer``
+        :param quiet: Disable all output (Defaults to False)
+        :type quiet: ``boolean``
+        :param extra_vars: Set additional variables as a Dict or the absolute
+                        path of a JSON or YAML file type.
+        :type extra_vars: Either a Dict or the absolute path of JSON or YAML
+        :param gathering_policy: This setting controls the default policy of
+                        fact gathering ('smart', 'implicit', 'explicit').
+                        (Defaults to 'smart')
+        :type gathering_facts: ``string``
+        :param extra_env_vars: Set additional ansible variables using an
+                                extravar dictionary.
+        :type extra_env_vars: ``dict``
+        :param parallel_run: Isolate playbook execution when playbooks are
+                             to be executed with multi-processing.
+        :type parallel_run: ``boolean``
+        :param callback_whitelist: Comma separated list of callback plugins.
+                                Custom output_callback is also whitelisted.
+                                (Defaults to ``None``)
+        :type callback_whitelist: ``string``
+        :param ansible_cfg: Path to an ansible configuration file. One will be
+                         generated in the artifact path if this option is None.
+        :type ansible_cfg: ``string``
+        :param ansible_timeout: Timeout for ansible connections.
+                                (Defaults to ``30 minutes``)
+        :type ansible_timeout: ``integer``
+        :param ansible_artifact_path: The Ansible artifact path
+        :type ansible_artifact_path: ``string``
+        :param log_path: The absolute path of the validations logs directory
+        :type log_path: ``string``
+        :param run_async: Enable the Ansible asynchronous mode
+                          (Defaults to 'False')
+        :type run_async: ``boolean``
+        :param python_interpreter: Path to the Python interpreter to be
+                                   used for module execution on remote targets,
+                                   or an automatic discovery mode (``auto``,
+                                   ``auto_silent`` or the default one
+                                   ``auto_legacy``)
+        :type python_interpreter: ``string``
+
+        :return: A ``tuple`` containing the the absolute path of the executed
+                 playbook, the return code and the status of the run
+        :rtype: ``tuple``
+        """
         if not playbook_dir:
             playbook_dir = workdir
 
