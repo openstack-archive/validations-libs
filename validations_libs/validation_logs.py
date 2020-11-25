@@ -190,6 +190,8 @@ class ValidationLog(object):
         for h in self.content['stats'].keys():
             if self.content['stats'][h].get('failures'):
                 failed += 1
+            if self.content['stats'][h].get('unreachable'):
+                failed += 1
         return ('FAILED' if failed else 'PASSED')
 
     @property
@@ -220,6 +222,8 @@ class ValidationLog(object):
         for h in self.content['stats'].keys():
             if self.content['stats'][h].get('failures'):
                 hosts.append('{},{}'.format(h, 'FAILED'))
+            elif self.content['stats'][h].get('unreachable'):
+                hosts.append('{},{}'.format(h, 'UNREACHABLE'))
             else:
                 hosts.append('{},{}'.format(h, 'PASSED'))
         return ', '.join(hosts)

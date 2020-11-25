@@ -145,6 +145,24 @@ class TestValidationLog(TestCase):
         self.assertEquals(status, 'PASSED')
 
     @mock.patch('json.load',
+                return_value=fakes.FAILED_VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_status_failed(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        status = val.get_status
+        self.assertEquals(status, 'FAILED')
+
+    @mock.patch('json.load',
+                return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_status_unreachable(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        status = val.get_status
+        self.assertEquals(status, 'FAILED')
+
+    @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
     @mock.patch('six.moves.builtins.open')
     def test_get_host_group(self, mock_open, mock_json):
@@ -163,6 +181,24 @@ class TestValidationLog(TestCase):
         self.assertEquals(host_group, 'undercloud,PASSED')
 
     @mock.patch('json.load',
+                return_value=fakes.FAILED_VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_hosts_status_failed(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        host_group = val.get_hosts_status
+        self.assertEquals(host_group, 'undercloud,FAILED')
+
+    @mock.patch('json.load',
+                return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_hosts_status_unreachable(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        host_group = val.get_hosts_status
+        self.assertEquals(host_group, 'undercloud,UNREACHABLE')
+
+    @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
     @mock.patch('six.moves.builtins.open')
     def test_get_unreachable_hosts(self, mock_open, mock_json):
@@ -178,7 +214,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         unreachable = val.get_unreachable_hosts
-        self.assertEquals(unreachable, '')
+        self.assertEquals(unreachable, 'undercloud')
 
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
