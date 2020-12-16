@@ -392,8 +392,8 @@ class ValidationLogs(object):
         :rtype: ``list``
         """
         return [join(self.logs_path, f) for f in os.listdir(self.logs_path) if
-                os.path.isfile(join(self.logs_path, f)) and
-                extension in os.path.splitext(join(self.logs_path, f))[1]]
+                os.path.isfile(join(self.logs_path, f)) and extension in
+                os.path.splitext(join(self.logs_path, f))[1]]
 
     def get_all_logfiles_content(self):
         """Return logfiles content
