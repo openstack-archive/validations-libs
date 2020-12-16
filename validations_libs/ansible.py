@@ -366,6 +366,13 @@ class Ansible(object):
         if not playbook_dir:
             playbook_dir = workdir
 
+        if not ansible_artifact_path:
+            if log_path:
+                ansible_artifact_path = "{}/artifacts/".format(log_path)
+            else:
+                ansible_artifact_path = \
+                    constants.VALIDATION_ANSIBLE_ARTIFACT_PATH
+
         playbook = self._playbook_check(playbook, playbook_dir)
         self.log.info(
             'Running Ansible playbook: {},'
@@ -388,8 +395,6 @@ class Ansible(object):
                                     key, extra_env_variables, ansible_timeout,
                                     callback_whitelist, base_dir,
                                     python_interpreter)
-        if not ansible_artifact_path:
-            ansible_artifact_path = constants.VALIDATION_ANSIBLE_ARTIFACT_PATH
         if 'ANSIBLE_CONFIG' not in env and not ansible_cfg:
             ansible_cfg = os.path.join(ansible_artifact_path, 'ansible.cfg')
             config = configparser.ConfigParser()
