@@ -13,6 +13,7 @@
 #   under the License.
 #
 
+import pkg_resources
 try:
     from unittest import mock
 except ImportError:
@@ -22,6 +23,12 @@ from unittest import TestCase
 from ansible_runner import Runner
 from validations_libs.ansible import Ansible
 from validations_libs.tests import fakes
+
+try:
+    version = pkg_resources.get_distribution("ansible_runner").version
+    backward_compat = (version < '1.4.0')
+except pkg_resources.DistributionNotFound:
+    backward_compat = False
 
 
 class TestAnsible(TestCase):
@@ -171,21 +178,27 @@ class TestAnsible(TestCase):
             workdir='/tmp',
             log_path='/tmp/foo'
         )
+
         opt = {
             'artifact_dir': '/tmp',
-            'envvars': {
-                'ANSIBLE_STDOUT_CALLBACK': 'fake.py',
-                'ANSIBLE_CONFIG': '/tmp/foo/artifacts/ansible.cfg',
-                'VALIDATIONS_LOG_DIR': '/tmp/foo'},
             'extravars': {},
-            'fact_cache': '/tmp/foo/artifacts/',
-            'fact_cache_type': 'jsonfile',
             'ident': '',
             'inventory': 'localhost,',
             'playbook': 'existing.yaml',
             'private_data_dir': '/tmp',
-            'project_dir': '/tmp',
             'quiet': False,
             'rotate_artifacts': 256,
             'verbosity': 0}
+
+        if not backward_compat:
+            opt.update({
+                'envvars': {
+                    'ANSIBLE_STDOUT_CALLBACK': 'fake.py',
+                    'ANSIBLE_CONFIG': '/tmp/foo/artifacts/ansible.cfg',
+                    'VALIDATIONS_LOG_DIR': '/tmp/foo'},
+                'project_dir': '/tmp',
+                'fact_cache': '/tmp/foo/artifacts/',
+                'fact_cache_type': 'jsonfile'
+                })
+
         mock_config.assert_called_with(**opt)

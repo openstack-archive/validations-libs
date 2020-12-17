@@ -39,7 +39,7 @@ except NameError:
 
 try:
     version = pkg_resources.get_distribution("ansible_runner").version
-    backward_compat = (version < '1.4.4')
+    backward_compat = (version < '1.4.0')
 except pkg_resources.DistributionNotFound:
     backward_compat = False
 
