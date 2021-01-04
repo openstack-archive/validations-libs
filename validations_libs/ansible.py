@@ -79,7 +79,7 @@ class Ansible(object):
             )
 
     def _creates_ansible_fact_dir(self,
-                                  temp_suffix='validagions-libs-ansible'):
+                                  temp_suffix='validations-libs-ansible'):
         """Creates ansible fact dir"""
         ansible_fact_path = os.path.join(
             os.path.join(
