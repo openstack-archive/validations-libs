@@ -204,7 +204,7 @@ class TestValidationActions(TestCase):
         v_actions = ValidationActions()
         self.assertRaises(RuntimeError,
                           v_actions.show_validations_parameters,
-                          validation='foo', format='bar')
+                          validation='foo', output_format='bar')
 
     @mock.patch('validations_libs.validation_logs.ValidationLogs.'
                 'get_logfile_by_validation',

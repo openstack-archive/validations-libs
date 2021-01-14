@@ -172,9 +172,9 @@ class Validation(object):
          'var_name2': 'value2'}
         """
         if self.has_metadata_dict:
-            vars = self.dict['vars'].copy()
-            vars.pop('metadata')
-            return vars
+            validation_vars = self.dict['vars'].copy()
+            validation_vars.pop('metadata')
+            return validation_vars
         else:
             raise NameError(
                 "No metadata found in validation {}".format(self.id)
