@@ -404,8 +404,6 @@ class Ansible(object):
                                          ansible_timeout, callback_whitelist,
                                          base_dir, python_interpreter))
 
-        if not ansible_artifact_path:
-            ansible_artifact_path = constants.VALIDATION_ANSIBLE_ARTIFACT_PATH
         if 'ANSIBLE_CONFIG' not in env and not ansible_cfg:
             ansible_cfg = os.path.join(ansible_artifact_path, 'ansible.cfg')
             config = configparser.ConfigParser()
