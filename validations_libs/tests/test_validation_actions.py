@@ -77,7 +77,7 @@ class TestValidationActions(TestCase):
         run_called_args = {
             'workdir': '/tmp/',
             'playbook': '/tmp/foo/fake.yaml',
-            'base_dir': '/usr/share/ansible/',
+            'base_dir': '/usr/share/ansible',
             'playbook_dir': '/tmp/foo',
             'parallel_run': True,
             'inventory': 'tmp/inventory.yaml',
@@ -123,7 +123,7 @@ class TestValidationActions(TestCase):
         run_called_args = {
             'workdir': '/tmp/',
             'playbook': '/tmp/foo/fake.yaml',
-            'base_dir': '/usr/share/ansible/',
+            'base_dir': '/usr/share/ansible',
             'playbook_dir': '/tmp/foo',
             'parallel_run': True,
             'inventory': 'tmp/inventory.yaml',
