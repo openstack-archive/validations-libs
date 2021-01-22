@@ -26,7 +26,7 @@ from validations_libs import utils as v_utils
 LOG = logging.getLogger(__name__ + ".validation_actions")
 
 
-class ValidationActions(object):
+class ValidationActions:
     """An object for encapsulating the Validation Actions
 
     This class allows the possibility to execute the following actions:

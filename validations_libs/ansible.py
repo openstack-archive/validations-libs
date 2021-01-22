@@ -44,7 +44,7 @@ except pkg_resources.DistributionNotFound:
     backward_compat = False
 
 
-class Ansible(object):
+class Ansible:
     """An Object for encapsulating an Ansible execution"""
 
     def __init__(self, uuid=None):
