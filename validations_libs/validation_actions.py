@@ -125,8 +125,8 @@ class ValidationActions(object):
                 self.validation_path)
             raise RuntimeError(msg)
         logfiles = vlog.get_logfile_content_by_validation(validation)
-        format = vlog.get_validations_stats(logfiles)
-        data.update(format)
+        data_format = vlog.get_validations_stats(logfiles)
+        data.update(data_format)
         return data
 
     def run_validations(self, validation_name=None, inventory='localhost',
@@ -328,7 +328,7 @@ class ValidationActions(object):
         return (column_name, group_info)
 
     def show_validations_parameters(self, validation=None, group=None,
-                                    format='json', download_file=None):
+                                    output_format='json', download_file=None):
         """
         Return Validations Parameters for one or several validations by their
         names or their groups.
@@ -339,8 +339,8 @@ class ValidationActions(object):
         :param group: List of validation group(s)
         :type group: `list`
 
-        :param format: Output format (Supported format are JSON or YAML)
-        :type format: `string`
+        :param output_format: Output format (Supported format are JSON or YAML)
+        :type output_format: `string`
 
         :param download_file: Path of a file in which the parameters will be
                               stored
@@ -353,8 +353,8 @@ class ValidationActions(object):
 
         >>> validation = ['check-cpu', 'check-ram']
         >>> group = None
-        >>> format = 'json'
-        >>> show_validations_parameters(validation, group, format)
+        >>> output_format = 'json'
+        >>> show_validations_parameters(validation, group, output_format)
         {
             "check-cpu": {
                 "parameters": {
@@ -376,8 +376,8 @@ class ValidationActions(object):
 
         supported_format = ['json', 'yaml']
 
-        if format not in supported_format:
-            raise RuntimeError("{} format not supported".format(format))
+        if output_format not in supported_format:
+            raise RuntimeError("{} output format not supported".format(output_format))
 
         validations = v_utils.get_validations_playbook(
             self.validation_path, validation, group)
@@ -390,7 +390,7 @@ class ValidationActions(object):
                     for k, v in params[val_name].get('parameters').items():
                         params_only[k] = v
 
-                if format == 'json':
+                if output_format == 'json':
                     f.write(json.dumps(params_only,
                                        indent=4,
                                        sort_keys=True))
@@ -399,7 +399,7 @@ class ValidationActions(object):
                                            allow_unicode=True,
                                            default_flow_style=False,
                                            indent=2))
-        if format == 'json':
+        if output_format == 'json':
             return json.dumps(params,
                               indent=4,
                               sort_keys=True)

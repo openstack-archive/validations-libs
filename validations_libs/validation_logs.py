@@ -472,12 +472,12 @@ class ValidationLogs(object):
         """
         if isinstance(uuid, list):
             results = []
-            for id in uuid:
+            for identifier in uuid:
                 results.extend(self.get_logfile_by_uuid_validation_id(
-                    id,
+                    identifier,
                     validation_id)
                                if validation_id else
-                               self.get_logfile_by_uuid(id))
+                               self.get_logfile_by_uuid(identifier))
         elif isinstance(uuid, str):
             results = (self.get_logfile_by_uuid_validation_id(uuid,
                                                               validation_id)
