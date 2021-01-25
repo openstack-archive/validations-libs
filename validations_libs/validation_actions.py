@@ -387,8 +387,7 @@ class ValidationActions(object):
             params_only = {}
             with open(download_file, 'w') as f:
                 for val_name in params.keys():
-                    for k, v in params[val_name].get('parameters').items():
-                        params_only[k] = v
+                    params_only.update(params[val_name].get('parameters'))
 
                 if output_format == 'json':
                     f.write(json.dumps(params_only,
