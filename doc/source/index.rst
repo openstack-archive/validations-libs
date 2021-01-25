@@ -13,12 +13,13 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   contributor/index
+   readme
+   contributing
+   testing
    reference/index
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

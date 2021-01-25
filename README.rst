@@ -2,7 +2,23 @@
 validations-libs
 ================
 
+.. image:: https://governance.openstack.org/tc/badges/validations-libs.svg
+    :target: https://governance.openstack.org/tc/reference/tags/index.html
+
 A collection of python libraries for the Validation Framework
+
+The validations will help detect issues early in the deployment process and
+prevent field engineers from wasting time on misconfiguration or hardware
+issues in their environments.
+
+* Free software: Apache_license_
+* Documentation: https://docs.openstack.org/validations-libs/latest/
+* Source: https://opendev.org/openstack/validations-libs
+* Bugs - Upstream: https://bugs.launchpad.net/tripleo/+bugs?field.tag=validations
+* Bugs - Downstream: https://bugzilla.redhat.com/buglist.cgi?component=validations-libs&product=Red%20Hat%20OpenStack
+
+.. * Release notes: https://docs.openstack.org/releasenotes/validations-libs/  We don't have any yet.
+
 
 Development Environment Setup
 =============================
@@ -42,3 +58,5 @@ Then you can run the container and start to run some builtin Validations::
 Then run validations::
 
     validation.py run --validation check-ftype,512e --inventory /etc/ansible/hosts
+
+.. _Apache_license: http://www.apache.org/licenses/LICENSE-2.0
