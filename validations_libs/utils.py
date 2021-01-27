@@ -88,6 +88,10 @@ def parse_all_validations_on_disk(path, groups=None):
 
     for pl in validations_abspath:
         val = Validation(pl)
+        if not val.groups:
+            msg = 'Group not found in playbook - please add appropriate group'
+            raise RuntimeError(msg)
+
         if not groups or set(groups).intersection(val.groups):
             results.append(val.get_metadata)
     return results
