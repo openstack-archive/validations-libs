@@ -223,3 +223,13 @@ class TestUtils(TestCase):
         self.assertRaises(TypeError,
                           utils.convert_data,
                           data=data_dict)
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK3)
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('glob.glob')
+    def test_playbook_without_groups(self, mock_glob, mock_open, mock_load):
+        mock_glob.return_value = \
+            ['/foo/playbook/foo.yaml']
+        self.assertRaises(RuntimeError,
+                          utils.parse_all_validations_on_disk,
+                          "/foo/playbook")
