@@ -45,9 +45,11 @@ class TestValidationActions(TestCase):
                                               'My Validation Two Name',
                                              ['prep', 'pre-introspection'])]))
 
+    @mock.patch('validations_libs.utils.create_artifacts_dir',
+                return_value=('1234', '/tmp/'))
     @mock.patch('validations_libs.utils.get_validations_playbook',
                 return_value=['/tmp/foo/fake.yaml'])
-    def test_validation_skip_validation(self, mock_validation_play):
+    def test_validation_skip_validation(self, mock_validation_play, mock_tmp):
 
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
@@ -80,6 +82,7 @@ class TestValidationActions(TestCase):
             'parallel_run': True,
             'inventory': 'tmp/inventory.yaml',
             'output_callback': 'validation_stdout',
+            'callback_whitelist': None,
             'quiet': True,
             'extra_vars': None,
             'limit_hosts': '!cloud1',
@@ -104,7 +107,8 @@ class TestValidationActions(TestCase):
         run_return = run.run_validations(playbook, inventory,
                                          validations_dir='/tmp/foo',
                                          skip_list=skip_list,
-                                         limit_hosts=None)
+                                         limit_hosts='!cloud1',
+                                         )
         mock_ansible_run.assert_called_with(**run_called_args)
 
     @mock.patch('validations_libs.utils.get_validations_playbook',
@@ -123,13 +127,14 @@ class TestValidationActions(TestCase):
             'parallel_run': True,
             'inventory': 'tmp/inventory.yaml',
             'output_callback': 'validation_stdout',
+            'callback_whitelist': None,
             'quiet': True,
             'extra_vars': None,
             'limit_hosts': '!cloud1,cloud,!cloud2',
-            'ansible_artifact_path': '/tmp/',
             'extra_env_variables': None,
             'ansible_cfg': None,
             'gathering_policy': 'explicit',
+            'ansible_artifact_path': '/tmp/',
             'log_path': None,
             'run_async': False,
             'python_interpreter': None

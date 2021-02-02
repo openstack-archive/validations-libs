@@ -339,7 +339,7 @@ class Ansible(object):
         :param callback_whitelist: Comma separated list of callback plugins.
                                 Custom output_callback is also whitelisted.
                                 (Defaults to ``None``)
-        :type callback_whitelist: ``string``
+        :type callback_whitelist: ``list`` or ``string``
         :param ansible_cfg: Path to an ansible configuration file. One will be
                          generated in the artifact path if this option is None.
         :type ansible_cfg: ``string``
@@ -389,6 +389,9 @@ class Ansible(object):
         env = {}
         env = os.environ.copy()
         extravars = self._get_extra_vars(extra_vars)
+
+        if isinstance(callback_whitelist, list):
+            callback_whitelist = ','.join(callback_whitelist)
         callback_whitelist, output_callback = self._callbacks(
             callback_whitelist,
             output_callback,
