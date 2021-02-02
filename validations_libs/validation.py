@@ -252,8 +252,7 @@ class Validation(object):
         :return: An `OrderedDict` with the full data of a validation
         :rtype: `OrderedDict`
         """
-        data = OrderedDict()
-        data.update(self.dict)
+        data = OrderedDict(self.dict)
         return data
 
     @property
