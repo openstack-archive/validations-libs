@@ -24,14 +24,10 @@ Build the container from the Dockerfile by running::
 
     docker build -t "vf:dockerfile" .
 
-Once the build is finished you can check the image id::
-
-    docker images
-
 Then you can run the container and start to run some builtin Validations::
 
-    docker run -ti <image_id> /bin/bash
+    docker run -ti vf:dockerfile /bin/bash
 
 Then run validations::
 
-    validation.py run --validation check-ftype,512e
+    validation.py run --validation check-ftype,512e --inventory /etc/ansible/hosts
