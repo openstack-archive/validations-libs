@@ -15,14 +15,14 @@ copy one into your desired location and rename to ``Vagrantfile``, then run::
 Once complete you will have a clean development environment
 ready to go for working with Validation Framework.
 
-Docker Quickstart
+podman Quickstart
 =================
 
 A Dockerfile is provided at the root of the Validations Library project in
 order to quickly set and hack the Validation Framework, on a equivalent of a single machine.
 Build the container from the Dockerfile by running::
 
-    docker build -t "vf:dockerfile" .
+    podman build -t "vf:dockerfile" .
 
 From the validations-libs repo directory.
 
@@ -30,9 +30,14 @@ From the validations-libs repo directory.
     More complex images are available in the dockerfiles directory
     and require explicit specification of both build context and the Dockerfile.
 
+Since the podman build uses code sourced from the buildah project to build container images.
+It is also possible to build an image using::
+
+    buildah bud -t "vf:dockerfile" .
+
 Then you can run the container and start to run some builtin Validations::
 
-    docker run -ti vf:dockerfile /bin/bash
+    podman run -ti vf:dockerfile /bin/bash
 
 Then run validations::
 
