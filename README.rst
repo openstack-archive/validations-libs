@@ -19,10 +19,16 @@ Docker Quickstart
 =================
 
 A Dockerfile is provided at the root of the Validations Library project in
-order to quickly set and hack the Validation Framework.
+order to quickly set and hack the Validation Framework, on a equivalent of a single machine.
 Build the container from the Dockerfile by running::
 
     docker build -t "vf:dockerfile" .
+
+From the validations-libs repo directory.
+
+.. note::
+    More complex images are available in the dockerfiles directory
+    and require explicit specification of both build context and the Dockerfile.
 
 Then you can run the container and start to run some builtin Validations::
 
