@@ -408,12 +408,12 @@ class ValidationActions(object):
                                   default_flow_style=False,
                                   indent=2)
 
-    def show_history(self, validation_id=None, extension='json',
+    def show_history(self, validation_ids=None, extension='json',
                      log_path=constants.VALIDATIONS_LOG_BASEDIR):
         """Return validation executions history
 
-        :param validation_id: The validation id
-        :type validation_id: ``string``
+        :param validation_ids: The validation ids
+        :type validation_ids: a list of strings
         :param extension: The log file extension (Defaults to ``json``)
         :type extension: ``string``
         :param log_path: The absolute path of the validations logs directory
@@ -449,7 +449,7 @@ class ValidationActions(object):
          '2020-11-13T11:47:50.279662Z',
          '0:00:02.237')])
         >>> actions = ValidationActions(constants.ANSIBLE_VALIDATION_DIR)
-        >>> print(actions.show_history(validation_id='foo'))
+        >>> print(actions.show_history(validation_ids=['foo']))
         (('UUID', 'Validations', 'Status', 'Execution at', 'Duration'),
          [('5afb1597-e2a1-4635-b2df-7afe21d00de6',
          'foo',
@@ -463,8 +463,14 @@ class ValidationActions(object):
          '0:00:02.237')])
         """
         vlogs = ValidationLogs(log_path)
-        logs = (vlogs.get_logfile_by_validation(validation_id)
-                if validation_id else vlogs.get_all_logfiles(extension))
+        if validation_ids:
+            if not isinstance(validation_ids, list):
+                validation_ids = [validation_ids]
+            logs = []
+            for validation_id in validation_ids:
+                logs.extend(vlogs.get_logfile_by_validation(validation_id))
+        else:
+            logs = vlogs.get_all_logfiles(extension)
 
         values = []
         column_name = ('UUID', 'Validations',

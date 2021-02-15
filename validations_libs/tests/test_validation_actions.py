@@ -212,9 +212,26 @@ class TestValidationActions(TestCase):
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
     @mock.patch('six.moves.builtins.open')
-    def test_show_history(self, mock_open, mock_load, mock_get_log):
+    def test_show_history_str(self, mock_open, mock_load, mock_get_log):
         v_actions = ValidationActions()
         col, values = v_actions.show_history('512e')
+        self.assertEqual(col, ('UUID', 'Validations',
+                               'Status', 'Execution at',
+                               'Duration'))
+        self.assertEqual(values, [('008886df-d297-1eaa-2a74-000000000008',
+                                   '512e', 'PASSED',
+                                   '2019-11-25T13:40:14.404623Z',
+                                   '0:00:03.753')])
+
+    @mock.patch('validations_libs.validation_logs.ValidationLogs.'
+                'get_logfile_by_validation',
+                return_value=['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
+    @mock.patch('json.load',
+                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_show_history_list(self, mock_open, mock_load, mock_get_log):
+        v_actions = ValidationActions()
+        col, values = v_actions.show_history(['512e'])
         self.assertEqual(col, ('UUID', 'Validations',
                                'Status', 'Execution at',
                                'Duration'))
