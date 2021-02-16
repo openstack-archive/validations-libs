@@ -82,13 +82,10 @@ class Ansible(object):
                                   temp_suffix='validations-libs-ansible'):
         """Creates ansible fact dir"""
         ansible_fact_path = os.path.join(
-            os.path.join(
                 tempfile.gettempdir(),
-                temp_suffix
-            ),
-            'fact_cache'
-        )
-
+                temp_suffix,
+                'fact_cache'
+                )
         try:
             os.makedirs(ansible_fact_path)
             return ansible_fact_path
