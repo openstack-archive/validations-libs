@@ -45,6 +45,111 @@ class TestValidationActions(TestCase):
                                               'My Validation Two Name',
                                              ['prep', 'pre-introspection'])]))
 
+    @mock.patch('validations_libs.utils.get_validations_playbook',
+                return_value=['/tmp/foo/fake.yaml'])
+    def test_validation_skip_validation(self, mock_validation_play):
+
+        playbook = ['fake.yaml']
+        inventory = 'tmp/inventory.yaml'
+        skip_list = {'fake': {'hosts': 'ALL',
+                              'reason': None,
+                              'lp': None
+                             }
+                    }
+
+        run = ValidationActions()
+        run_return = run.run_validations(playbook, inventory,
+                                         validations_dir='/tmp/foo',
+                                         skip_list=skip_list,
+                                         limit_hosts=None)
+        self.assertEqual(run_return, [])
+
+    @mock.patch('validations_libs.utils.get_validations_playbook',
+                return_value=['/tmp/foo/fake.yaml'])
+    @mock.patch('validations_libs.ansible.Ansible.run')
+    @mock.patch('validations_libs.utils.create_artifacts_dir',
+                return_value=('1234', '/tmp/'))
+    def test_validation_skip_on_specific_host(self, mock_tmp, mock_ansible_run,
+                                              mock_validation_play):
+        mock_ansible_run.return_value = ('fake.yaml', 0, 'successful')
+        run_called_args = {
+            'workdir': '/tmp/',
+            'playbook': '/tmp/foo/fake.yaml',
+            'base_dir': '/usr/share/ansible/',
+            'playbook_dir': '/tmp/foo',
+            'parallel_run': True,
+            'inventory': 'tmp/inventory.yaml',
+            'output_callback': 'validation_stdout',
+            'quiet': True,
+            'extra_vars': None,
+            'limit_hosts': '!cloud1',
+            'ansible_artifact_path': '/tmp/',
+            'extra_env_variables': None,
+            'ansible_cfg': None,
+            'gathering_policy': 'explicit',
+            'log_path': None,
+            'run_async': False,
+            'python_interpreter': None
+        }
+
+        playbook = ['fake.yaml']
+        inventory = 'tmp/inventory.yaml'
+        skip_list = {'fake': {'hosts': 'cloud1',
+                              'reason': None,
+                              'lp': None
+                             }
+                    }
+
+        run = ValidationActions()
+        run_return = run.run_validations(playbook, inventory,
+                                         validations_dir='/tmp/foo',
+                                         skip_list=skip_list,
+                                         limit_hosts=None)
+        mock_ansible_run.assert_called_with(**run_called_args)
+
+    @mock.patch('validations_libs.utils.get_validations_playbook',
+                return_value=['/tmp/foo/fake.yaml'])
+    @mock.patch('validations_libs.ansible.Ansible.run')
+    @mock.patch('validations_libs.utils.create_artifacts_dir',
+                return_value=('1234', '/tmp/'))
+    def test_validation_skip_with_limit_host(self, mock_tmp, mock_ansible_run,
+                                             mock_validation_play):
+        mock_ansible_run.return_value = ('fake.yaml', 0, 'successful')
+        run_called_args = {
+            'workdir': '/tmp/',
+            'playbook': '/tmp/foo/fake.yaml',
+            'base_dir': '/usr/share/ansible/',
+            'playbook_dir': '/tmp/foo',
+            'parallel_run': True,
+            'inventory': 'tmp/inventory.yaml',
+            'output_callback': 'validation_stdout',
+            'quiet': True,
+            'extra_vars': None,
+            'limit_hosts': '!cloud1,cloud,!cloud2',
+            'ansible_artifact_path': '/tmp/',
+            'extra_env_variables': None,
+            'ansible_cfg': None,
+            'gathering_policy': 'explicit',
+            'log_path': None,
+            'run_async': False,
+            'python_interpreter': None
+        }
+
+        playbook = ['fake.yaml']
+        inventory = 'tmp/inventory.yaml'
+        skip_list = {'fake': {'hosts': 'cloud1',
+                              'reason': None,
+                              'lp': None
+                             }
+                    }
+
+        run = ValidationActions()
+        run_return = run.run_validations(playbook, inventory,
+                                         validations_dir='/tmp/foo',
+                                         skip_list=skip_list,
+                                         limit_hosts='cloud,cloud1,!cloud2')
+        mock_ansible_run.assert_called_with(**run_called_args)
+
     @mock.patch('validations_libs.validation_logs.ValidationLogs.get_results')
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
     @mock.patch('validations_libs.ansible.Ansible.run')
