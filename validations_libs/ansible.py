@@ -66,7 +66,7 @@ class Ansible(object):
             if isinstance(inventory, six.string_types):
                 # check is file path
                 if os.path.exists(inventory):
-                    return inventory
+                    return os.path.abspath(inventory)
             elif isinstance(inventory, dict):
                 inventory = yaml.safe_dump(
                     inventory,

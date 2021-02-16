@@ -170,9 +170,10 @@ class TestAnsible(TestCase):
     @mock.patch('validations_libs.ansible.Ansible._ansible_env_var',
                 return_value={'ANSIBLE_STDOUT_CALLBACK': 'fake.py'})
     @mock.patch('os.environ.copy', return_value={})
-    def test_run_specific_log_path(self, mock_env, mock_env_var, mock_config,
-                                   mock_dump_artifact, mock_run, mock_mkdirs,
-                                   mock_exists, mock_open):
+    @mock.patch('os.path.abspath', return_value='/tmp/foo/localhost')
+    def test_run_specific_log_path(self, moch_path, mock_env, mock_env_var,
+                                   mock_config, mock_dump_artifact, mock_run,
+                                   mock_mkdirs, mock_exists, mock_open):
         _playbook, _rc, _status = self.run.run(
             playbook='existing.yaml',
             inventory='localhost,',
@@ -184,7 +185,7 @@ class TestAnsible(TestCase):
             'artifact_dir': '/tmp',
             'extravars': {},
             'ident': '',
-            'inventory': 'localhost,',
+            'inventory': '/tmp/foo/localhost',
             'playbook': 'existing.yaml',
             'private_data_dir': '/tmp',
             'quiet': False,
