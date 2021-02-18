@@ -129,13 +129,89 @@ class ValidationActions(object):
         data.update(data_format)
         return data
 
+    def _skip_hosts(self, skip_list, playbook, limit_hosts=None):
+        """Check Ansible Hosts and return an updated limit_hosts
+        :param skip_list: The list of the validation to skip
+        :type validation_name: ``dict``
+        :param playbook: The name of the playbook
+        :type base_dir: ``string``
+        :param limit_hosts: Limit the execution to the hosts.
+        :type limit_hosts: ``string``
+
+        :return the limit hosts according the skip_list or None if the
+                validation should be skipped on ALL hosts.
+        :example
+            limit_hosts = 'cloud1,cloud2'
+            skip_list = {'xyz': {'hosts': 'cloud1',
+                                          'reason': None,
+                                          'lp': None}
+                        }
+            >>> _skip_hosts(skip_list, playbook, limit_hosts='cloud1,cloud2')
+            'cloud2,!cloud1'
+
+        """
+        hosts = skip_list[playbook].get('hosts')
+        if hosts == 'ALL' or hosts is None:
+            return None
+        else:
+            _hosts = ['!{}'.format(hosts)]
+            if limit_hosts:
+                # check if skipped hosts is already in limit host
+                _hosts.extend([limit for limit in limit_hosts.split(',')
+                               if hosts not in limit])
+            return ','.join(_hosts)
+
+    def _skip_playbook(self, skip_list, playbook, limit_hosts=None):
+        """Check if playbook is in the ski plist
+        :param skip_list: The list of the validation to skip
+        :type validation_name: ``dict``
+        :param playbook: The name of the playbook
+        :type base_dir: ``string``
+        :param limit_hosts: Limit the execution to the hosts.
+        :type limit_hosts: ``string``
+
+        :return a tuple of playbook and hosts
+        :example
+            skip_list = {'xyz': {'hosts': 'cloud1',
+                                          'reason': None,
+                                          'lp': None}
+                        }
+            If playbook not in skip list:
+            >>> _skip_playbook(skip_list, 'foo', None)
+            ('foo', None)
+
+            If playbook in the skip list, but with restriction only on
+            host cloud1:
+            >>> _skip_playbook(skip_list, 'xyz', None)
+            ('xyz', '!cloud1')
+
+            If playbook in the skip list, and should be skip on ALL hosts:
+            skip_list = {'xyz': {'hosts': 'ALL',
+                                 'reason': None,
+                                 'lp': None}
+                        }
+            >>> _skip_playbook(skip_list, 'xyz', None)
+            (None, None)
+
+        """
+        if skip_list:
+            if playbook in skip_list.keys():
+                _hosts = self._skip_hosts(skip_list, playbook,
+                                          limit_hosts)
+                if _hosts:
+                    return playbook, _hosts
+                else:
+                    return None, _hosts
+        return playbook, limit_hosts
+
     def run_validations(self, validation_name=None, inventory='localhost',
                         group=None, extra_vars=None, validations_dir=None,
                         extra_env_vars=None, ansible_cfg=None, quiet=True,
                         workdir=None, limit_hosts=None, run_async=False,
                         base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
                         log_path=None, python_interpreter=None,
-                        output_callback='validation_stdout'):
+                        output_callback='validation_stdout',
+                        skip_list=None):
         """Run one or multiple validations by name(s) or by group(s)
 
         :param validation_name: A list of validation names
@@ -181,6 +257,11 @@ class ValidationActions(object):
         :param output_callback: The Callback plugin to use.
                                 (Defaults to 'validation_stdout')
         :type output_callback: ``string``
+        :param skip_list: List of validations to skip during the Run form as
+                          {'xyz': {'hosts': 'ALL', 'reason': None, 'lp': None}
+                          }
+                          (Defaults to 'None')
+        :type skip_list: ``dict``
 
         :return: A list of dictionary containing the informations of the
                  validations executions (Validations, Duration, Host_Group,
@@ -248,33 +329,42 @@ class ValidationActions(object):
         self.log.debug('Running the validations with Ansible')
         results = []
         for playbook in playbooks:
-            validation_uuid, artifacts_dir = v_utils.create_artifacts_dir(
-                dir_path=log_path, prefix=os.path.basename(playbook))
-            run_ansible = v_ansible(validation_uuid)
-            _playbook, _rc, _status = run_ansible.run(
-                workdir=artifacts_dir,
-                playbook=playbook,
-                base_dir=base_dir,
-                playbook_dir=validations_dir,
-                parallel_run=True,
-                inventory=inventory,
-                output_callback=output_callback,
-                quiet=quiet,
-                extra_vars=extra_vars,
-                limit_hosts=limit_hosts,
-                extra_env_variables=extra_env_vars,
-                ansible_cfg=ansible_cfg,
-                gathering_policy='explicit',
-                ansible_artifact_path=artifacts_dir,
-                log_path=log_path,
-                run_async=run_async,
-                python_interpreter=python_interpreter)
-            results.append({'playbook': _playbook,
-                            'rc_code': _rc,
-                            'status': _status,
-                            'validations': _playbook.split('.')[0],
-                            'UUID': validation_uuid,
-                            })
+            # Check if playbook should be skipped and on which hosts
+            play_name = os.path.basename(os.path.splitext(playbook)[0])
+            _play, _hosts = self._skip_playbook(skip_list,
+                                                play_name,
+                                                limit_hosts)
+            if _play:
+                validation_uuid, artifacts_dir = v_utils.create_artifacts_dir(
+                    dir_path=log_path, prefix=os.path.basename(playbook))
+                run_ansible = v_ansible(validation_uuid)
+                _playbook, _rc, _status = run_ansible.run(
+                    workdir=artifacts_dir,
+                    playbook=playbook,
+                    base_dir=base_dir,
+                    playbook_dir=validations_dir,
+                    parallel_run=True,
+                    inventory=inventory,
+                    output_callback=output_callback,
+                    quiet=quiet,
+                    extra_vars=extra_vars,
+                    limit_hosts=_hosts,
+                    extra_env_variables=extra_env_vars,
+                    ansible_cfg=ansible_cfg,
+                    gathering_policy='explicit',
+                    ansible_artifact_path=artifacts_dir,
+                    log_path=log_path,
+                    run_async=run_async,
+                    python_interpreter=python_interpreter)
+                results.append({'playbook': _playbook,
+                                'rc_code': _rc,
+                                'status': _status,
+                                'validations': _playbook.split('.')[0],
+                                'UUID': validation_uuid,
+                                })
+            else:
+                self.log.debug('Skipping Validations: {}'.format(playbook))
+
         if run_async:
             return results
         # Return log results
