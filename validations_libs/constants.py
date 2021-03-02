@@ -12,6 +12,8 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
+import os
+
 DEFAULT_VALIDATIONS_BASEDIR = '/usr/share/ansible/'
 
 ANSIBLE_VALIDATION_DIR = '/usr/share/ansible/validation-playbooks'
@@ -22,6 +24,9 @@ VALIDATION_GROUPS = ['no-op',
                      'prep',
                      'post']
 
-VALIDATIONS_LOG_BASEDIR = '/var/log/validations/'
+VALIDATIONS_LOG_BASEDIR = ('/var/log/validations'
+                           if os.path.exists('/var/log/validations') else
+                           os.getcwd())
+
 VALIDATION_ANSIBLE_ARTIFACT_PATH = '{}/artifacts/'.format(
     VALIDATIONS_LOG_BASEDIR)
