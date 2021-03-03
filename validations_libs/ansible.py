@@ -39,9 +39,9 @@ except NameError:
 
 try:
     version = pkg_resources.get_distribution("ansible_runner").version
-    backward_compat = (version < '1.4.0')
+    BACKWARD_COMPAT = (version < '1.4.0')
 except pkg_resources.DistributionNotFound:
-    backward_compat = False
+    BACKWARD_COMPAT = False
 
 
 class Ansible(object):
@@ -428,7 +428,7 @@ class Ansible(object):
             'ident': ''
             }
 
-        if not backward_compat:
+        if not BACKWARD_COMPAT:
             r_opts.update({
                 'envvars': envvars,
                 'project_dir': playbook_dir,
@@ -453,7 +453,7 @@ class Ansible(object):
         runner_config.prepare()
         runner_config.env['ANSIBLE_STDOUT_CALLBACK'] = \
             envvars['ANSIBLE_STDOUT_CALLBACK']
-        if backward_compat:
+        if BACKWARD_COMPAT:
             runner_config.env.update(envvars)
 
         runner = ansible_runner.Runner(config=runner_config)
