@@ -41,34 +41,36 @@ class ValidationLog(object):
         :param log_path: The absolute path of the logs directory
         :type log_path: ``string``
         :param extension: The file extension (Default to 'json')
-        :type extension: ````
+        :type extension: ``string``
         """
         # Set properties
         self.uuid = uuid
         self.validation_id = validation_id
-        self.log_path = log_path
+        self.abs_log_path = log_path
         self.extension = extension
         self.content = {}
         self.name = None
         self.datetime = None
 
-        if not logfile and (not uuid or not validation_id):
+        # Get full path and content raise exception if it's impossible
+        if logfile:
+            if os.path.isabs(logfile):
+                self.abs_log_path = logfile
+            else:
+                raise ValueError(
+                'logfile must be absolute path, but is: {}'.format(logfile)
+            )
+        elif uuid and validation_id:
+            self.abs_log_path = self.get_log_path()
+        else:
             raise Exception(
                 'When not using logfile argument, the uuid and '
                 'validation_id have to be set'
             )
 
-        # Get full path and content
-        if logfile:
-            full_path = logfile
-        else:
-            if uuid and validation_id:
-                full_path = self.get_log_path()
-
-        if full_path:
-            self.content = self._get_content(full_path)
-            self.name = os.path.splitext(os.path.basename(full_path))[0]
-            self.datetime = self.name.rsplit('_', 1)[-1]
+        self.content = self._get_content()
+        self.name = self._get_name()
+        self.datetime = self._get_time()
 
         # if we have a log file then extract uuid, validation_id and timestamp
         if logfile:
@@ -79,23 +81,37 @@ class ValidationLog(object):
                 logging.warning('Wrong log file format, it should be formed '
                                 'such as {uuid}_{validation-id}_{timestamp}')
 
-    def _get_content(self, file):
+    def _get_content(self):
         try:
-            with open(file, 'r') as log_file:
+            with open(self.abs_log_path, 'r') as log_file:
                 return json.load(log_file)
         except IOError:
-            msg = "log file: {} not found".format(file)
+            msg = "log file: {} not found".format(self.abs_log_path)
             raise IOError(msg)
         except ValueError:
-            msg = "bad json format for {}".format(file)
+            msg = "bad json format for {}".format(self.abs_log_path)
             raise ValueError(msg)
 
     def get_log_path(self):
         """Return full path of a validation log"""
         # We return occurence 0, because it should be a uniq file name:
-        return glob.glob("{}/{}_{}_*.{}".format(self.log_path,
+        return glob.glob("{}/{}_{}_*.{}".format(self.abs_log_path,
                                                 self.uuid, self.validation_id,
                                                 self.extension))[0]
+
+    def _get_name(self):
+        """Return name of the log file under the self.full_path
+
+        :rtype: ``string``
+        """
+        return os.path.splitext(os.path.basename(self.abs_log_path))[0]
+
+    def _get_time(self):
+        """Return time component of the log file name
+
+        :rtype: ``string``
+        """
+        return self.name.rsplit('_', 1)[-1]
 
     def is_valid_format(self):
         """Return True if the log file is a valid validation format
