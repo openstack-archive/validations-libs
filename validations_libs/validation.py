@@ -61,9 +61,9 @@ class Validation(object):
             metadata:
               name: Hello World
               description: This validation prints Hello World!
-            groups:
-              - pre-deployment
-              - hardware
+              groups:
+                - pre-deployment
+                - hardware
           roles:
           - hello-world
 
@@ -93,9 +93,9 @@ class Validation(object):
                 metadata:
                   name: hello world
                   description: this validation prints hello world!
-                groups:
-                  - pre-deployment
-                  - hardware
+                  groups:
+                    - pre-deployment
+                    - hardware
               roles:
               - hello-world
 
@@ -115,9 +115,9 @@ class Validation(object):
                 metadata:             <====
                   name: hello world
                   description: this validation prints hello world!
-                groups:
-                  - pre-deployment
-                  - hardware
+                  groups:
+                    - pre-deployment
+                    - hardware
               roles:
               - hello-world
 
