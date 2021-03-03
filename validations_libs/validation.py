@@ -219,11 +219,7 @@ class Validation(object):
         ['group1', 'group2']
         """
         if self.has_metadata_dict:
-            groups = self.dict['vars']['metadata'].get('groups')
-            if groups:
-                return groups
-            else:
-                return []
+            return self.dict['vars']['metadata'].get('groups', [])
         else:
             raise NameError(
                 "No metadata found in validation {}".format(self.id)
