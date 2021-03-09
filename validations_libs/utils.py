@@ -51,8 +51,12 @@ def create_artifacts_dir(dir_path=None, prefix=None):
         os.makedirs(log_dir)
         return validation_uuid, log_dir
     except OSError:
-        LOG.exception("Error while creating Ansible artifacts log file."
-                      "Please check the access rights for {}").format(log_dir)
+        LOG.exception(
+            (
+                "Error while creating Ansible artifacts log file."
+                "Please check the access rights for {}"
+            ).format(log_dir)
+        )
 
 
 def parse_all_validations_on_disk(path, groups=None):
