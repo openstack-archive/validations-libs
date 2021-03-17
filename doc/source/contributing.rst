@@ -4,8 +4,7 @@
 Contributing to validations-libs
 ================================
 
-If you're interested in contributing to the validations-libs project,
-the following will help get you started.
+.. include:: ../../CONTRIBUTING.rst
 
 #tripleo on Freenode IRC Network
 --------------------------------
@@ -38,3 +37,4 @@ Code Hosting
 
 Code Review
     https://review.opendev.org/#/q/status:open+project:openstack/validations-libs,n,z
+

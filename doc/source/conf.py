@@ -1,11 +1,37 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import os
+import sys
+
+# Add the project
+sys.path.insert(0, os.path.abspath('../..'))
+# Add the extensions
+sys.path.insert(0, os.path.join(os.path.abspath('.'), '_exts'))
+
 # -- General configuration ----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinxcontrib.apidoc',
-              'sphinx.ext.viewcode',
-              'openstackdocstheme',
-              ]
+extensions = [
+    'sphinxcontrib.apidoc',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.autodoc',
+    'openstackdocstheme',
+    'ansible-autodoc'
+]
 
 # sphinxcontrib.apidoc options
 apidoc_module_dir = '../../validations_libs'
@@ -16,8 +42,9 @@ apidoc_separate_modules = True
 
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/validations-libs'
-openstackdocs_pdf_link = True
 openstackdocs_use_storyboard = True
+openstackdocs_bug_project = 'tripleo'
+openstackdocs_bug_tag = 'documentation'
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
 # text edit cycles.
@@ -33,7 +60,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'OpenStack Foundation'
+copyright = u'2021, OpenStack Foundation'
 
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['validations_libs.']
