@@ -44,9 +44,8 @@ class ValidationActions(object):
         self.log = logging.getLogger(__name__ + ".ValidationActions")
         self.validation_path = (validation_path if validation_path
                                 else constants.ANSIBLE_VALIDATION_DIR)
-        self.group = group
 
-    def list_validations(self):
+    def list_validations(self, group=None):
         """Get a list of the available validations
 
         This is used to print table from python ``Tuple`` with ``PrettyTable``.
@@ -76,7 +75,7 @@ class ValidationActions(object):
         """
         self.log = logging.getLogger(__name__ + ".list_validations")
         validations = v_utils.parse_all_validations_on_disk(
-            self.validation_path, self.group)
+            self.validation_path, group)
 
         return_values = []
         column_name = ('ID', 'Name', 'Groups')
@@ -498,15 +497,7 @@ class ValidationActions(object):
                                            allow_unicode=True,
                                            default_flow_style=False,
                                            indent=2))
-        if output_format == 'json':
-            return json.dumps(params,
-                              indent=4,
-                              sort_keys=True)
-        else:
-            return yaml.safe_dump(params,
-                                  allow_unicode=True,
-                                  default_flow_style=False,
-                                  indent=2)
+        return params
 
     def show_history(self, validation_ids=None, extension='json',
                      log_path=constants.VALIDATIONS_LOG_BASEDIR):

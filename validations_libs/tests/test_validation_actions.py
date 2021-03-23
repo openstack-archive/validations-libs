@@ -308,8 +308,7 @@ class TestValidationActions(TestCase):
                                        {'parameters': fakes.FAKE_METADATA}}
         v_actions = ValidationActions()
         result = v_actions.show_validations_parameters('foo')
-        self.assertEqual(result, json.dumps(mock_get_param.return_value,
-                                            indent=4, sort_keys=True))
+        self.assertEqual(result, mock_get_param.return_value)
 
     @mock.patch('six.moves.builtins.open')
     def test_show_validations_parameters_non_supported_format(self, mock_open):

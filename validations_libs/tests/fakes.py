@@ -27,6 +27,19 @@ VALIDATIONS_LIST = [{
     'parameters': {'min_value': 8}
 }]
 
+VALIDATIONS_LIST_GROUP = [{
+    'description': 'My Validation Two Description',
+    'groups': ['prep', 'pre-introspection'],
+    'id': 'my_val2',
+    'name': 'My Validation Two Name',
+    'parameters': {'min_value': 8}
+}]
+
+
+VALIDATION_LIST_RESULT = (('ID', 'Name', 'Groups'),
+                          [('my_val2', 'My Validation Two Name',
+                            ['prep', 'pre-introspection'])])
+
 GROUPS_LIST = [
     ('group1', 'Group1 description'),
     ('group2', 'Group2 description'),
@@ -251,6 +264,36 @@ FORMATED_DATA = {'Description': 'foo',
 GROUP = {'no-op': [{'description': 'noop-foo'}],
          'pre': [{'description': 'pre-foo'}],
          'post': [{'description': 'post-foo'}]}
+
+FAKE_SUCCESS_RUN = [{'Duration': '0:00:01.761',
+                     'Host_Group': 'overcloud',
+                     'Status': 'PASSED',
+                     'Status_by_Host': 'subnode-1,PASSED, subnode-2,PASSED',
+                     'UUID': '123',
+                     'Unreachable_Hosts': '',
+                     'Validations': 'foo'}]
+
+FAKE_FAILED_RUN = [{'Duration': '0:00:01.761',
+                    'Host_Group': 'overcloud',
+                    'Status': 'FAILED',
+                    'Status_by_Host': 'subnode-1,FAILED, subnode-2,PASSED',
+                    'UUID': '123',
+                    'Unreachable_Hosts': '',
+                    'Validations': 'foo'},
+                   {'Duration': '0:00:01.761',
+                    'Host_Group': 'overcloud',
+                    'Status': 'FAILED',
+                    'Status_by_Host': 'subnode-1,FAILED, subnode-2,PASSED',
+                    'UUID': '123',
+                    'Unreachable_Hosts': '',
+                    'Validations': 'foo'},
+                   {'Duration': '0:00:01.761',
+                    'Host_Group': 'overcloud',
+                    'Status': 'PASSED',
+                    'Status_by_Host': 'subnode-1,PASSED, subnode-2,PASSED',
+                    'UUID': '123',
+                    'Unreachable_Hosts': '',
+                    'Validations': 'foo'}]
 
 
 def fake_ansible_runner_run_return(status='successful', rc=0):
