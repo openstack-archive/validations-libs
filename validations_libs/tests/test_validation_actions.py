@@ -92,7 +92,8 @@ class TestValidationActions(TestCase):
             'gathering_policy': 'explicit',
             'log_path': None,
             'run_async': False,
-            'python_interpreter': None
+            'python_interpreter': None,
+            'ssh_user': None
         }
 
         playbook = ['fake.yaml']
@@ -137,7 +138,8 @@ class TestValidationActions(TestCase):
             'ansible_artifact_path': '/tmp/',
             'log_path': None,
             'run_async': False,
-            'python_interpreter': None
+            'python_interpreter': None,
+            'ssh_user': None
         }
 
         playbook = ['fake.yaml']

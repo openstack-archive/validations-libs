@@ -150,7 +150,8 @@ class Ansible(object):
         env['ANSIBLE_GATHER_TIMEOUT'] = 45
         env['ANSIBLE_SSH_RETRIES'] = 3
         env['ANSIBLE_PIPELINING'] = True
-        env['ANSIBLE_REMOTE_USER'] = ssh_user
+        if ssh_user:
+            env['ANSIBLE_REMOTE_USER'] = ssh_user
         env['ANSIBLE_STDOUT_CALLBACK'] = output_callback
         env['ANSIBLE_LIBRARY'] = os.path.expanduser(
             '~/.ansible/plugins/modules:'
@@ -277,7 +278,7 @@ class Ansible(object):
     def run(self, playbook, inventory, workdir, playbook_dir=None,
             connection='smart', output_callback=None,
             base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
-            ssh_user='root', key=None, module_path=None,
+            ssh_user=None, key=None, module_path=None,
             limit_hosts=None, tags=None, skip_tags=None,
             verbosity=0, quiet=False, extra_vars=None,
             gathering_policy='smart',
