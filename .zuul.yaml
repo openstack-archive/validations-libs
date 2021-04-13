@@ -27,9 +27,9 @@
 - project:
     templates:
       - check-requirements
-      - openstack-python3-victoria-jobs
     check:
       jobs:
+        - openstack-tox-py36
         - openstack-tox-linters
         - openstack-tox-cover
         - tripleo-ci-centos-8-content-provider:
@@ -48,6 +48,7 @@
         - validations-libs-functional
     gate:
       jobs:
+        - openstack-tox-py36
         - openstack-tox-linters
         - openstack-tox-docs: *tripleo-docs
         - validations-libs-functional
