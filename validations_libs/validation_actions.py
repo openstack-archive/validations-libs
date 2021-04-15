@@ -212,7 +212,8 @@ class ValidationActions(object):
                         log_path=None, python_interpreter=None,
                         skip_list=None,
                         callback_whitelist=None,
-                        output_callback='validation_stdout'):
+                        output_callback='validation_stdout',
+                        ssh_user=None):
         """Run one or multiple validations by name(s) or by group(s)
 
         :param validation_name: A list of validation names
@@ -272,6 +273,8 @@ class ValidationActions(object):
                  validations executions (Validations, Duration, Host_Group,
                  Status, Status_by_Host, UUID and Unreachable_Hosts)
         :rtype: ``list``
+        :param ssh_user: Ssh user for Ansible remote connection
+        :type ssh_user: ``string``
 
         :Example:
 
@@ -361,7 +364,8 @@ class ValidationActions(object):
                     ansible_artifact_path=artifacts_dir,
                     log_path=log_path,
                     run_async=run_async,
-                    python_interpreter=python_interpreter)
+                    python_interpreter=python_interpreter,
+                    ssh_user=ssh_user)
                 results.append({'playbook': _playbook,
                                 'rc_code': _rc,
                                 'status': _status,
