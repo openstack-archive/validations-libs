@@ -483,7 +483,13 @@ class ValidationLogs(object):
                                                               validation_id)
                        if validation_id else self.get_logfile_by_uuid(uuid))
         else:
-            raise RuntimeError("uuid should be either a str or a list")
+            raise RuntimeError(
+                (
+                    "uuid should be either a str or a list"
+                    "but is {} instead"
+                ).format(type(uuid))
+            )
+
         res = []
         for result in results:
             vlog = ValidationLog(logfile=result)
