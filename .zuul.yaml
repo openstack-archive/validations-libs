@@ -16,7 +16,7 @@
       - ^releasenotes/.*$
 
 - job:
-    name: tripleo-ci-centos-8-standalone-validation
+    name: tripleo-ci-centos-8-standalone-validation-libs
     parent: tripleo-ci-centos-8-standalone
     vars:
       featureset: '052'
@@ -37,7 +37,12 @@
               - openstack-tox-linters
               - openstack-tox-cover
               - validations-libs-functional
-        - tripleo-ci-centos-8-standalone-validation:
+        - tripleo-ci-centos-8-standalone-validation-libs: &standalone_consumer_job_params
+            vars:
+              consumer_job: true
+              build_container_images: false
+              remove_tags:
+                - build
             dependencies:
               - tripleo-ci-centos-8-content-provider
         - openstack-tox-docs: &tripleo-docs
@@ -56,9 +61,7 @@
             dependencies:
               - openstack-tox-linters
               - validations-libs-functional
-        - tripleo-ci-centos-8-standalone-validation:
-            dependencies:
-              - tripleo-ci-centos-8-content-provider
+        - tripleo-ci-centos-8-standalone-validation-libs: *standalone_consumer_job_params
     promote:
       jobs:
         - promote-openstack-tox-docs: *tripleo-docs
