@@ -15,6 +15,7 @@
 
 import os
 import sys
+import datetime
 
 # Add the project
 sys.path.insert(0, os.path.abspath('../..'))
@@ -27,6 +28,7 @@ sys.path.insert(0, os.path.join(os.path.abspath('.'), '_exts'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'sphinxcontrib.apidoc',
+    'sphinxcontrib.rsvgconverter',
     'sphinx.ext.viewcode',
     'sphinx.ext.autodoc',
     'openstackdocstheme',
@@ -43,6 +45,7 @@ apidoc_separate_modules = True
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/validations-libs'
 openstackdocs_use_storyboard = True
+openstackdocs_pdf_link = True
 openstackdocs_bug_project = 'tripleo'
 openstackdocs_bug_tag = 'documentation'
 
@@ -60,7 +63,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'2021, OpenStack Foundation'
+copyright = u'{}, OpenStack Foundation'.format(datetime.date.year)
 
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['validations_libs.']
@@ -106,3 +109,6 @@ latex_documents = [
         'manual'
     ),
 ]
+
+# Allow deeper levels of nesting for \begin...\end stanzas
+latex_elements = {'maxlistdepth': 10, 'extraclassoptions': ',openany,oneside'}
