@@ -25,7 +25,7 @@ class ValidationCliApp(App):
     :param description: one-liner explaining the program purpose
     :param version: application version number
     :param command_manager: plugin loader
-    :param deferred_help: Allow subcommands to accept `–help` with allowing
+    :param deferred_help: Allow subcommands to accept `--help` with allowing
     to defer help print after initialize_app
     """
 
