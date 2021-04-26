@@ -198,17 +198,16 @@ class ValidationLog(object):
     def get_status(self):
         """Return validation status
 
-        :return: 'FAILED' if there is failure(s), 'PASSED' if not.
-                 If no tasks have been executed, it returns 'NOT_RUN'.
+        :return: 'FAILED' if there are any failed or unreachable validations,
+                 'PASSED' if not.
         :rtype: ``string``
         """
-        failed = 0
-        for h in self.content['stats'].keys():
-            if self.content['stats'][h].get('failures'):
-                failed += 1
-            if self.content['stats'][h].get('unreachable'):
-                failed += 1
-        return ('FAILED' if failed else 'PASSED')
+        failure_states = ['failures', 'unreachable']
+
+        for v_stats in self.content['stats'].values():
+            if any([v_stats[failure] != 0 for failure in failure_states]):
+                return 'FAILED'
+        return 'PASSED'
 
     @property
     def get_host_group(self):
