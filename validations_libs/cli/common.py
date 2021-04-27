@@ -19,15 +19,9 @@ from prettytable import PrettyTable
 
 from validations_libs import constants
 from validations_libs import utils as v_utils
+from validations_libs.cli import colors
 
 GROUP_FILE = constants.VALIDATION_GROUPS_INFO
-
-# PrettyTable Colors:
-RED = "\033[1;31m"
-GREEN = "\033[0;32m"
-CYAN = "\033[36m"
-RESET = "\033[0;0m"
-YELLOW = "\033[0;33m"
 
 
 def print_dict(data):
@@ -49,16 +43,12 @@ def print_dict(data):
                     # if ValueError, then host is in unknown state:
                     _name = host
                     _status = 'UNKNOWN'
-                color = (GREEN if _status == 'PASSED' else
-                         (YELLOW if _status == 'UNREACHABLE' else RED))
-                _name = '{}{}{}'.format(color, _name, RESET)
+                _name = colors.color_output(_name, status=_status)
                 hosts.append(_name)
             row['Status_by_Host'] = ', '.join(hosts)
         if row.get('Status'):
             status = row.get('Status')
-            color = (CYAN if status in ['starting', 'running']
-                     else GREEN if status == 'PASSED' else RED)
-            row['Status'] = '{}{}{}'.format(color, status, RESET)
+            row['Status'] = colors.color_output(status, status=status)
         table.add_row(row.values())
     print(table)
 
