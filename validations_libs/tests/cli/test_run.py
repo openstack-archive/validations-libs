@@ -37,8 +37,7 @@ class TestRun(BaseCommand):
         verifylist = [('validation_name', ['foo'])]
 
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
-        result = self.cmd.take_action(parsed_args)
-        self.assertEqual(result, None)
+        self.assertRaises(RuntimeError, self.cmd.take_action, parsed_args)
 
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
@@ -255,6 +254,29 @@ class TestRun(BaseCommand):
                 'run_validations',
                 return_value=fakes.FAKE_FAILED_RUN)
     def test_run_command_failed_validation(self, mock_run, mock_user):
+        run_called_args = {
+            'inventory': 'localhost',
+            'limit_hosts': None,
+            'group': [],
+            'extra_vars': {'key': 'value'},
+            'validations_dir': '/usr/share/ansible/validation-playbooks',
+            'base_dir': '/usr/share/ansible/',
+            'validation_name': ['foo'],
+            'extra_env_vars': {'key2': 'value2'},
+            'quiet': True,
+            'ssh_user': 'doe'}
+
+        arglist = ['--validation', 'foo']
+        verifylist = [('validation_name', ['foo'])]
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.assertRaises(RuntimeError, self.cmd.take_action, parsed_args)
+
+    @mock.patch('getpass.getuser',
+                return_value='doe')
+    @mock.patch('validations_libs.validation_actions.ValidationActions.'
+                'run_validations',
+                return_value=[])
+    def test_run_command_no_validation(self, mock_run, mock_user):
         run_called_args = {
             'inventory': 'localhost',
             'limit_hosts': None,

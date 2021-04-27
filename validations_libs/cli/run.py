@@ -162,13 +162,14 @@ class Run(Command):
         except RuntimeError as e:
             raise RuntimeError(e)
 
-        _rc = None
         if results:
-            _rc = any([1 for r in results if r['Status'] == 'FAILED'])
-
+            _rc = any([r for r in results if r['Status'] == 'FAILED'])
             if parsed_args.output_log:
                 common.write_output(parsed_args.output_log, results)
             common.print_dict(results)
-
             if _rc:
                 raise RuntimeError("One or more validations have failed.")
+        else:
+            msg = ("No validation has been run, please check "
+                   "log in the Ansible working directory.")
+            raise RuntimeError(msg)
