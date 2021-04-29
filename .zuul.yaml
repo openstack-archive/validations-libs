@@ -29,9 +29,10 @@
       - check-requirements
     check:
       jobs:
-        - openstack-tox-py36
         - openstack-tox-linters
         - openstack-tox-cover
+        - openstack-tox-py36
+        - openstack-tox-py39
         - tripleo-ci-centos-8-content-provider:
             dependencies:
               - openstack-tox-linters
@@ -53,8 +54,9 @@
         - validations-libs-functional
     gate:
       jobs:
-        - openstack-tox-py36
         - openstack-tox-linters
+        - openstack-tox-py36
+        - openstack-tox-py39
         - openstack-tox-docs: *tripleo-docs
         - validations-libs-functional
         - tripleo-ci-centos-8-content-provider:
