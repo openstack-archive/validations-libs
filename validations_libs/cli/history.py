@@ -17,6 +17,7 @@
 import json
 import os
 import sys
+from argparse import ArgumentError
 
 from cliff.command import Command
 from cliff.lister import Lister
@@ -36,6 +37,15 @@ class ListHistory(Lister):
                             metavar="<validation>",
                             type=str,
                             help='Display execution history for a validation')
+        parser.add_argument('--limit',
+                            dest='history_limit',
+                            type=int,
+                            default=15,
+                            help=(
+                                'Display <n> most recent '
+                                'runs of the selected <validation>. '
+                                '<n> must be > 0\n'
+                                'The default display limit is set to 15.\n'))
         parser.add_argument('--validation-log-dir', dest='validation_log_dir',
                             default=constants.VALIDATIONS_LOG_BASEDIR,
                             help=("Path where the validation log files "
@@ -43,8 +53,24 @@ class ListHistory(Lister):
         return parser
 
     def take_action(self, parsed_args):
+
+        if parsed_args.history_limit < 1:
+            raise ValueError(
+                (
+                    "Number <n> of the most recent runs must be > 0. "
+                    "You have provided {}").format(
+                        parsed_args.history_limit))
+        self.app.LOG.info(
+            (
+                "Limiting output to the maximum of "
+                "{} last validations.").format(
+                parsed_args.history_limit))
+
         actions = ValidationActions(parsed_args.validation_log_dir)
-        return actions.show_history(parsed_args.validation)
+
+        return actions.show_history(
+            validation_ids=parsed_args.validation,
+            history_limit=parsed_args.history_limit)
 
 
 class GetHistory(Command):
