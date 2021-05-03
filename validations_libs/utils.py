@@ -32,25 +32,51 @@ def current_time():
     return '%sZ' % datetime.datetime.utcnow().isoformat()
 
 
-def create_artifacts_dir(dir_path=None, prefix=None):
-    """Create Ansible artifacts directory
+def create_log_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR):
+    """Create default validations log dir.
+    Log the failure if encountering OSError or PermissionError.
+    :raises: RuntimeError
+    """
+    try:
+        if os.path.exists(log_path):
+            if os.access(log_path, os.W_OK):
+                return log_path
+            else:
+                create_log_dir(constants.VALIDATIONS_LOG_BASEDIR)
+        else:
+            os.makedirs(log_path)
+            return log_path
+    except (OSError, PermissionError):
+        LOG.error(
+            (
+                "Error while creating the log directory. "
+                "Please check the access rights for: '{}'"
+            ).format(log_path)
+        )
+        # Fallback in default path if log_path != from constants path
+        if log_path != constants.VALIDATIONS_LOG_BASEDIR:
+            create_log_dir(constants.VALIDATIONS_LOG_BASEDIR)
+        raise RuntimeError()
 
-    :param dir_path: Directory asbolute path
-    :type dir_path: `string`
+
+def create_artifacts_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR,
+                         prefix=None):
+    """Create Ansible artifacts directory
+    :param log_path: Directory asbolute path
+    :type log_path: `string`
     :param prefix: Playbook name
     :type prefix: `string`
     :return: The UUID of the validation and the absolute Path of the log file
     :rtype: `string`, `string`
     """
-    dir_path = (dir_path if dir_path else
-                constants.VALIDATION_ANSIBLE_ARTIFACT_PATH)
+    artifact_dir = os.path.join(log_path, 'artifacts')
     validation_uuid = str(uuid.uuid4())
-    log_dir = "{}/{}_{}_{}".format(dir_path, validation_uuid,
+    log_dir = "{}/{}_{}_{}".format(artifact_dir, validation_uuid,
                                    (prefix if prefix else ''), current_time())
     try:
         os.makedirs(log_dir)
         return validation_uuid, log_dir
-    except OSError:
+    except (OSError, PermissionError):
         LOG.exception(
             (
                 "Error while creating Ansible artifacts log file."

@@ -45,11 +45,9 @@ class TestValidationActions(TestCase):
                                               'My Validation Two Name',
                                              ['prep', 'pre-introspection'])]))
 
-    @mock.patch('validations_libs.utils.create_artifacts_dir',
-                return_value=('1234', '/tmp/'))
     @mock.patch('validations_libs.utils.get_validations_playbook',
                 return_value=['/tmp/foo/fake.yaml'])
-    def test_validation_skip_validation(self, mock_validation_play, mock_tmp):
+    def test_validation_skip_validation(self, mock_validation_play):
 
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
@@ -66,16 +64,29 @@ class TestValidationActions(TestCase):
                                          limit_hosts=None)
         self.assertEqual(run_return, [])
 
+    @mock.patch('validations_libs.utils.current_time',
+                return_value='time')
+    @mock.patch('validations_libs.utils.uuid.uuid4',
+                return_value='123')
+    @mock.patch('validations_libs.utils.os.makedirs')
+    @mock.patch('validations_libs.utils.os.access',
+                return_value=True)
+    @mock.patch('validations_libs.utils.os.path.exists',
+                return_value=True)
     @mock.patch('validations_libs.utils.get_validations_playbook',
                 return_value=['/tmp/foo/fake.yaml'])
     @mock.patch('validations_libs.ansible.Ansible.run')
-    @mock.patch('validations_libs.utils.create_artifacts_dir',
-                return_value=('1234', '/tmp/'))
-    def test_validation_skip_on_specific_host(self, mock_tmp, mock_ansible_run,
-                                              mock_validation_play):
+    def test_validation_skip_on_specific_host(self, mock_ansible_run,
+                                              mock_validation_play,
+                                              mock_exists,
+                                              mock_access,
+                                              mock_makedirs,
+                                              mock_uuid,
+                                              mock_time):
+
         mock_ansible_run.return_value = ('fake.yaml', 0, 'successful')
         run_called_args = {
-            'workdir': '/tmp/',
+            'workdir': '/var/log/validations/artifacts/123_fake.yaml_time',
             'playbook': '/tmp/foo/fake.yaml',
             'base_dir': '/usr/share/ansible/',
             'playbook_dir': '/tmp/foo',
@@ -86,11 +97,11 @@ class TestValidationActions(TestCase):
             'quiet': True,
             'extra_vars': None,
             'limit_hosts': '!cloud1',
-            'ansible_artifact_path': '/tmp/',
             'extra_env_variables': None,
             'ansible_cfg': None,
             'gathering_policy': 'explicit',
-            'log_path': None,
+            'ansible_artifact_path': '/var/log/validations/artifacts/123_fake.yaml_time',
+            'log_path': '/var/log/validations',
             'run_async': False,
             'python_interpreter': None,
             'ssh_user': None
@@ -106,22 +117,36 @@ class TestValidationActions(TestCase):
 
         run = ValidationActions()
         run_return = run.run_validations(playbook, inventory,
+                                         log_path='/var/log/validations',
                                          validations_dir='/tmp/foo',
                                          skip_list=skip_list,
-                                         limit_hosts='!cloud1',
-                                         )
+                                         limit_hosts='!cloud1')
+
         mock_ansible_run.assert_called_with(**run_called_args)
 
+    @mock.patch('validations_libs.utils.current_time',
+                return_value='time')
+    @mock.patch('validations_libs.utils.uuid.uuid4',
+                return_value='123')
+    @mock.patch('validations_libs.utils.os.makedirs')
+    @mock.patch('validations_libs.utils.os.access',
+                return_value=True)
+    @mock.patch('validations_libs.utils.os.path.exists',
+                return_value=True)
     @mock.patch('validations_libs.utils.get_validations_playbook',
                 return_value=['/tmp/foo/fake.yaml'])
     @mock.patch('validations_libs.ansible.Ansible.run')
-    @mock.patch('validations_libs.utils.create_artifacts_dir',
-                return_value=('1234', '/tmp/'))
-    def test_validation_skip_with_limit_host(self, mock_tmp, mock_ansible_run,
-                                             mock_validation_play):
+    def test_validation_skip_with_limit_host(self, mock_ansible_run,
+                                             mock_validation_play,
+                                             mock_exists,
+                                             mock_access,
+                                             mock_makedirs,
+                                             mock_uuid,
+                                             mock_time):
+
         mock_ansible_run.return_value = ('fake.yaml', 0, 'successful')
         run_called_args = {
-            'workdir': '/tmp/',
+            'workdir': '/var/log/validations/artifacts/123_fake.yaml_time',
             'playbook': '/tmp/foo/fake.yaml',
             'base_dir': '/usr/share/ansible/',
             'playbook_dir': '/tmp/foo',
@@ -135,8 +160,8 @@ class TestValidationActions(TestCase):
             'extra_env_variables': None,
             'ansible_cfg': None,
             'gathering_policy': 'explicit',
-            'ansible_artifact_path': '/tmp/',
-            'log_path': None,
+            'ansible_artifact_path': '/var/log/validations/artifacts/123_fake.yaml_time',
+            'log_path': '/var/log/validations',
             'run_async': False,
             'python_interpreter': None,
             'ssh_user': None
@@ -152,40 +177,31 @@ class TestValidationActions(TestCase):
 
         run = ValidationActions()
         run_return = run.run_validations(playbook, inventory,
+                                         log_path='/var/log/validations',
                                          validations_dir='/tmp/foo',
                                          skip_list=skip_list,
                                          limit_hosts='cloud,cloud1,!cloud2')
+
         mock_ansible_run.assert_called_with(**run_called_args)
 
-    @mock.patch('validations_libs.validation_logs.ValidationLogs.get_results')
+    @mock.patch('validations_libs.validation_actions.ValidationLogs.get_results',
+                side_effect=fakes.FAKE_SUCCESS_RUN)
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
     @mock.patch('validations_libs.ansible.Ansible.run')
-    @mock.patch('validations_libs.utils.create_artifacts_dir',
-                return_value=('1234', '/tmp/'))
-    def test_validation_run_success(self, mock_tmp, mock_ansible_run,
-                                    mock_validation_dir, mock_results):
+    def test_validation_run_success(self, mock_ansible_run,
+                                    mock_validation_dir,
+                                    mock_results):
+
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
             'groups': ['prep', 'pre-deployment'],
             'id': 'foo',
             'name': 'My Validition One Name',
             'parameters': {}}]
+
         mock_ansible_run.return_value = ('foo.yaml', 0, 'successful')
 
-        mock_results.return_value = [{'Duration': '0:00:01.761',
-                                      'Host_Group': 'overcloud',
-                                      'Status': 'PASSED',
-                                      'Status_by_Host': 'subnode-1,PASSED',
-                                      'UUID': 'foo',
-                                      'Unreachable_Hosts': '',
-                                      'Validations': 'ntp'}]
-        expected_run_return = [{'Duration': '0:00:01.761',
-                                'Host_Group': 'overcloud',
-                                'Status': 'PASSED',
-                                'Status_by_Host': 'subnode-1,PASSED',
-                                'UUID': 'foo',
-                                'Unreachable_Hosts': '',
-                                'Validations': 'ntp'}]
+        expected_run_return = fakes.FAKE_SUCCESS_RUN[0]
 
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
@@ -209,17 +225,18 @@ class TestValidationActions(TestCase):
     @mock.patch('validations_libs.validation_logs.ValidationLogs.get_results')
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
     @mock.patch('validations_libs.ansible.Ansible.run')
-    @mock.patch('validations_libs.utils.create_artifacts_dir',
-                return_value=('1234', '/tmp/'))
-    def test_validation_run_failed(self, mock_tmp, mock_ansible_run,
+    def test_validation_run_failed(self, mock_ansible_run,
                                    mock_validation_dir, mock_results):
+
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
             'groups': ['prep', 'pre-deployment'],
             'id': 'foo',
             'name': 'My Validition One Name',
             'parameters': {}}]
+
         mock_ansible_run.return_value = ('foo.yaml', 0, 'failed')
+
         mock_results.return_value = [{'Duration': '0:00:01.761',
                                       'Host_Group': 'overcloud',
                                       'Status': 'PASSED',
@@ -227,6 +244,7 @@ class TestValidationActions(TestCase):
                                       'UUID': 'foo',
                                       'Unreachable_Hosts': '',
                                       'Validations': 'ntp'}]
+
         expected_run_return = [{'Duration': '0:00:01.761',
                                 'Host_Group': 'overcloud',
                                 'Status': 'PASSED',

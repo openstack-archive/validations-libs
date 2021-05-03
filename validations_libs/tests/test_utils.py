@@ -47,18 +47,6 @@ class TestUtils(TestCase):
                           utils.get_validations_data,
                           validation)
 
-    @mock.patch('validations_libs.utils.current_time',
-                return_value='2020-04-02T06:58:20.352272Z')
-    @mock.patch('os.makedirs')
-    @mock.patch('uuid.uuid4', return_value='1234')
-    def test_create_artifacts_dir(self, mock_uuid, mock_makedirs,
-                                  mock_datetime):
-        uuid, dir_path = utils.create_artifacts_dir(dir_path='/tmp/foo',
-                                                    prefix='ntp')
-        self.assertEqual(uuid, '1234')
-        self.assertEqual(dir_path,
-                         '/tmp/foo/1234_ntp_2020-04-02T06:58:20.352272Z')
-
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     @mock.patch('glob.glob')
