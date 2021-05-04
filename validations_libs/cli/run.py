@@ -66,6 +66,11 @@ class Run(Command):
                             default=None,
                             help=("Path where the run result will be stored."))
 
+        parser.add_argument('--junitxml', dest='junitxml',
+                            default=None,
+                            help=("Path where the run result in JUnitXML "
+                                  "format will be stored."))
+
         parser.add_argument(
             '--extra-env-vars',
             action=KeyValueAction,
@@ -166,6 +171,8 @@ class Run(Command):
             _rc = any([r for r in results if r['Status'] == 'FAILED'])
             if parsed_args.output_log:
                 common.write_output(parsed_args.output_log, results)
+            if parsed_args.junitxml:
+                common.write_junitxml(parsed_args.junitxml, results)
             common.print_dict(results)
             if _rc:
                 raise RuntimeError("One or more validations have failed.")
