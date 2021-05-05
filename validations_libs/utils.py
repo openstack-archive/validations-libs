@@ -49,7 +49,7 @@ def create_log_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR):
     try:
         if os.path.exists(log_path):
             if os.access(log_path, os.W_OK):
-                return log_path
+                return os.path.abspath(log_path)
             else:
                 LOG.error(
                     (
@@ -76,7 +76,7 @@ def create_log_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR):
                     log_path=log_path))
 
             os.makedirs(log_path)
-            return log_path
+            return os.path.abspath(log_path)
     except (OSError, PermissionError) as error:
         LOG.error(
             (
@@ -117,7 +117,7 @@ def create_artifacts_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR,
         current_time())
     try:
         os.makedirs(validation_artifacts_dir)
-        return validation_uuid, validation_artifacts_dir
+        return validation_uuid, os.path.abspath(validation_artifacts_dir)
     except (OSError, PermissionError):
         LOG.exception(
             (

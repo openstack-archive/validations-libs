@@ -53,6 +53,13 @@ class Run(BaseCommand):
                             help=("Path where the ansible roles, library "
                                   "and plugins are located."))
 
+        parser.add_argument(
+            '--validation-log-dir',
+            dest='validation_log_dir',
+            default=constants.VALIDATIONS_LOG_BASEDIR,
+            help=(
+                "Path where the log files and artifacts will be located. "))
+
         parser.add_argument('--inventory', '-i', type=str,
                             default="localhost",
                             help="Path of the Ansible inventory.")
@@ -169,6 +176,7 @@ class Run(BaseCommand):
                 python_interpreter=parsed_args.python_interpreter,
                 quiet=quiet_mode,
                 ssh_user=parsed_args.ssh_user,
+                log_path=parsed_args.validation_log_dir
             )
         except RuntimeError as e:
             raise RuntimeError(e)
