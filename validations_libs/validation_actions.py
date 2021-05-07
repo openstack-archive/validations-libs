@@ -203,6 +203,22 @@ class ValidationActions(object):
                     return None, _hosts
         return playbook, limit_hosts
 
+    def _retrieve_latest_results(self, logs, history_limit):
+        """Retrieve the most recent validation results.
+        Previously retrieved logs are sorted in ascending order,
+        with the last time the file was modified serving as a key.
+        Finally we take the last `n` logs, where `n` == `history_limit`
+        and return them while discarding the time information.
+        """
+
+        history_limit = min(history_limit, len(logs))
+
+        logs = sorted(
+                [(os.stat(path).st_mtime, path) for path in logs],
+                key=lambda path: path[0])
+
+        return [path[1] for path in logs[-history_limit:]]
+
     def run_validations(self, validation_name=None, inventory='localhost',
                         group=None, extra_vars=None, validations_dir=None,
                         extra_env_vars=None, ansible_cfg=None, quiet=True,
@@ -500,7 +516,8 @@ class ValidationActions(object):
         return params
 
     def show_history(self, validation_ids=None, extension='json',
-                     log_path=constants.VALIDATIONS_LOG_BASEDIR):
+                     log_path=constants.VALIDATIONS_LOG_BASEDIR,
+                     history_limit=None):
         """Return validation executions history
 
         :param validation_ids: The validation ids
@@ -509,6 +526,9 @@ class ValidationActions(object):
         :type extension: ``string``
         :param log_path: The absolute path of the validations logs directory
         :type log_path: ``string``
+        :param history_limit: The number of most recent history logs
+                              to be displayed.
+        :type history_limit: ``int``
 
         :return: Returns the information about the validation executions
                  history
@@ -559,9 +579,14 @@ class ValidationActions(object):
                 validation_ids = [validation_ids]
             logs = []
             for validation_id in validation_ids:
-                logs.extend(vlogs.get_logfile_by_validation(validation_id))
+                logs.extend(
+                    vlogs.get_logfile_by_validation(
+                        validation_id))
         else:
             logs = vlogs.get_all_logfiles(extension)
+
+        if history_limit and history_limit < len(logs):
+            logs = self._retrieve_latest_results(logs, history_limit)
 
         values = []
         column_name = ('UUID', 'Validations',
