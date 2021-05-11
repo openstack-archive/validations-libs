@@ -16,6 +16,18 @@
       - ^releasenotes/.*$
 
 - job:
+    name: validations-libs-reqcheck
+    nodeset: centos-8
+    parent: base
+    run: playbooks/reqcheck.yaml
+    timeout: 1600
+    voting: false
+    required-projects:
+      - openstack/validations-libs
+    files:
+      - ^requirements.txt$
+
+- job:
     name: tripleo-ci-centos-8-standalone-validation-libs
     parent: tripleo-ci-centos-8-standalone
     vars:
@@ -29,6 +41,7 @@
       - check-requirements
     check:
       jobs:
+        - validations-libs-reqcheck
         - openstack-tox-linters
         - openstack-tox-cover
         - openstack-tox-py36
