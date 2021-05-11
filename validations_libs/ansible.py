@@ -376,7 +376,7 @@ class Ansible(object):
                     constants.VALIDATION_ANSIBLE_ARTIFACT_PATH
 
         playbook = self._playbook_check(playbook, playbook_dir)
-        self.log.info(
+        self.log.debug(
             'Running Ansible playbook: {},'
             ' Working directory: {},'
             ' Playbook directory: {}'.format(
