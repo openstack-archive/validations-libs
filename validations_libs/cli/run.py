@@ -72,6 +72,16 @@ class Run(Command):
                                   "format will be stored."))
 
         parser.add_argument(
+            '--python-interpreter',
+            metavar="--python-interpreter <PYTHON_INTERPRETER_PATH>",
+            action="store",
+            default="{}".format(
+                sys.executable if sys.executable else "/usr/bin/python"
+            ),
+            help=("Python interpreter for Ansible execution. ")
+        )
+
+        parser.add_argument(
             '--extra-env-vars',
             action=KeyValueAction,
             default=None,
@@ -171,6 +181,7 @@ class Run(Command):
                 base_dir=parsed_args.ansible_base_dir,
                 validation_name=parsed_args.validation_name,
                 extra_env_vars=extra_env_vars,
+                python_interpreter=parsed_args.python_interpreter,
                 quiet=quiet_mode,
                 ssh_user=parsed_args.ssh_user,
             )

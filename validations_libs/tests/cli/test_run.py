@@ -12,6 +12,8 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
+import sys
+
 try:
     from unittest import mock
 except ImportError:
@@ -72,6 +74,7 @@ class TestRun(BaseCommand):
             'base_dir': '/usr/share/ansible/',
             'validation_name': ['foo'],
             'extra_env_vars': None,
+            'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe'}
 
@@ -101,6 +104,7 @@ class TestRun(BaseCommand):
             'base_dir': '/usr/share/ansible/',
             'validation_name': ['foo'],
             'extra_env_vars': None,
+            'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe'}
 
@@ -142,6 +146,7 @@ class TestRun(BaseCommand):
             'base_dir': '/usr/share/ansible/',
             'validation_name': ['foo'],
             'extra_env_vars': None,
+            'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe'}
 
@@ -169,6 +174,7 @@ class TestRun(BaseCommand):
             'base_dir': '/usr/share/ansible/',
             'validation_name': ['foo'],
             'extra_env_vars': {'key': 'value'},
+            'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe'}
 
@@ -198,6 +204,7 @@ class TestRun(BaseCommand):
             'base_dir': '/usr/share/ansible/',
             'validation_name': ['foo'],
             'extra_env_vars': {'ANSIBLE_STDOUT_CALLBACK': 'default'},
+            'python_interpreter': sys.executable,
             'quiet': False,
             'ssh_user': 'doe'}
 
@@ -225,6 +232,7 @@ class TestRun(BaseCommand):
             'base_dir': '/usr/share/ansible/',
             'validation_name': ['foo'],
             'extra_env_vars': {'key': 'value2'},
+            'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe'}
 
@@ -254,6 +262,7 @@ class TestRun(BaseCommand):
             'base_dir': '/usr/share/ansible/',
             'validation_name': ['foo'],
             'extra_env_vars': {'key2': 'value2'},
+            'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe'}
 
@@ -292,6 +301,7 @@ class TestRun(BaseCommand):
             'base_dir': '/usr/share/ansible/',
             'validation_name': ['foo'],
             'extra_env_vars': {'key2': 'value2'},
+            'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe'}
 
@@ -315,6 +325,7 @@ class TestRun(BaseCommand):
             'base_dir': '/usr/share/ansible/',
             'validation_name': ['foo'],
             'extra_env_vars': {'key2': 'value2'},
+            'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe'}
 
