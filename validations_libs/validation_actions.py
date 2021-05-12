@@ -78,8 +78,13 @@ class ValidationActions(object):
           ('validation2', 'Name of the validation2', ['group1', 'group2'])])
         """
         self.log = logging.getLogger(__name__ + ".list_validations")
+
         validations = v_utils.parse_all_validations_on_disk(
             self.validation_path, group)
+
+        self.log.debug(
+            "Parsed {} validations.".format(len(validations))
+        )
 
         return_values = [
             (val.get('id'), val.get('name'), val.get('groups'))

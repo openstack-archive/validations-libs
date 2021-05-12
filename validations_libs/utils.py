@@ -83,6 +83,7 @@ def parse_all_validations_on_disk(path, groups=None):
       'id': 'check-cpu',
       'name': 'Verify if the server fits the CPU core requirements'}]
     """
+
     results = []
     if not groups:
         groups = []
@@ -90,6 +91,13 @@ def parse_all_validations_on_disk(path, groups=None):
         groups = convert_data(groups)
 
     validations_abspath = glob.glob("{path}/*.yaml".format(path=path))
+
+    LOG.debug(
+        "Attempting to parse validations of groups `{}` from {}".format(
+            ','.join(groups),
+            validations_abspath
+        )
+    )
 
     for playbook in validations_abspath:
         val = Validation(playbook)
