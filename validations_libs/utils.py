@@ -247,6 +247,13 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
 
     data = {}
     val_path = "{}/{}.yaml".format(path, validation)
+
+    LOG.debug(
+        "Obtaining information about validation {} from {}".format(
+            validation,
+            val_path)
+    )
+
     if os.path.exists(val_path):
         val = Validation(val_path)
         data.update(val.get_formated_data)
