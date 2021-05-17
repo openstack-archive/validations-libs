@@ -5,4 +5,5 @@
     - fetch-subunit-output
     - fetch-devstack-log-dir
     - fetch-output
+    - role: "src/opendev.org/openstack/validations-common/roles/fetch_validations"
     - fetch-python-sdist-output
