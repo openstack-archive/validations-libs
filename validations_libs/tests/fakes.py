@@ -295,6 +295,8 @@ FAKE_FAILED_RUN = [{'Duration': '0:00:01.761',
                     'Unreachable_Hosts': '',
                     'Validations': 'foo'}]
 
+FAKE_VALIDATIONS_PATH = '/usr/share/ansible/validation-playbooks'
+
 
 def fake_ansible_runner_run_return(status='successful', rc=0):
     return status, rc
