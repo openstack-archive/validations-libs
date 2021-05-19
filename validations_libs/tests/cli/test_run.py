@@ -186,6 +186,35 @@ class TestRun(BaseCommand):
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
                 return_value=fakes.FAKE_SUCCESS_RUN)
+    def test_run_command_extra_env_vars_with_custom_callback(self,
+                                                             mock_run,
+                                                             mock_user):
+        run_called_args = {
+            'inventory': 'localhost',
+            'limit_hosts': None,
+            'group': [],
+            'extra_vars': None,
+            'validations_dir': '/usr/share/ansible/validation-playbooks',
+            'base_dir': '/usr/share/ansible/',
+            'validation_name': ['foo'],
+            'extra_env_vars': {'ANSIBLE_STDOUT_CALLBACK': 'default'},
+            'quiet': False,
+            'ssh_user': 'doe'}
+
+        arglist = ['--validation', 'foo',
+                   '--extra-env-vars', 'ANSIBLE_STDOUT_CALLBACK=default']
+        verifylist = [('validation_name', ['foo']),
+                      ('extra_env_vars', {'ANSIBLE_STDOUT_CALLBACK': 'default'})]
+
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.cmd.take_action(parsed_args)
+        mock_run.assert_called_with(**run_called_args)
+
+    @mock.patch('getpass.getuser',
+                return_value='doe')
+    @mock.patch('validations_libs.validation_actions.ValidationActions.'
+                'run_validations',
+                return_value=fakes.FAKE_SUCCESS_RUN)
     def test_run_command_extra_env_vars_twice(self, mock_run, mock_user):
         run_called_args = {
             'inventory': 'localhost',

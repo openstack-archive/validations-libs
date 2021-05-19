@@ -141,6 +141,15 @@ class Run(Command):
         v_actions = ValidationActions(
             validation_path=parsed_args.validation_dir)
 
+        # Ansible execution should be quiet while using the validations_json
+        # default callback and be verbose while passing ANSIBLE_SDTOUT_CALLBACK
+        # environment variable to Ansible through the --extra-env-vars argument
+        quiet_mode = True
+        extra_env_vars = parsed_args.extra_env_vars
+        if extra_env_vars:
+            if "ANSIBLE_STDOUT_CALLBACK" in extra_env_vars.keys():
+                quiet_mode = False
+
         extra_vars = parsed_args.extra_vars
         if parsed_args.extra_vars_file:
             try:
@@ -161,9 +170,10 @@ class Run(Command):
                 validations_dir=parsed_args.validation_dir,
                 base_dir=parsed_args.ansible_base_dir,
                 validation_name=parsed_args.validation_name,
-                extra_env_vars=parsed_args.extra_env_vars,
-                quiet=True,
-                ssh_user=parsed_args.ssh_user)
+                extra_env_vars=extra_env_vars,
+                quiet=quiet_mode,
+                ssh_user=parsed_args.ssh_user,
+            )
         except RuntimeError as e:
             raise RuntimeError(e)
 
