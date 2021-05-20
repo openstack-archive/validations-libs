@@ -30,6 +30,14 @@ try:
 except pkg_resources.DistributionNotFound:
     backward_compat = False
 
+# NOTE(cloudnull): This is setting the FileExistsError for py2 environments.
+#                  When we no longer support py2 (centos7) this should be
+#                  removed.
+try:
+    FileExistsError = FileExistsError
+except NameError:
+    FileExistsError = OSError
+
 
 class TestAnsible(TestCase):
 
@@ -175,7 +183,7 @@ class TestAnsible(TestCase):
         self.assertEqual(extra_vars, self.run._get_extra_vars(extra_vars))
 
     @mock.patch('yaml.safe_load', return_value={'fizz': 'buzz'})
-    @mock.patch('builtins.open', spec=open)
+    @mock.patch('six.moves.builtins.open', spec=open)
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.path.isfile', return_value=True)
     def test_get_extra_vars_path(self, mock_isfile,
