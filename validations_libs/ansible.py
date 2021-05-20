@@ -26,6 +26,7 @@ import yaml
 
 from six.moves import configparser
 from validations_libs import constants
+from validations_libs import utils
 
 LOG = logging.getLogger(__name__ + ".ansible")
 
@@ -275,6 +276,17 @@ class Ansible(object):
         else:
             return env
 
+    def _dump_validation_config(self, config, path, filename='validation.cfg'):
+        """Dump Validation config in artifact directory"""
+        parser = configparser.ConfigParser()
+        for section_key in config.keys():
+            parser.add_section(section_key)
+            for item_key in config[section_key].keys():
+                parser.set(section_key, item_key,
+                           str(config[section_key][item_key]))
+        with open('{}/{}'.format(path, filename), 'w') as conf:
+            parser.write(conf)
+
     def run(self, playbook, inventory, workdir, playbook_dir=None,
             connection='smart', output_callback=None,
             base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
@@ -283,9 +295,10 @@ class Ansible(object):
             verbosity=0, quiet=False, extra_vars=None,
             gathering_policy='smart',
             extra_env_variables=None, parallel_run=False,
-            callback_whitelist=None, ansible_cfg=None,
+            callback_whitelist=None, ansible_cfg_file=None,
             ansible_timeout=30, ansible_artifact_path=None,
-            log_path=None, run_async=False, python_interpreter=None):
+            log_path=None, run_async=False, python_interpreter=None,
+            validation_cfg_file=None):
         """Execute one or multiple Ansible playbooks
 
         :param playbook: The Absolute path of the Ansible playbook
@@ -341,9 +354,10 @@ class Ansible(object):
                                 Custom output_callback is also whitelisted.
                                 (Defaults to ``None``)
         :type callback_whitelist: ``list`` or ``string``
-        :param ansible_cfg: Path to an ansible configuration file. One will be
-                         generated in the artifact path if this option is None.
-        :type ansible_cfg: ``string``
+        :param ansible_cfg_file: Path to an ansible configuration file. One
+                                 will be generated in the artifact path if
+                                 this option is None.
+        :type ansible_cfg_file: ``string``
         :param ansible_timeout: Timeout for ansible connections.
                                 (Defaults to ``30 minutes``)
         :type ansible_timeout: ``integer``
@@ -360,6 +374,10 @@ class Ansible(object):
                                    ``auto_silent`` or the default one
                                    ``auto_legacy``)
         :type python_interpreter: ``string``
+        :param validation_cfg_file: A dictionary of configuration for
+                                    Validation loaded from an validation.cfg
+                                    file.
+        :type validation_cfg_file: ``dict``
 
         :return: A ``tuple`` containing the the absolute path of the executed
                  playbook, the return code and the status of the run
@@ -405,16 +423,17 @@ class Ansible(object):
                                          ansible_timeout, callback_whitelist,
                                          base_dir, python_interpreter))
 
-        if 'ANSIBLE_CONFIG' not in env and not ansible_cfg:
-            ansible_cfg = os.path.join(ansible_artifact_path, 'ansible.cfg')
-            config = configparser.ConfigParser()
-            config.add_section('defaults')
-            config.set('defaults', 'internal_poll_interval', '0.05')
-            with open(ansible_cfg, 'w') as f:
-                config.write(f)
-            env['ANSIBLE_CONFIG'] = ansible_cfg
-        elif 'ANSIBLE_CONFIG' not in env and ansible_cfg:
-            env['ANSIBLE_CONFIG'] = ansible_cfg
+        if 'ANSIBLE_CONFIG' not in env and not ansible_cfg_file:
+            ansible_cfg_file = os.path.join(ansible_artifact_path,
+                                            'ansible.cfg')
+            ansible_config = configparser.ConfigParser()
+            ansible_config.add_section('defaults')
+            ansible_config.set('defaults', 'internal_poll_interval', '0.05')
+            with open(ansible_cfg_file, 'w') as f:
+                ansible_config.write(f)
+            env['ANSIBLE_CONFIG'] = ansible_cfg_file
+        elif 'ANSIBLE_CONFIG' not in env and ansible_cfg_file:
+            env['ANSIBLE_CONFIG'] = ansible_cfg_file
 
         if log_path:
             env['VALIDATIONS_LOG_DIR'] = log_path
@@ -434,7 +453,6 @@ class Ansible(object):
 
         if not BACKWARD_COMPAT:
             r_opts.update({
-                'envvars': envvars,
                 'project_dir': playbook_dir,
                 'fact_cache': ansible_artifact_path,
                 'fact_cache_type': 'jsonfile'
@@ -453,6 +471,17 @@ class Ansible(object):
 
         if parallel_run:
             r_opts['directory_isolation_base_path'] = ansible_artifact_path
+
+        if validation_cfg_file:
+            if 'ansible_runner' in validation_cfg_file.keys():
+                r_opts.update(validation_cfg_file['ansible_runner'])
+            if 'ansible_environment' in validation_cfg_file.keys():
+                envvars.update(validation_cfg_file['ansible_environment'])
+            self._dump_validation_config(validation_cfg_file,
+                                         ansible_artifact_path)
+        if not BACKWARD_COMPAT:
+            r_opts.update({'envvars': envvars})
+
         runner_config = ansible_runner.runner_config.RunnerConfig(**r_opts)
         runner_config.prepare()
         runner_config.env['ANSIBLE_STDOUT_CALLBACK'] = \

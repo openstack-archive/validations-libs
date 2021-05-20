@@ -34,6 +34,7 @@ class TestListHistory(BaseCommand):
         arglist = ['--validation-log-dir', '/foo/log/dir']
         verifylist = [('validation_log_dir', '/foo/log/dir')]
 
+        self._set_args(arglist)
         col = ('UUID', 'Validations', 'Status', 'Execution at', 'Duration')
         values = [('008886df-d297-1eaa-2a74-000000000008',
                    '512e', 'PASSED',
@@ -43,6 +44,33 @@ class TestListHistory(BaseCommand):
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         result = self.cmd.take_action(parsed_args)
         self.assertEqual(result, (col, values))
+
+    @mock.patch('validations_libs.validation_actions.ValidationActions.'
+                'show_history')
+    @mock.patch('validations_libs.utils.load_config',
+                return_value=fakes.DEFAULT_CONFIG)
+    def test_list_history_limit_with_config(self, mock_config, mock_history):
+        arglist = ['--validation-log-dir', '/foo/log/dir']
+        verifylist = [('validation_log_dir', '/foo/log/dir')]
+        self._set_args(arglist)
+
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.assertEqual(parsed_args.history_limit, 15)
+
+    @mock.patch('validations_libs.validation_actions.ValidationActions.'
+                'show_history')
+    @mock.patch('validations_libs.utils.load_config',
+                return_value=fakes.WRONG_HISTORY_CONFIG)
+    def test_list_history_limit_with_wrong_config(self, mock_config,
+                                                  mock_history):
+        arglist = ['--validation-log-dir', '/foo/log/dir']
+        verifylist = [('validation_log_dir', '/foo/log/dir')]
+        self._set_args(arglist)
+
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.assertEqual(parsed_args.history_limit, 0)
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.assertRaises(ValueError, self.cmd.take_action, parsed_args)
 
 
 class TestGetHistory(BaseCommand):
@@ -57,6 +85,7 @@ class TestGetHistory(BaseCommand):
     def test_get_history(self, mock_logs):
         arglist = ['123']
         verifylist = [('uuid', '123')]
+        self._set_args(arglist)
 
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
@@ -68,6 +97,7 @@ class TestGetHistory(BaseCommand):
         arglist = ['123', '--validation-log-dir', '/foo/log/dir']
         verifylist = [('uuid', '123'), ('validation_log_dir', '/foo/log/dir')]
 
+        self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
 
@@ -78,5 +108,6 @@ class TestGetHistory(BaseCommand):
         arglist = ['123', '--full']
         verifylist = [('uuid', '123'), ('full', True)]
 
+        self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)

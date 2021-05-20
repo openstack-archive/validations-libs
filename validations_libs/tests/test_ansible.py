@@ -348,3 +348,83 @@ class TestAnsible(TestCase):
                 })
 
         mock_config.assert_called_once_with(**opt)
+
+    @mock.patch('os.path.exists', return_value=True)
+    @mock.patch('os.makedirs')
+    @mock.patch.object(Runner, 'run',
+                       return_value=fakes.fake_ansible_runner_run_return(rc=0))
+    @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
+                return_value="/foo/inventory.yaml")
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('ansible_runner.runner_config.RunnerConfig')
+    def test_run_success_with_config(self, mock_config, mock_open,
+                                     mock_dump_artifact, mock_run,
+                                     mock_mkdirs, mock_exists
+                                     ):
+        fake_config = {'default': fakes.DEFAULT_CONFIG,
+                       'ansible_environment':
+                       fakes.ANSIBLE_ENVIRONNMENT_CONFIG,
+                       'ansible_runner': fakes.ANSIBLE_RUNNER_CONFIG
+                       }
+        _playbook, _rc, _status = self.run.run(
+            playbook='existing.yaml',
+            inventory='localhost,',
+            workdir='/tmp',
+            connection='local',
+            ansible_artifact_path='/tmp',
+            validation_cfg_file=fake_config
+        )
+        self.assertEqual((_playbook, _rc, _status),
+                         ('existing.yaml', 0, 'successful'))
+        mock_open.assert_called_with('/tmp/validation.cfg', 'w')
+
+    @mock.patch('os.path.exists', return_value=True)
+    @mock.patch('os.makedirs')
+    @mock.patch.object(Runner, 'run',
+                       return_value=fakes.fake_ansible_runner_run_return(rc=0))
+    @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
+                return_value="/foo/inventory.yaml")
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('ansible_runner.runner_config.RunnerConfig')
+    def test_run_success_with_empty_config(self, mock_config, mock_open,
+                                           mock_dump_artifact, mock_run,
+                                           mock_mkdirs, mock_exists
+                                           ):
+        fake_config = {}
+        _playbook, _rc, _status = self.run.run(
+            playbook='existing.yaml',
+            inventory='localhost,',
+            workdir='/tmp',
+            connection='local',
+            ansible_cfg_file='/foo.cfg',
+            ansible_artifact_path='/tmp',
+            validation_cfg_file=fake_config
+        )
+        self.assertEqual((_playbook, _rc, _status),
+                         ('existing.yaml', 0, 'successful'))
+        mock_open.assert_not_called()
+
+    @mock.patch('os.path.exists', return_value=True)
+    @mock.patch('os.makedirs')
+    @mock.patch.object(Runner, 'run',
+                       return_value=fakes.fake_ansible_runner_run_return(rc=0))
+    @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
+                return_value="/foo/inventory.yaml")
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('ansible_runner.runner_config.RunnerConfig')
+    def test_run_success_with_ansible_config(self, mock_config, mock_open,
+                                             mock_dump_artifact, mock_run,
+                                             mock_mkdirs, mock_exists
+                                             ):
+        fake_config = {}
+        _playbook, _rc, _status = self.run.run(
+            playbook='existing.yaml',
+            inventory='localhost,',
+            workdir='/tmp',
+            connection='local',
+            ansible_artifact_path='/tmp',
+            validation_cfg_file=fake_config
+        )
+        self.assertEqual((_playbook, _rc, _status),
+                         ('existing.yaml', 0, 'successful'))
+        mock_open.assert_called_with('/tmp/ansible.cfg', 'w')

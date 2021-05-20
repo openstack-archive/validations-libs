@@ -156,17 +156,23 @@ class Run(BaseCommand):
                   "if more than one product is required "
                   "separate the product names with commas."))
 
+        if self.app:
+            # Merge config and CLI args:
+            return self.base.set_argument_parser(parser)
         return parser
 
     def take_action(self, parsed_args):
         """Take validation action"""
-        v_actions = ValidationActions(
-            validation_path=parsed_args.validation_dir)
+        # Get config:
+        config = self.base.config
 
+        v_actions = ValidationActions(parsed_args.validation_dir)
         # Ansible execution should be quiet while using the validations_json
         # default callback and be verbose while passing ANSIBLE_SDTOUT_CALLBACK
         # environment variable to Ansible through the --extra-env-vars argument
-        quiet_mode = True
+        runner_config = (config.get('ansible_runner', {})
+                         if isinstance(config, dict) else {})
+        quiet_mode = runner_config.get('quiet', True)
         extra_env_vars = parsed_args.extra_env_vars
         if extra_env_vars:
             if "ANSIBLE_STDOUT_CALLBACK" in extra_env_vars.keys():
@@ -178,7 +184,8 @@ class Run(BaseCommand):
                 "Loading extra vars file {}".format(
                     parsed_args.extra_vars_file))
 
-            extra_vars = common.read_extra_vars_file(parsed_args.extra_vars_file)
+            extra_vars = common.read_extra_vars_file(
+                parsed_args.extra_vars_file)
 
         try:
             results = v_actions.run_validations(
@@ -195,8 +202,8 @@ class Run(BaseCommand):
                 python_interpreter=parsed_args.python_interpreter,
                 quiet=quiet_mode,
                 ssh_user=parsed_args.ssh_user,
-                log_path=parsed_args.validation_log_dir
-            )
+                log_path=parsed_args.validation_log_dir,
+                validation_config=config)
         except RuntimeError as e:
             raise RuntimeError(e)
 

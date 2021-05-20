@@ -12,11 +12,15 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
+import ast
+import configparser
 import datetime
 import glob
 import logging
 import os
+import site
 import six
+import sys
 import uuid
 
 from os.path import join
@@ -488,3 +492,94 @@ def get_validations_parameters(validations_data,
             }
 
     return params
+
+
+def _eval_types(value):
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return ast.literal_eval(value)
+    except (SyntaxError, NameError, ValueError):
+        pass
+    try:
+        return str(value)
+    except ValueError:
+        msg = ("Can not eval or type not supported for value: {},").format(
+            value)
+        raise ValueError(msg)
+
+
+def load_config(config):
+    """Load Config File from CLI"""
+    if not os.path.exists(config):
+        msg = ("Config file {} could not be found, ignoring...").format(config)
+        LOG.warning(msg)
+        return {}
+    else:
+        msg = "Validation config file found: {}".format(config)
+        LOG.info(msg)
+    parser = configparser.ConfigParser()
+    parser.optionxform = str
+    parser.read(config)
+    data = {}
+    try:
+        for section in parser.sections():
+            for keys, values in parser.items(section):
+                if section not in data:
+                    # Init section in dictionary
+                    data[section] = {}
+                if section == 'ansible_environment':
+                    # for Ansible environment variables we dont want to cast
+                    # types, each values should a type String.
+                    data[section][keys] = values
+                elif section == 'ansible_runner' and \
+                keys not in constants.ANSIBLE_RUNNER_CONFIG_PARAMETERS:
+                    # for Ansible runner parameters, we select only a set
+                    # of parameters which will be passed as **kwargs in the
+                    # runner, so we have to ignore all the others.
+                    msg = ("Incompatible key found for ansible_runner section {}, "
+                           "ignoring {} ...").format(section, keys)
+                    LOG.warning(msg)
+                    continue
+                else:
+                    data[section][keys] = _eval_types(values)
+    except configparser.NoSectionError:
+        msg = ("Wrong format for the config file {}, "
+               "section {} can not be found, ignoring...").format(config,
+                                                                  section)
+        LOG.warning(msg)
+        return {}
+    return data
+
+
+def find_config_file(config_file_name='validation.cfg'):
+    """ Find the config file for Validation in the following order:
+        * environment validation VALIDATION_CONFIG
+        * current user directory
+        * user home directory
+        * Python prefix path which has been used for the installation
+        * /etc/validation.cfg
+    """
+    def _check_path(path):
+        if os.path.exists(path):
+            if os.path.isfile(path) and os.access(path,
+                                                  os.R_OK):
+                return path
+    # Build a list of potential paths with the correct order:
+    paths = []
+    env_config = os.getenv("VALIDATION_CONFIG", "")
+    if _check_path(env_config):
+        return env_config
+    paths.append(os.getcwd())
+    paths.append(os.path.expanduser('~'))
+    for prefix in site.PREFIXES:
+        paths.append(os.path.join(prefix, 'etc'))
+    paths.append('/etc')
+
+    for path in paths:
+        current_path = os.path.join(path, config_file_name)
+        if _check_path(current_path):
+            return current_path
+    return current_path

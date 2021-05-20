@@ -14,14 +14,13 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
-from cliff.lister import Lister
-
 from validations_libs.validation_actions import ValidationActions
 from validations_libs import constants
+from validations_libs.cli.base import BaseLister
 from validations_libs.cli.parseractions import CommaListAction
 
 
-class ValidationList(Lister):
+class ValidationList(BaseLister):
     """List the Validations Catalog"""
 
     def get_parser(self, parser):
@@ -52,7 +51,8 @@ class ValidationList(Lister):
                             default=constants.ANSIBLE_VALIDATION_DIR,
                             help=("Path where the validation playbooks "
                                   "are located."))
-        return parser
+        # Merge config and CLI args:
+        return self.base.set_argument_parser(parser)
 
     def take_action(self, parsed_args):
         """Take validation action"""
@@ -61,6 +61,7 @@ class ValidationList(Lister):
         category = parsed_args.category
         product = parsed_args.product
         validation_dir = parsed_args.validation_dir
+        group = parsed_args.group
 
         v_actions = ValidationActions(validation_path=validation_dir)
         return (v_actions.list_validations(groups=group,

@@ -38,3 +38,7 @@ VALIDATIONS_LOG_BASEDIR = os.path.expanduser('~/validations')
 VALIDATION_ANSIBLE_ARTIFACT_PATH = os.path.join(
     VALIDATIONS_LOG_BASEDIR,
     'artifacts')
+
+ANSIBLE_RUNNER_CONFIG_PARAMETERS = ['verbosity', 'extravars', 'fact_cache',
+                                    'fact_cache_type', 'inventory', 'playbook',
+                                    'project_dir', 'quiet', 'rotate_artifacts']

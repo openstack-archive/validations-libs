@@ -104,13 +104,14 @@ class TestValidationActions(TestCase):
             'extra_vars': None,
             'limit_hosts': '!cloud1',
             'extra_env_variables': None,
-            'ansible_cfg': None,
+            'ansible_cfg_file': None,
             'gathering_policy': 'explicit',
             'ansible_artifact_path': '/var/log/validations/artifacts/123_fake.yaml_time',
             'log_path': '/var/log/validations',
             'run_async': False,
             'python_interpreter': None,
-            'ssh_user': None
+            'ssh_user': None,
+            'validation_cfg_file': None
         }
 
         playbook = ['fake.yaml']
@@ -164,13 +165,14 @@ class TestValidationActions(TestCase):
             'extra_vars': None,
             'limit_hosts': '!cloud1,cloud,!cloud2',
             'extra_env_variables': None,
-            'ansible_cfg': None,
+            'ansible_cfg_file': None,
             'gathering_policy': 'explicit',
             'ansible_artifact_path': '/var/log/validations/artifacts/123_fake.yaml_time',
             'log_path': '/var/log/validations',
             'run_async': False,
             'python_interpreter': None,
-            'ssh_user': None
+            'ssh_user': None,
+            'validation_cfg_file': None
         }
 
         playbook = ['fake.yaml']

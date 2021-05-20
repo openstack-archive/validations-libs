@@ -267,7 +267,8 @@ class ValidationActions(object):
                         log_path=constants.VALIDATIONS_LOG_BASEDIR,
                         python_interpreter=None, skip_list=None,
                         callback_whitelist=None,
-                        output_callback='validation_stdout', ssh_user=None):
+                        output_callback='validation_stdout', ssh_user=None,
+                        validation_config=None):
         """Run one or multiple validations by name(s), by group(s) or by
         product(s)
 
@@ -336,6 +337,9 @@ class ValidationActions(object):
         :rtype: ``list``
         :param ssh_user: Ssh user for Ansible remote connection
         :type ssh_user: ``string``
+        :param validation_config: A dictionary of configuration for Validation
+                                  loaded from an validation.cfg file.
+        :type validation_config: ``dict``
 
         :Example:
 
@@ -424,13 +428,14 @@ class ValidationActions(object):
                             extra_vars=extra_vars,
                             limit_hosts=_hosts,
                             extra_env_variables=extra_env_vars,
-                            ansible_cfg=ansible_cfg,
+                            ansible_cfg_file=ansible_cfg,
                             gathering_policy='explicit',
                             ansible_artifact_path=artifacts_dir,
                             log_path=log_path,
                             run_async=run_async,
                             python_interpreter=python_interpreter,
-                            ssh_user=ssh_user)
+                            ssh_user=ssh_user,
+                            validation_cfg_file=validation_config)
                 else:
                     _playbook, _rc, _status = run_ansible.run(
                         workdir=artifacts_dir,
@@ -445,13 +450,14 @@ class ValidationActions(object):
                         extra_vars=extra_vars,
                         limit_hosts=_hosts,
                         extra_env_variables=extra_env_vars,
-                        ansible_cfg=ansible_cfg,
+                        ansible_cfg_file=ansible_cfg,
                         gathering_policy='explicit',
                         ansible_artifact_path=artifacts_dir,
                         log_path=log_path,
                         run_async=run_async,
                         python_interpreter=python_interpreter,
-                        ssh_user=ssh_user)
+                        ssh_user=ssh_user,
+                        validation_cfg_file=validation_config)
                 results.append({'playbook': _playbook,
                                 'rc_code': _rc,
                                 'status': _status,

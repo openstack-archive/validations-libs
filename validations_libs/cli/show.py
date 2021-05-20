@@ -14,15 +14,13 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
-from cliff.show import ShowOne
-from cliff.lister import Lister
-
 from validations_libs.validation_actions import ValidationActions
 from validations_libs import constants
 from validations_libs.cli.parseractions import CommaListAction
+from validations_libs.cli.base import BaseShow, BaseLister
 
 
-class Show(ShowOne):
+class Show(BaseShow):
     """Show detailed informations about a Validation"""
 
     def get_parser(self, parser):
@@ -36,7 +34,8 @@ class Show(ShowOne):
                             metavar="<validation>",
                             type=str,
                             help="Show a specific validation.")
-        return parser
+        # Merge config and CLI args:
+        return self.base.set_argument_parser(parser)
 
     def take_action(self, parsed_args):
         """Take validation action"""
@@ -51,7 +50,7 @@ class Show(ShowOne):
             return data.keys(), data.values()
 
 
-class ShowGroup(Lister):
+class ShowGroup(BaseLister):
     """Show detailed informations about Validation Groups"""
 
     def get_parser(self, parser):
@@ -63,7 +62,8 @@ class ShowGroup(Lister):
                             help=("Path where the validation playbooks "
                                   "are located."))
 
-        return parser
+        # Merge config and CLI args:
+        return self.base.set_argument_parser(parser)
 
     def take_action(self, parsed_args):
         """Take validation action"""
@@ -72,7 +72,7 @@ class ShowGroup(Lister):
         return v_actions.group_information(constants.VALIDATION_GROUPS_INFO)
 
 
-class ShowParameter(ShowOne):
+class ShowParameter(BaseShow):
     """Show Validation(s) parameter(s)
 
     Display Validation(s) Parameter(s) which could be overriden during an
@@ -147,11 +147,13 @@ class ShowParameter(ShowOne):
             help=("Print representation of the validation. "
                   "The choices of the output format is json,yaml. ")
         )
-
-        return parser
+        # Merge config and CLI args:
+        return self.base.set_argument_parser(parser)
 
     def take_action(self, parsed_args):
-        v_actions = ValidationActions(parsed_args.validation_dir)
+
+        validation_dir = parsed_args.validation_dir
+        v_actions = ValidationActions(validation_dir)
         params = v_actions.show_validations_parameters(
             validations=parsed_args.validation_name,
             groups=parsed_args.group,

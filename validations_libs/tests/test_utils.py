@@ -389,3 +389,40 @@ class TestUtils(TestCase):
         """Test if failure to create artifacts dir raises 'RuntimeError'.
         """
         self.assertRaises(RuntimeError, utils.create_artifacts_dir, "/foo/bar")
+
+    def test_eval_types_str(self):
+        self.assertIsInstance(utils._eval_types('/usr'), str)
+
+    def test_eval_types_bool(self):
+        self.assertIsInstance(utils._eval_types('True'), bool)
+
+    def test_eval_types_int(self):
+        self.assertIsInstance(utils._eval_types('15'), int)
+
+    def test_eval_types_dict(self):
+        self.assertIsInstance(utils._eval_types('{}'), dict)
+
+    @mock.patch('os.path.exists', return_value=True)
+    @mock.patch('configparser.ConfigParser.sections',
+                return_value=['default'])
+    def test_load_config(self, mock_config, mock_exists):
+        results = utils.load_config('foo.cfg')
+        self.assertEqual(results, {})
+
+    def test_default_load_config(self):
+        results = utils.load_config('validation.cfg')
+        self.assertEqual(results['default'], fakes.DEFAULT_CONFIG)
+
+    def test_ansible_runner_load_config(self):
+        results = utils.load_config('validation.cfg')
+        self.assertEqual(results['ansible_runner'],
+                         fakes.ANSIBLE_RUNNER_CONFIG)
+
+    def test_ansible_environment_config_load_config(self):
+        results = utils.load_config('validation.cfg')
+        self.assertEqual(
+            results['ansible_environment']['ANSIBLE_CALLBACK_WHITELIST'],
+            fakes.ANSIBLE_ENVIRONNMENT_CONFIG['ANSIBLE_CALLBACK_WHITELIST'])
+        self.assertEqual(
+            results['ansible_environment']['ANSIBLE_STDOUT_CALLBACK'],
+            fakes.ANSIBLE_ENVIRONNMENT_CONFIG['ANSIBLE_STDOUT_CALLBACK'])

@@ -20,3 +20,4 @@ Command Options
 ~~~~~~~~~~~~~~~
 
 .. autoprogram-cliff:: validation.cli
+   :application: validation

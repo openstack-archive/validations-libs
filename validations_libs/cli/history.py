@@ -19,8 +19,7 @@ import json
 from validations_libs import constants
 from validations_libs.validation_actions import ValidationActions
 from validations_libs.validation_logs import ValidationLogs
-from validations_libs.cli.base import BaseCommand
-from validations_libs.cli.base import BaseLister
+from validations_libs.cli.base import BaseCommand, BaseLister
 
 
 class ListHistory(BaseLister):
@@ -46,28 +45,27 @@ class ListHistory(BaseLister):
                             default=constants.VALIDATIONS_LOG_BASEDIR,
                             help=("Path where the validation log files "
                                   "is located."))
-        return parser
+        # Merge config and CLI args:
+        return self.base.set_argument_parser(parser)
 
     def take_action(self, parsed_args):
+        validation_log_dir = parsed_args.validation_log_dir
+        history_limit = parsed_args.history_limit
 
-        if parsed_args.history_limit < 1:
-            raise ValueError(
-                (
-                    "Number <n> of the most recent runs must be > 0. "
-                    "You have provided {}").format(
-                        parsed_args.history_limit))
+        if history_limit < 1:
+            msg = ("Number <n> of the most recent runs must be > 0. "
+                   "You have provided {}").format(history_limit)
+            raise ValueError(msg)
         self.app.LOG.info(
-            (
-                "Limiting output to the maximum of "
-                "{} last validations.").format(
-                parsed_args.history_limit))
+            ("Limiting output to the maximum of "
+             "{} last validations.").format(history_limit))
 
         actions = ValidationActions()
 
         return actions.show_history(
             validation_ids=parsed_args.validation,
             log_path=parsed_args.validation_log_dir,
-            history_limit=parsed_args.history_limit)
+            history_limit=history_limit)
 
 
 class GetHistory(BaseCommand):
@@ -88,10 +86,10 @@ class GetHistory(BaseCommand):
                             default=constants.VALIDATIONS_LOG_BASEDIR,
                             help=("Path where the validation log files "
                                   "is located."))
-        return parser
+        # Merge config and CLI args:
+        return self.base.set_argument_parser(parser)
 
     def take_action(self, parsed_args):
-
         self.app.LOG.debug(
             (
                 "Obtaining information about the validation run {}\n"

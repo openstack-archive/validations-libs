@@ -33,6 +33,7 @@ class TestShow(BaseCommand):
     def test_show_validations(self, mock_show):
         arglist = ['foo']
         verifylist = [('validation_name', 'foo')]
+        self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
 

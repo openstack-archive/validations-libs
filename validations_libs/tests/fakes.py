@@ -318,6 +318,23 @@ FAKE_FAILED_RUN = [{'Duration': '0:00:01.761',
 
 FAKE_VALIDATIONS_PATH = '/usr/share/ansible/validation-playbooks'
 
+DEFAULT_CONFIG = {'validation_dir': '/usr/share/ansible/validation-playbooks',
+                  'ansible_base_dir': '/usr/share/ansible/',
+                  'output_log': 'output.log',
+                  'history_limit': 15,
+                  'fit_width': True}
+
+WRONG_HISTORY_CONFIG = {'default': {'history_limit': 0}}
+
+ANSIBLE_RUNNER_CONFIG = {'verbosity': 5,
+                         'fact_cache_type': 'jsonfile',
+                         'quiet': True, 'rotate_artifacts': 256}
+
+ANSIBLE_ENVIRONNMENT_CONFIG = {'ANSIBLE_CALLBACK_WHITELIST':
+                               'validation_stdout,validation_json,'
+                               'profile_tasks',
+                               'ANSIBLE_STDOUT_CALLBACK': 'validation_stdout'}
+
 
 def fake_ansible_runner_run_return(status='successful', rc=0):
     return status, rc

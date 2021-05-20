@@ -12,17 +12,26 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
+import sys
 
 from unittest import TestCase
 
 from validations_libs.cli import app
+from validations_libs.cli import base
+from validations_libs import utils
+
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 
 class BaseCommand(TestCase):
 
     def check_parser(self, cmd, args, verify_args):
-        cmd_parser = cmd.get_parser('check_parser')
         try:
+            cmd_parser = cmd.get_parser('check_parser')
             parsed_args = cmd_parser.parse_args(args)
         except SystemExit:
             raise Exception("Argument parse failed")
@@ -35,7 +44,14 @@ class BaseCommand(TestCase):
 
     def setUp(self):
         super(BaseCommand, self).setUp()
+        self._set_args([])
         self.app = app.ValidationCliApp()
+
+    def _set_args(self, args):
+        sys.argv = sys.argv[:1]
+        sys.argv.extend(args)
+        return args
+
 
 KEYVALUEACTION_VALUES = {
     'valid': 'foo=bar',
