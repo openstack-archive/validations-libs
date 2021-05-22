@@ -32,7 +32,6 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.autodoc',
     'openstackdocstheme',
-    'ansible-autodoc'
 ]
 
 # sphinxcontrib.apidoc options
