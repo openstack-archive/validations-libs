@@ -40,3 +40,11 @@ class BaseCommand(TestCase):
     def setUp(self):
         super(BaseCommand, self).setUp()
         self.app = app.ValidationCliApp()
+
+KEYVALUEACTION_VALUES = {
+    'valid': 'foo=bar',
+    'invalid_noeq': 'foo>bar',
+    'invalid_multieq': 'foo===bar',
+    'invalid_nokey': '=bar',
+    'invalid_multikey': 'foo=bar,fizz=buzz'
+}

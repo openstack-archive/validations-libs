@@ -33,13 +33,19 @@ class KeyValueAction(argparse.Action):
             setattr(namespace, self.dest, {})
 
         # Add value if an assignment else remove it
-        if '=' in values and values.count('=') == 1:
+        if values.count('=') == 1:
             values_list = values.split('=', 1)
             if '' == values_list[0]:
-                msg = ("Property key must be specified: %s")
-                raise argparse.ArgumentTypeError(msg % str(values))
+                msg = (
+                    "Property key must be specified: {}"
+                ).format(str(values))
+
+                raise argparse.ArgumentTypeError(msg)
             else:
                 getattr(namespace, self.dest, {}).update([values_list])
         else:
-            msg = ("Expected 'key=value' type, but got: %s")
-            raise argparse.ArgumentTypeError(msg % str(values))
+            msg = (
+                "Expected 'key=value' type, but got: {}"
+            ).format(str(values))
+
+            raise argparse.ArgumentTypeError(msg)
