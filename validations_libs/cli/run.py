@@ -15,10 +15,7 @@
 #   under the License.
 
 import getpass
-import json
-import os
 import sys
-import yaml
 
 from cliff.command import Command
 
@@ -39,15 +36,14 @@ class Run(Command):
                 "A string that identifies a single node or comma-separated "
                 "list of nodes to be upgraded in parallel in this upgrade "
                 " run invocation. For example: --limit \"compute-0,"
-                " compute-1, compute-5\".")
-        )
+                "compute-1,compute-5\"."))
 
         parser.add_argument(
             '--ssh-user',
             dest='ssh_user',
             default=getpass.getuser(),
-            help=("Ssh User name for the Ansible ssh connection.")
-        )
+            help=("SSH user name for the Ansible ssh connection."))
+
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
                             help=("Path where the validation playbooks "
@@ -78,8 +74,7 @@ class Run(Command):
             default="{}".format(
                 sys.executable if sys.executable else "/usr/bin/python"
             ),
-            help=("Python interpreter for Ansible execution. ")
-        )
+            help=("Python interpreter for Ansible execution. "))
 
         parser.add_argument(
             '--extra-env-vars',
@@ -91,8 +86,7 @@ class Run(Command):
                 "to provide to your Ansible execution "
                 "as KEY=VALUE pairs. Note that if you pass the same "
                 "KEY multiple times, the last given VALUE for that same KEY "
-                "will override the other(s)")
-        )
+                "will override the other(s)"))
 
         extra_vars_group = parser.add_mutually_exclusive_group(required=False)
         extra_vars_group.add_argument(
@@ -104,8 +98,7 @@ class Run(Command):
                 "Add Ansible extra variables to the validation(s) execution "
                 "as KEY=VALUE pair(s). Note that if you pass the same "
                 "KEY multiple times, the last given VALUE for that same KEY "
-                "will override the other(s)")
-            )
+                "will override the other(s)"))
 
         extra_vars_group.add_argument(
             '--extra-vars-file',
@@ -114,9 +107,7 @@ class Run(Command):
             help=(
                 "Add a JSON/YAML file containing extra variable "
                 "to a validation: "
-                "--extra-vars-file /home/stack/vars.[json|yaml]."
-            )
-        )
+                "--extra-vars-file /home/stack/vars.[json|yaml]."))
 
         ex_group = parser.add_mutually_exclusive_group(required=True)
         ex_group.add_argument(
@@ -129,8 +120,7 @@ class Run(Command):
                   "if more than one validation is required "
                   "separate the names with commas: "
                   "--validation check-ftype,512e | "
-                  "--validation 512e")
-        )
+                  "--validation 512e"))
 
         ex_group.add_argument(
             '--group', '-g',
@@ -141,8 +131,7 @@ class Run(Command):
                   "if more than one group is required "
                   "separate the group names with commas: "
                   "--group pre-upgrade,prep | "
-                  "--group openshift-on-openstack")
-        )
+                  "--group openshift-on-openstack"))
 
         return parser
 
@@ -162,14 +151,11 @@ class Run(Command):
 
         extra_vars = parsed_args.extra_vars
         if parsed_args.extra_vars_file:
-            try:
-                with open(parsed_args.extra_vars_file, 'r') as env_file:
-                    extra_vars = yaml.safe_load(env_file.read())
-            except yaml.YAMLError as e:
-                error_msg = (
-                    "The extra_vars file must be properly formatted YAML/JSON."
-                    "Details: %s." % e)
-                raise RuntimeError(error_msg)
+            self.app.LOG.debug(
+                "Loading extra vars file {}".format(
+                    parsed_args.extra_vars_file))
+
+            extra_vars = common.read_extra_vars_file(parsed_args.extra_vars_file)
 
         try:
             results = v_actions.run_validations(
@@ -189,13 +175,13 @@ class Run(Command):
             raise RuntimeError(e)
 
         if results:
-            _rc = any([r for r in results if r['Status'] == 'FAILED'])
+            failed_rc = any([r for r in results if r['Status'] == 'FAILED'])
             if parsed_args.output_log:
                 common.write_output(parsed_args.output_log, results)
             if parsed_args.junitxml:
                 common.write_junitxml(parsed_args.junitxml, results)
             common.print_dict(results)
-            if _rc:
+            if failed_rc:
                 raise RuntimeError("One or more validations have failed.")
         else:
             msg = ("No validation has been run, please check "
