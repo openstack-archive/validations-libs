@@ -46,9 +46,16 @@ class ValidationActions(object):
                                 else constants.ANSIBLE_VALIDATION_DIR)
 
     def list_validations(self, group=None):
-        """Get a list of the available validations
-
+        """Get a list of the validations selected by group
+        membership. With their names and group membership information.
         This is used to print table from python ``Tuple`` with ``PrettyTable``.
+
+        :param group: Group or multiple groups of validations.
+                      Additional groups have to be separated by comma.
+        :type group: `string`
+
+        :return: Column names and a list of the selected validations
+        :rtype: `tuple`
 
         .. code:: text
 
@@ -59,9 +66,6 @@ class ValidationActions(object):
             | validation2   | Name of the validation2  | ['group1', 'group2'] |
             | validation3   | Name of the validation3  | ['group4]            |
             +---------------+--------------------------+----------------------+
-
-        :return: The list of the available validations
-        :rtype: `tuple`
 
         :Example:
 
@@ -77,13 +81,13 @@ class ValidationActions(object):
         validations = v_utils.parse_all_validations_on_disk(
             self.validation_path, group)
 
-        return_values = []
-        column_name = ('ID', 'Name', 'Groups')
+        return_values = [
+            (val.get('id'), val.get('name'), val.get('groups'))
+            for val in validations]
 
-        for val in validations:
-            return_values.append((val.get('id'), val.get('name'),
-                                  val.get('groups')))
-        return (column_name, return_values)
+        column_names = ('ID', 'Name', 'Groups')
+
+        return (column_names, return_values)
 
     def show_validations(self, validation,
                          log_path=constants.VALIDATIONS_LOG_BASEDIR):
