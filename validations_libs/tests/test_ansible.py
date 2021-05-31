@@ -216,8 +216,8 @@ class TestAnsible(TestCase):
         _playbook, _rc, _status = self.run.run('existing.yaml',
                                                'localhost,',
                                                '/tmp')
-        self.assertEquals((_playbook, _rc, _status),
-                          ('existing.yaml', 1, 'failed'))
+        self.assertEqual((_playbook, _rc, _status),
+                         ('existing.yaml', 1, 'failed'))
 
     @mock.patch('six.moves.builtins.open')
     @mock.patch('os.path.exists', return_value=True)
@@ -235,8 +235,8 @@ class TestAnsible(TestCase):
             inventory='localhost,',
             workdir='/tmp'
         )
-        self.assertEquals((_playbook, _rc, _status),
-                          ('existing.yaml', 0, 'successful'))
+        self.assertEqual((_playbook, _rc, _status),
+                         ('existing.yaml', 0, 'successful'))
 
     @mock.patch('six.moves.builtins.open')
     @mock.patch('os.path.exists', return_value=True)
@@ -257,8 +257,8 @@ class TestAnsible(TestCase):
             connection='local',
             gathering_policy='smart'
         )
-        self.assertEquals((_playbook, _rc, _status),
-                          ('existing.yaml', 0, 'successful'))
+        self.assertEqual((_playbook, _rc, _status),
+                         ('existing.yaml', 0, 'successful'))
 
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
@@ -278,8 +278,8 @@ class TestAnsible(TestCase):
             workdir='/tmp',
             connection='local'
         )
-        self.assertEquals((_playbook, _rc, _status),
-                          ('existing.yaml', 0, 'successful'))
+        self.assertEqual((_playbook, _rc, _status),
+                         ('existing.yaml', 0, 'successful'))
 
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
@@ -300,8 +300,8 @@ class TestAnsible(TestCase):
             connection='local',
             run_async=True
         )
-        self.assertEquals((_playbook, _rc, _status),
-                          ('existing.yaml', None, 'unstarted'))
+        self.assertEqual((_playbook, _rc, _status),
+                         ('existing.yaml', None, 'unstarted'))
 
     @mock.patch('six.moves.builtins.open')
     @mock.patch('os.path.exists', return_value=True)

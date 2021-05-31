@@ -33,14 +33,14 @@ class TestValidation(TestCase):
     def test_get_data(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_data
-        self.assertEquals(data, fakes.FAKE_PLAYBOOK[0])
+        self.assertEqual(data, fakes.FAKE_PLAYBOOK[0])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     def test_get_metadata(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_metadata
-        self.assertEquals(data, fakes.FAKE_METADATA)
+        self.assertEqual(data, fakes.FAKE_METADATA)
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
@@ -55,14 +55,14 @@ class TestValidation(TestCase):
     def test_get_vars(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_vars
-        self.assertEquals(data, fakes.FAKE_VARS)
+        self.assertEqual(data, fakes.FAKE_VARS)
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     def test_get_vars_no_vars(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_vars
-        self.assertEquals(data, {})
+        self.assertEqual(data, {})
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
@@ -78,15 +78,15 @@ class TestValidation(TestCase):
         val = Validation('/tmp/foo')
         id = val.id
         get_id = val.get_id
-        self.assertEquals(id, 'foo')
-        self.assertEquals(get_id, 'foo')
+        self.assertEqual(id, 'foo')
+        self.assertEqual(get_id, 'foo')
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     def test_groups(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         groups = val.groups
-        self.assertEquals(groups, ['prep', 'pre-deployment'])
+        self.assertEqual(groups, ['prep', 'pre-deployment'])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
@@ -101,21 +101,21 @@ class TestValidation(TestCase):
     def test_groups_with_no_existing_groups(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         groups = val.groups
-        self.assertEquals(groups, [])
+        self.assertEqual(groups, [])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     def test_get_ordered_dict(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_ordered_dict
-        self.assertEquals(data, fakes.FAKE_PLAYBOOK[0])
+        self.assertEqual(data, fakes.FAKE_PLAYBOOK[0])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     def test_get_formated_data(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_formated_data
-        self.assertEquals(data, fakes.FORMATED_DATA)
+        self.assertEqual(data, fakes.FORMATED_DATA)
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')

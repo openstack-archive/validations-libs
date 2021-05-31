@@ -33,7 +33,7 @@ class TestValidationLogs(TestCase):
     def test_validation_log_file(self, mock_open, mock_json):
         vlogs = ValidationLogs('/tmp/foo')
         content = vlogs._get_content('/tmp/foo/bar.json')
-        self.assertEquals(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
+        self.assertEqual(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
 
     @mock.patch('six.moves.builtins.open')
     def test_log_not_found(self, mock_open):
@@ -53,8 +53,8 @@ class TestValidationLogs(TestCase):
             ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
         vlogs = ValidationLogs('/tmp/foo')
         log = vlogs.get_logfile_by_validation('foo')
-        self.assertEquals(log,
-                          ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
+        self.assertEqual(log,
+                         ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
 
     @mock.patch('glob.glob')
     @mock.patch('json.load',
@@ -66,7 +66,7 @@ class TestValidationLogs(TestCase):
             ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
         vlogs = ValidationLogs('/tmp/foo')
         content = vlogs.get_logfile_content_by_validation('foo')
-        self.assertEquals(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
+        self.assertEqual(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
 
     @mock.patch('glob.glob')
     @mock.patch('json.load')
@@ -76,8 +76,8 @@ class TestValidationLogs(TestCase):
             ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
         vlogs = ValidationLogs('/tmp/foo')
         log = vlogs.get_logfile_by_uuid('123')
-        self.assertEquals(log,
-                          ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
+        self.assertEqual(log,
+                         ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
 
     @mock.patch('glob.glob')
     @mock.patch('json.load',
@@ -89,7 +89,7 @@ class TestValidationLogs(TestCase):
             ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
         vlogs = ValidationLogs('/tmp/foo')
         content = vlogs.get_logfile_content_by_uuid('123')
-        self.assertEquals(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
+        self.assertEqual(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
 
     @mock.patch('glob.glob')
     @mock.patch('json.load')
@@ -100,8 +100,8 @@ class TestValidationLogs(TestCase):
             ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
         vlogs = ValidationLogs('/tmp/foo')
         log = vlogs.get_logfile_by_uuid_validation_id('123', 'foo')
-        self.assertEquals(log,
-                          ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
+        self.assertEqual(log,
+                         ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
 
     @mock.patch('glob.glob')
     @mock.patch('json.load',
@@ -114,7 +114,7 @@ class TestValidationLogs(TestCase):
             ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
         vlogs = ValidationLogs('/tmp/foo')
         content = vlogs.get_logfile_content_by_uuid_validation_id('123', 'foo')
-        self.assertEquals(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
+        self.assertEqual(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
 
     @mock.patch('os.path.isfile')
     @mock.patch('os.listdir')
@@ -128,8 +128,8 @@ class TestValidationLogs(TestCase):
         mock_isfile.return_value = True
         vlogs = ValidationLogs('/tmp/foo')
         log = vlogs.get_all_logfiles()
-        self.assertEquals(log,
-                          ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
+        self.assertEqual(log,
+                         ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
 
     @mock.patch('os.path.isfile')
     @mock.patch('os.listdir')
@@ -144,8 +144,8 @@ class TestValidationLogs(TestCase):
         mock_isfile.return_value = True
         vlogs = ValidationLogs('/tmp/foo')
         log = vlogs.get_all_logfiles(extension='yaml')
-        self.assertEquals(log,
-                          ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.yaml'])
+        self.assertEqual(log,
+                         ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.yaml'])
 
     @mock.patch('os.path.isfile')
     @mock.patch('os.listdir')
@@ -160,8 +160,8 @@ class TestValidationLogs(TestCase):
         mock_isfile.return_value = True
         vlogs = ValidationLogs('/tmp/foo')
         log = vlogs.get_all_logfiles()
-        self.assertEquals(log,
-                          ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
+        self.assertEqual(log,
+                         ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
 
     @mock.patch('os.path.isfile')
     @mock.patch('os.listdir')
@@ -175,7 +175,7 @@ class TestValidationLogs(TestCase):
         mock_isfile.return_value = True
         vlogs = ValidationLogs('/tmp/foo')
         content = vlogs.get_all_logfiles_content()
-        self.assertEquals(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
+        self.assertEqual(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
 
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -184,7 +184,7 @@ class TestValidationLogs(TestCase):
         vlogs = ValidationLogs('/tmp/foo')
         content = vlogs.get_validations_stats(
             fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
-        self.assertEquals(content, fakes.VALIDATIONS_STATS)
+        self.assertEqual(content, fakes.VALIDATIONS_STATS)
 
     @mock.patch('validations_libs.validation_logs.ValidationLogs.'
                 'get_logfile_by_uuid_validation_id')
@@ -196,14 +196,15 @@ class TestValidationLogs(TestCase):
             ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
         vlogs = ValidationLogs('/tmp/foo')
         content = vlogs.get_results(uuid='123', validation_id='foo')
-        self.assertEquals(content, [{'UUID': '123',
-                                     'Validations': 'foo',
-                                     'Status': 'PASSED',
-                                     'Status_by_Host': 'undercloud,PASSED',
-                                     'Host_Group': 'undercloud',
-                                     'Unreachable_Hosts': '',
-                                     'Duration': '0:00:03.753',
-                                     'Validations': 'foo'}])
+        self.assertEqual(content, [{
+            'UUID': '123',
+            'Validations': 'foo',
+            'Status': 'PASSED',
+            'Status_by_Host': 'undercloud,PASSED',
+            'Host_Group': 'undercloud',
+            'Unreachable_Hosts': '',
+            'Duration': '0:00:03.753',
+            'Validations': 'foo'}])
 
     def test_get_results_none(self):
         vlogs = ValidationLogs('/tmp/foo')
@@ -219,19 +220,22 @@ class TestValidationLogs(TestCase):
             ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
         vlogs = ValidationLogs('/tmp/foo')
         content = vlogs.get_results(uuid=['123', '123'], validation_id='foo')
-        self.assertEquals(content, [{'UUID': '123',
-                                     'Validations': 'foo',
-                                     'Status': 'PASSED',
-                                     'Status_by_Host': 'undercloud,PASSED',
-                                     'Host_Group': 'undercloud',
-                                     'Unreachable_Hosts': '',
-                                     'Duration': '0:00:03.753',
-                                     'Validations': 'foo'},
-                                    {'UUID': '123',
-                                     'Validations': 'foo',
-                                     'Status': 'PASSED',
-                                     'Status_by_Host': 'undercloud,PASSED',
-                                     'Host_Group': 'undercloud',
-                                     'Unreachable_Hosts': '',
-                                     'Duration': '0:00:03.753',
-                                     'Validations': 'foo'}])
+        self.assertEqual(content, [
+            {
+                'UUID': '123',
+                'Validations': 'foo',
+                'Status': 'PASSED',
+                'Status_by_Host': 'undercloud,PASSED',
+                'Host_Group': 'undercloud',
+                'Unreachable_Hosts': '',
+                'Duration': '0:00:03.753',
+                'Validations': 'foo'},
+            {
+                'UUID': '123',
+                'Validations': 'foo',
+                'Status': 'PASSED',
+                'Status_by_Host': 'undercloud,PASSED',
+                'Host_Group': 'undercloud',
+                'Unreachable_Hosts': '',
+                'Duration': '0:00:03.753',
+                'Validations': 'foo'}])
