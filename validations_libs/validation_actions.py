@@ -504,19 +504,36 @@ class ValidationActions(object):
                                                     group)
         if download_file:
             params_only = {}
-            with open(download_file, 'w') as f:
-                for val_name in params.keys():
-                    params_only.update(params[val_name].get('parameters'))
+            try:
+                with open(download_file, 'w') as parameters_file:
+                    for val_name in params.keys():
+                        params_only.update(params[val_name].get('parameters'))
 
-                if output_format == 'json':
-                    f.write(json.dumps(params_only,
+                    if output_format == 'json':
+                        parameters_file.write(
+                            json.dumps(params_only,
                                        indent=4,
                                        sort_keys=True))
-                else:
-                    f.write(yaml.safe_dump(params_only,
+                    else:
+                        parameters_file.write(
+                            yaml.safe_dump(params_only,
                                            allow_unicode=True,
                                            default_flow_style=False,
                                            indent=2))
+                self.log.debug(
+                    "Validations parameters file {} saved as {} ".format(
+                        download_file,
+                        output_format))
+
+            except (PermissionError, OSError) as error:
+                self.log.exception(
+                    (
+                        "Exception {} encountered while tring to write "
+                        "a validations parameters file {}"
+                    ).format(
+                        error,
+                        download_file))
+
         return params
 
     def show_history(self, validation_ids=None, extension='json',

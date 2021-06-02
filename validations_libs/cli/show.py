@@ -14,9 +14,6 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
-import json
-import sys
-
 from cliff.show import ShowOne
 
 from validations_libs.validation_actions import ValidationActions
@@ -33,7 +30,7 @@ class Show(ShowOne):
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
                             help=("Path where the validation playbooks "
-                                  "is located."))
+                                  "are located."))
         parser.add_argument('validation_name',
                             metavar="<validation>",
                             type=str,
@@ -62,7 +59,7 @@ class ShowGroup(ShowOne):
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
                             help=("Path where the validation playbooks "
-                                  "is located."))
+                                  "are located."))
         parser.add_argument('--group', '-g',
                             metavar='<group_name>',
                             dest="group",
@@ -88,7 +85,7 @@ class ShowParameter(ShowOne):
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
                             help=("Path where the validation playbooks "
-                                  "is located."))
+                                  "are located."))
 
         ex_group = parser.add_mutually_exclusive_group(required=False)
         ex_group.add_argument(
@@ -145,7 +142,9 @@ class ShowParameter(ShowOne):
             parsed_args.group,
             parsed_args.format_output,
             parsed_args.download)
+
         if parsed_args.download:
-            print("The file {} has been created successfully".format(
+            self.app.LOG.info(
+                "The file {} has been created successfully".format(
                 parsed_args.download))
         return params.keys(), params.values()
