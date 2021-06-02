@@ -66,6 +66,7 @@ def parse_all_validations_on_disk(path, groups=None):
     :type path: `string`
     :param groups: Groups of validations. Could be a `list` or a
                    comma-separated `string` of groups
+    :type groups: `list` or `string`
     :return: A list of validations metadata.
     :rtype: `list`
 
@@ -90,8 +91,8 @@ def parse_all_validations_on_disk(path, groups=None):
 
     validations_abspath = glob.glob("{path}/*.yaml".format(path=path))
 
-    for pl in validations_abspath:
-        val = Validation(pl)
+    for playbook in validations_abspath:
+        val = Validation(playbook)
 
         if not groups or set(groups).intersection(val.groups):
             results.append(val.get_metadata)

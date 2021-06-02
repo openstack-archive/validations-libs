@@ -14,9 +14,6 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
-import json
-import sys
-
 from cliff.lister import Lister
 
 from validations_libs.validation_actions import ValidationActions
@@ -34,7 +31,7 @@ class ValidationList(Lister):
                             metavar='<group>[,<group>,...]',
                             action=CommaListAction,
                             default=[],
-                            help=("Run specific group validations, "
+                            help=("List specific group of validations, "
                                   "if more than one group is required "
                                   "separate the group names with commas: "
                                   "--group pre-upgrade,prep | "
@@ -42,12 +39,12 @@ class ValidationList(Lister):
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
                             help=("Path where the validation playbooks "
-                                  "is located."))
+                                  "are located."))
         return parser
 
     def take_action(self, parsed_args):
         """Take validation action"""
-        # Get parameters:
+
         group = parsed_args.group
         validation_dir = parsed_args.validation_dir
 
