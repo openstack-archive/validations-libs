@@ -18,6 +18,8 @@ import json
 import logging
 from prettytable import PrettyTable
 import re
+import yaml
+
 try:
     from junit_xml import TestSuite, TestCase, to_xml_report_string
     JUNIT_XML_FOUND = True
@@ -98,3 +100,16 @@ def write_junitxml(output_junitxml, results):
     ts = TestSuite("Validations", test_cases)
     with open(output_junitxml, 'w') as output:
         output.write(to_xml_report_string([ts]))
+
+
+def read_extra_vars_file(extra_vars_file):
+    """Read file containing extra variables.
+    """
+    try:
+        with open(extra_vars_file, 'r') as env_file:
+            return yaml.safe_load(env_file.read())
+    except yaml.YAMLError as error:
+        error_msg = (
+            "The extra_vars file must be properly formatted YAML/JSON."
+            "Details: {}.").format(error)
+        raise RuntimeError(error_msg)
