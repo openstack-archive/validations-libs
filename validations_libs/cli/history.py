@@ -15,9 +15,6 @@
 #   under the License.
 
 import json
-import os
-import sys
-from argparse import ArgumentError
 
 from cliff.command import Command
 from cliff.lister import Lister
@@ -94,19 +91,40 @@ class GetHistory(Command):
         return parser
 
     def take_action(self, parsed_args):
+
+        self.app.LOG.debug(
+            (
+                "Obtaining information about the validation run {}\n"
+                "From directory {}"
+            ).format(
+                parsed_args.uuid,
+                parsed_args.validation_log_dir))
+
         vlogs = ValidationLogs(logs_path=parsed_args.validation_log_dir)
-        data = vlogs.get_logfile_content_by_uuid(parsed_args.uuid)
-        if data:
+
+        try:
+            log_files = vlogs.get_logfile_content_by_uuid(parsed_args.uuid)
+        except IOError as io_error:
+            raise RuntimeError(
+                (
+                    "Encountered a following IO error while attempting read a log "
+                    "file linked to UUID: {} .\n"
+                    "{}"
+                ).format(
+                    parsed_args.uuid,
+                    io_error))
+
+        if log_files:
             if parsed_args.full:
-                for d in data:
-                    print(json.dumps(d, indent=4, sort_keys=True))
+                for log_file in log_files:
+                    print(json.dumps(log_file, indent=4, sort_keys=True))
             else:
-                for d in data:
-                    for p in d.get('validation_output', []):
-                        print(json.dumps(p['task'],
+                for log_file in log_files:
+                    for validation_result in log_file.get('validation_output', []):
+                        print(json.dumps(validation_result['task'],
                                          indent=4,
                                          sort_keys=True))
         else:
             raise RuntimeError(
-                "Could not find the log file linked to this UUID: %s" %
-                parsed_args.uuid)
+                "Could not find the log file linked to this UUID: {}".format(
+                parsed_args.uuid))
