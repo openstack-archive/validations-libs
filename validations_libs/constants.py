@@ -20,10 +20,6 @@ ANSIBLE_VALIDATION_DIR = '/usr/share/ansible/validation-playbooks'
 
 VALIDATION_GROUPS_INFO = '%s/groups.yaml' % DEFAULT_VALIDATIONS_BASEDIR
 
-VALIDATION_GROUPS = ['no-op',
-                     'prep',
-                     'post']
-
 VALIDATIONS_LOG_BASEDIR = ('/var/log/validations'
                            if os.path.exists('/var/log/validations') else
                            os.getcwd())
