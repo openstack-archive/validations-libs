@@ -33,7 +33,7 @@ class TestGroup(TestCase):
     def test_get_data(self, mock_open, mock_yaml):
         grp = Group('/tmp/foo')
         data = grp.get_data
-        self.assertEquals(data, fakes.GROUP)
+        self.assertEqual(data, fakes.GROUP)
 
     @mock.patch('yaml.safe_load', return_value=fakes.GROUP)
     @mock.patch('six.moves.builtins.open')
@@ -41,7 +41,7 @@ class TestGroup(TestCase):
         grp = Group('/tmp/foo')
         ret = [('no-op', 'noop-foo'), ('post', 'post-foo'), ('pre', 'pre-foo')]
         data = grp.get_formated_group
-        self.assertEquals(data, ret)
+        self.assertEqual(data, ret)
 
     @mock.patch('yaml.safe_load', return_value=fakes.GROUP)
     @mock.patch('six.moves.builtins.open')
@@ -49,7 +49,7 @@ class TestGroup(TestCase):
         grp = Group('/tmp/foo')
         ret = ['no-op', 'post', 'pre']
         data = grp.get_groups_keys_list
-        self.assertEquals(data, ret)
+        self.assertEqual(data, ret)
 
     @mock.patch('six.moves.builtins.open')
     def test_group_file_not_found(self, mock_open):

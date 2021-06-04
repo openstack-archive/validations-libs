@@ -50,19 +50,19 @@ class TestColors(TestCase):
             color = self.status_color[status]
             colored_output = colors.color_output("fizz", status=status)
             #Checking reset color
-            self.assertEquals(colored_output[-6:], '\033[0;0m')
+            self.assertEqual(colored_output[-6:], '\033[0;0m')
             #Checking output color
-            self.assertEquals(colored_output[:len(color)], color)
+            self.assertEqual(colored_output[:len(color)], color)
             #Checking output string
-            self.assertEquals(colored_output[len(color):][:4], "fizz")
+            self.assertEqual(colored_output[len(color):][:4], "fizz")
 
     def test_format_unknown_status(self):
 
         color = self.status_color['UNKNOWN']
         colored_output = colors.color_output("buzz")
         #Checking reset color
-        self.assertEquals(colored_output[-6:], '\033[0;0m')
+        self.assertEqual(colored_output[-6:], '\033[0;0m')
         #Checking output color
-        self.assertEquals(colored_output[:len(color)], color)
+        self.assertEqual(colored_output[:len(color)], color)
         #Checking output string
-        self.assertEquals(colored_output[len(color):][:4], "buzz")
+        self.assertEqual(colored_output[len(color):][:4], "buzz")

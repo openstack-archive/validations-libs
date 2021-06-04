@@ -33,9 +33,9 @@ class TestValidationLog(TestCase):
     def test_validation_log_file(self, mock_open, mock_json):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
-        self.assertEquals(val.uuid, '123')
-        self.assertEquals(val.validation_id, 'foo')
-        self.assertEquals(val.datetime, '2020-03-30T13:17:22.447857Z')
+        self.assertEqual(val.uuid, '123')
+        self.assertEqual(val.validation_id, 'foo')
+        self.assertEqual(val.datetime, '2020-03-30T13:17:22.447857Z')
 
     @mock.patch('json.load')
     @mock.patch('six.moves.builtins.open')
@@ -60,9 +60,9 @@ class TestValidationLog(TestCase):
     def test_validation_underscore_validation_id(self, mock_open, mock_json):
         val = ValidationLog(
             logfile='/tmp/123_foo_bar_2020-03-30T13:17:22.447857Z.json')
-        self.assertEquals(val.uuid, '123')
-        self.assertEquals(val.validation_id, 'foo_bar')
-        self.assertEquals(val.datetime, '2020-03-30T13:17:22.447857Z')
+        self.assertEqual(val.uuid, '123')
+        self.assertEqual(val.validation_id, 'foo_bar')
+        self.assertEqual(val.datetime, '2020-03-30T13:17:22.447857Z')
 
     @mock.patch('json.load')
     @mock.patch('six.moves.builtins.open')
@@ -83,8 +83,8 @@ class TestValidationLog(TestCase):
             ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
         val = ValidationLog(uuid='123', validation_id='foo', log_path='/tmp')
         path = val.get_log_path()
-        self.assertEquals(path,
-                          '/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        self.assertEqual(path,
+                         '/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
 
     @mock.patch('glob.glob')
     @mock.patch('json.load')
@@ -94,8 +94,8 @@ class TestValidationLog(TestCase):
             ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
         val = ValidationLog(uuid='123', validation_id='foo', log_path='/tmp')
         log_info = val.get_logfile_infos
-        self.assertEquals(log_info,
-                          ['123', 'foo', '2020-03-30T13:17:22.447857Z'])
+        self.assertEqual(log_info,
+                         ['123', 'foo', '2020-03-30T13:17:22.447857Z'])
 
     @mock.patch('glob.glob')
     @mock.patch('json.load')
@@ -105,7 +105,7 @@ class TestValidationLog(TestCase):
             ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
         val = ValidationLog(uuid='123', validation_id='foo', log_path='/tmp')
         datetime = val.get_logfile_datetime
-        self.assertEquals(datetime, '2020-03-30T13:17:22.447857Z')
+        self.assertEqual(datetime, '2020-03-30T13:17:22.447857Z')
 
     @mock.patch('json.load', return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
     @mock.patch('six.moves.builtins.open')
@@ -113,7 +113,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         content = val.get_logfile_content
-        self.assertEquals(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
+        self.assertEqual(content, fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
 
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -122,8 +122,8 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         uuid = val.get_uuid
-        self.assertEquals(uuid, '123')
-        self.assertEquals(val.uuid, '123')
+        self.assertEqual(uuid, '123')
+        self.assertEqual(val.uuid, '123')
 
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -132,8 +132,8 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         validation_id = val.get_validation_id
-        self.assertEquals(validation_id, 'foo')
-        self.assertEquals(val.validation_id, 'foo')
+        self.assertEqual(validation_id, 'foo')
+        self.assertEqual(val.validation_id, 'foo')
 
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -142,7 +142,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         status = val.get_status
-        self.assertEquals(status, 'PASSED')
+        self.assertEqual(status, 'PASSED')
 
     @mock.patch('json.load',
                 return_value=fakes.FAILED_VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -151,7 +151,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         status = val.get_status
-        self.assertEquals(status, 'FAILED')
+        self.assertEqual(status, 'FAILED')
 
     @mock.patch('json.load',
                 return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -160,7 +160,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         status = val.get_status
-        self.assertEquals(status, 'FAILED')
+        self.assertEqual(status, 'FAILED')
 
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -169,7 +169,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         host_group = val.get_host_group
-        self.assertEquals(host_group, 'undercloud')
+        self.assertEqual(host_group, 'undercloud')
 
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -178,7 +178,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         host_group = val.get_hosts_status
-        self.assertEquals(host_group, 'undercloud,PASSED')
+        self.assertEqual(host_group, 'undercloud,PASSED')
 
     @mock.patch('json.load',
                 return_value=fakes.FAILED_VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -187,7 +187,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         host_group = val.get_hosts_status
-        self.assertEquals(host_group, 'undercloud,FAILED')
+        self.assertEqual(host_group, 'undercloud,FAILED')
 
     @mock.patch('json.load',
                 return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -196,7 +196,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         host_group = val.get_hosts_status
-        self.assertEquals(host_group, 'undercloud,UNREACHABLE')
+        self.assertEqual(host_group, 'undercloud,UNREACHABLE')
 
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -205,7 +205,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         unreachable = val.get_unreachable_hosts
-        self.assertEquals(unreachable, '')
+        self.assertEqual(unreachable, '')
 
     @mock.patch('json.load',
                 return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -214,7 +214,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         unreachable = val.get_unreachable_hosts
-        self.assertEquals(unreachable, 'undercloud')
+        self.assertEqual(unreachable, 'undercloud')
 
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -223,7 +223,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         duration = val.get_duration
-        self.assertEquals(duration, '0:00:03.753')
+        self.assertEqual(duration, '0:00:03.753')
 
     @mock.patch('json.load',
                 return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -232,7 +232,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         duration = val.get_duration
-        self.assertEquals(duration, '')
+        self.assertEqual(duration, '')
 
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -241,7 +241,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         start_time = val.get_start_time
-        self.assertEquals(start_time, '2019-11-25T13:40:14.404623Z')
+        self.assertEqual(start_time, '2019-11-25T13:40:14.404623Z')
 
     @mock.patch('json.load',
                 return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])
@@ -250,7 +250,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         start_time = val.get_start_time
-        self.assertEquals(start_time, '')
+        self.assertEqual(start_time, '')
 
     @mock.patch('six.moves.builtins.open')
     def test_log_not_found(self, mock_open):
@@ -286,7 +286,7 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         plays = val.get_plays
-        self.assertEquals(
+        self.assertEqual(
             plays,
             [fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0]['plays'][0]['play']])
 
@@ -297,7 +297,8 @@ class TestValidationLog(TestCase):
         val = ValidationLog(
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         tasks_data = val.get_tasks_data
-        self.assertEquals(
+        self.assertEqual(
             tasks_data,
-            [fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0]
-             ['validation_output'][0]['task']])
+            [
+                fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0]
+                ['validation_output'][0]['task']])
