@@ -6,14 +6,13 @@ Contributing to validations-libs
 
 .. include:: ../../CONTRIBUTING.rst
 
-#tripleo on Freenode IRC Network
---------------------------------
-There is a very active chat channel at irc://freenode.net/#tripleo.
-This is usually the best place to ask questions and find your way around.
-IRC stands for Internet Relay Chat and it is a way to chat online in real
-time. You can ask a question and come back later to read the answer in the
-log files. Logs for the #tripleo IRC channel are stored at
-http://eavesdrop.openstack.org/irclogs/%23tripleo/.
+Communication
+-------------
+* IRC channel ``#validation-framework`` at `Libera`_ (For all subject-matters)
+* IRC channel ``#tripleo`` at `OFTC`_ (OpenStack and TripleO discussions)
+
+.. _Libera: https://libera.chat/
+.. _OFTC: https://www.oftc.net/
 
 Contributor License Agreement
 -----------------------------
