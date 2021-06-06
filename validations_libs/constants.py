@@ -14,7 +14,7 @@
 #
 import os
 
-DEFAULT_VALIDATIONS_BASEDIR = '/usr/share/ansible/'
+DEFAULT_VALIDATIONS_BASEDIR = '/usr/share/ansible'
 
 ANSIBLE_VALIDATION_DIR = '/usr/share/ansible/validation-playbooks'
 
