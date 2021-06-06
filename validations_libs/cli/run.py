@@ -17,15 +17,14 @@
 import getpass
 import sys
 
-from cliff.command import Command
-
 from validations_libs import constants
 from validations_libs.validation_actions import ValidationActions
 from validations_libs.cli import common
+from validations_libs.cli.base import BaseCommand
 from validations_libs.cli.parseractions import CommaListAction, KeyValueAction
 
 
-class Run(Command):
+class Run(BaseCommand):
     """Validation Run client implementation class"""
 
     def get_parser(self, parser):

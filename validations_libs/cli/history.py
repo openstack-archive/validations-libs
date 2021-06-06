@@ -16,15 +16,14 @@
 
 import json
 
-from cliff.command import Command
-from cliff.lister import Lister
-
 from validations_libs import constants
 from validations_libs.validation_actions import ValidationActions
 from validations_libs.validation_logs import ValidationLogs
+from validations_libs.cli.base import BaseCommand
+from validations_libs.cli.base import BaseLister
 
 
-class ListHistory(Lister):
+class ListHistory(BaseLister):
     """Display Validations execution history"""
 
     def get_parser(self, parser):
@@ -70,7 +69,7 @@ class ListHistory(Lister):
             history_limit=parsed_args.history_limit)
 
 
-class GetHistory(Command):
+class GetHistory(BaseCommand):
     """Display details about a Validation execution"""
 
     def get_parser(self, parser):
