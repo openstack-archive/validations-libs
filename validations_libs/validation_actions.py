@@ -228,7 +228,8 @@ class ValidationActions(object):
                         extra_env_vars=None, ansible_cfg=None, quiet=True,
                         workdir=None, limit_hosts=None, run_async=False,
                         base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
-                        log_path=None, python_interpreter=None,
+                        log_path=constants.VALIDATIONS_LOG_BASEDIR,
+                        python_interpreter=None,
                         skip_list=None,
                         callback_whitelist=None,
                         output_callback='validation_stdout',
@@ -268,6 +269,8 @@ class ValidationActions(object):
                          ``constants.DEFAULT_VALIDATIONS_BASEDIR``)
         :type base_dir: ``string``
         :param log_path: The absolute path of the validations logs directory
+                         (Defaults to
+                         ``constants.VALIDATIONS_LOG_BASEDIR``)
         :type log_path: ``string``
         :param python_interpreter: Path to the Python interpreter to be
                                    used for module execution on remote targets,
@@ -353,6 +356,7 @@ class ValidationActions(object):
         else:
             raise RuntimeError("No validations found")
 
+        log_path = v_utils.create_log_dir(log_path)
         self.log.debug('Running the validations with Ansible')
         results = []
         for playbook in playbooks:
@@ -363,7 +367,7 @@ class ValidationActions(object):
                                                 limit_hosts)
             if _play:
                 validation_uuid, artifacts_dir = v_utils.create_artifacts_dir(
-                    dir_path=log_path, prefix=os.path.basename(playbook))
+                    log_path=log_path, prefix=os.path.basename(playbook))
                 run_ansible = v_ansible(validation_uuid)
                 _playbook, _rc, _status = run_ansible.run(
                     workdir=artifacts_dir,
@@ -398,7 +402,7 @@ class ValidationActions(object):
             return results
         # Return log results
         uuid = [id['UUID'] for id in results]
-        vlog = ValidationLogs()
+        vlog = ValidationLogs(log_path)
         return vlog.get_results(uuid)
 
     def group_information(self, groups):

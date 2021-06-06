@@ -20,9 +20,7 @@ ANSIBLE_VALIDATION_DIR = '/usr/share/ansible/validation-playbooks'
 
 VALIDATION_GROUPS_INFO = '%s/groups.yaml' % DEFAULT_VALIDATIONS_BASEDIR
 
-VALIDATIONS_LOG_BASEDIR = ('/var/log/validations'
-                           if os.path.exists('/var/log/validations') else
-                           os.getcwd())
+VALIDATIONS_LOG_BASEDIR = os.path.join(os.environ.get('HOME'), 'validations')
 
 VALIDATION_ANSIBLE_ARTIFACT_PATH = '{}/artifacts/'.format(
     VALIDATIONS_LOG_BASEDIR)
