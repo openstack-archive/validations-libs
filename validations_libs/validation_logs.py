@@ -328,6 +328,11 @@ class ValidationLogs(object):
         """
         log_files = glob.glob("{}/*_{}_*".format(self.logs_path,
                                                  validation_id))
+        LOG.debug(
+            "Getting log file for validation {} from {}.".format(
+                validation_id,
+                log_files)
+        )
         return [self._get_content(log) for log in log_files]
 
     def get_logfile_by_uuid(self, uuid):
@@ -417,12 +422,25 @@ class ValidationLogs(object):
         """
         if not isinstance(logs, list):
             logs = [logs]
+
+            LOG.debug(
+                ("`get_validations_stats` received `logs` argument "
+                 "of type {} but it expects a list. "
+                 "Attempting to resolve.").format(
+                    type(logs))
+            )
+
         # Get validation stats
         total_number = len(logs)
         failed_number = 0
         passed_number = 0
         last_execution = None
         dates = []
+
+        LOG.debug(
+            "Retreiving {} validation stats.".format(total_number)
+        )
+
         for log in logs:
             if log.get('validation_output'):
                 failed_number += 1
@@ -439,11 +457,15 @@ class ValidationLogs(object):
         if dates:
             last_execution = time.strftime('%Y-%m-%d %H:%M:%S', max(dates))
 
+        execution_stats = "Total: {}, Passed: {}, Failed: {}".format(
+            total_number,
+            passed_number,
+            failed_number)
+
+        LOG.debug(execution_stats)
+
         return {"Last execution date": last_execution,
-                "Number of execution": "Total: {}, Passed: {}, "
-                                       "Failed: {}".format(total_number,
-                                                           passed_number,
-                                                           failed_number)}
+                "Number of execution": execution_stats}
 
     def get_results(self, uuid, validation_id=None):
         """Return a list of validation results by uuid
