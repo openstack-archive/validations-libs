@@ -17,9 +17,10 @@ try:
     from unittest import mock
 except ImportError:
     import mock
+
 from unittest import TestCase
 
-from validations_libs import utils
+from validations_libs import utils, constants
 from validations_libs.tests import fakes
 
 
@@ -211,3 +212,99 @@ class TestUtils(TestCase):
         self.assertRaises(TypeError,
                           utils.convert_data,
                           data=data_dict)
+
+    @mock.patch('validations_libs.utils.LOG', autospec=True)
+    @mock.patch('validations_libs.utils.os.makedirs')
+    @mock.patch(
+        'validations_libs.utils.os.access',
+        side_effect=[False, True])
+    @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
+    def test_create_log_dir_access_issue(self, mock_exists,
+                                         mock_access, mock_mkdirs,
+                                         mock_log):
+        log_path = utils.create_log_dir("/foo/bar")
+        self.assertEqual(log_path, constants.VALIDATIONS_LOG_BASEDIR)
+
+    @mock.patch('validations_libs.utils.LOG', autospec=True)
+    @mock.patch(
+        'validations_libs.utils.os.makedirs',
+        side_effect=PermissionError)
+    @mock.patch(
+        'validations_libs.utils.os.access',
+        autospec=True,
+        return_value=True)
+    @mock.patch(
+        'validations_libs.utils.os.path.exists',
+        autospec=True,
+        side_effect=fakes._accept_default_log_path)
+    def test_create_log_dir_existence_issue(self, mock_exists,
+                                            mock_access, mock_mkdirs,
+                                            mock_log):
+        """Tests behavior after encountering non-existence
+        of the the selected log folder, failed attempt to create it
+        (raising PermissionError), and finally resorting to a fallback.
+        """
+        log_path = utils.create_log_dir("/foo/bar")
+        self.assertEqual(log_path, constants.VALIDATIONS_LOG_BASEDIR)
+
+    @mock.patch('validations_libs.utils.LOG', autospec=True)
+    @mock.patch('validations_libs.utils.os.makedirs')
+    @mock.patch('validations_libs.utils.os.access', return_value=True)
+    @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
+    def test_create_log_dir_success(self, mock_exists,
+                                    mock_access, mock_mkdirs,
+                                    mock_log):
+        """Test successful log dir retrieval on the first try.
+        """
+        log_path = utils.create_log_dir("/foo/bar")
+        self.assertEqual(log_path, "/foo/bar")
+
+    @mock.patch('validations_libs.utils.LOG', autospec=True)
+    @mock.patch(
+        'validations_libs.utils.os.makedirs',
+        side_effect=PermissionError)
+    @mock.patch('validations_libs.utils.os.access', return_value=False)
+    @mock.patch('validations_libs.utils.os.path.exists', return_value=False)
+    def test_create_log_dir_runtime_err(self, mock_exists,
+                                        mock_access, mock_mkdirs,
+                                        mock_log):
+        """Test if failure of the fallback raises 'RuntimeError'
+        """
+        self.assertRaises(RuntimeError, utils.create_log_dir, "/foo/bar")
+
+    @mock.patch('validations_libs.utils.LOG', autospec=True)
+    @mock.patch(
+        'validations_libs.utils.os.makedirs',
+        side_effect=PermissionError)
+    @mock.patch('validations_libs.utils.os.access', return_value=False)
+    @mock.patch(
+        'validations_libs.utils.os.path.exists',
+        side_effect=fakes._accept_default_log_path)
+    def test_create_log_dir_default_perms_runtime_err(
+                                        self, mock_exists,
+                                        mock_access, mock_mkdirs,
+                                        mock_log):
+        """Test if the inaccessible fallback raises 'RuntimeError'
+        """
+        self.assertRaises(RuntimeError, utils.create_log_dir, "/foo/bar")
+
+    @mock.patch('validations_libs.utils.LOG', autospec=True)
+    @mock.patch('validations_libs.utils.os.makedirs')
+    @mock.patch('validations_libs.utils.os.access', return_value=False)
+    @mock.patch('validations_libs.utils.os.path.exists', return_value=False)
+    def test_create_log_dir_mkdirs(self, mock_exists,
+                                   mock_access, mock_mkdirs,
+                                   mock_log):
+        """Test successful creation of the directory if the first access fails.
+        """
+
+        log_path = utils.create_log_dir("/foo/bar")
+        self.assertEqual(log_path, "/foo/bar")
+
+    @mock.patch(
+        'validations_libs.utils.os.makedirs',
+        side_effect=PermissionError)
+    def test_create_artifacts_dir_runtime_err(self, mock_mkdirs):
+        """Test if failure to create artifacts dir raises 'RuntimeError'.
+        """
+        self.assertRaises(RuntimeError, utils.create_artifacts_dir, "/foo/bar")

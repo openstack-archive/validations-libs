@@ -13,6 +13,8 @@
 #   under the License.
 #
 
+from validations_libs import constants
+
 VALIDATIONS_LIST = [{
     'description': 'My Validation One Description',
     'groups': ['prep', 'pre-deployment'],
@@ -300,3 +302,9 @@ FAKE_VALIDATIONS_PATH = '/usr/share/ansible/validation-playbooks'
 
 def fake_ansible_runner_run_return(status='successful', rc=0):
     return status, rc
+
+
+def _accept_default_log_path(path, *args):
+    if path == constants.VALIDATIONS_LOG_BASEDIR:
+        return True
+    return False

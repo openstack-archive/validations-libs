@@ -33,56 +33,97 @@ def current_time():
 
 
 def create_log_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR):
-    """Create default validations log dir.
+    """Check for presence of the selected validations log dir.
+    Create the directory if needed, and use fallback if that
+    proves too tall an order.
+
     Log the failure if encountering OSError or PermissionError.
-    :raises: RuntimeError
+
+    :param log_path: path of the selected log directory
+    :type log_path: `string`
+    :return: valid path to the log directory
+    :rtype: `string`
+
+    :raises: RuntimeError if even the fallback proves unavailable.
     """
     try:
         if os.path.exists(log_path):
             if os.access(log_path, os.W_OK):
                 return log_path
             else:
-                create_log_dir(constants.VALIDATIONS_LOG_BASEDIR)
+                LOG.error(
+                    (
+                        "Selected log directory '{log_path}' is inaccessible. "
+                        "Please check the access rights for: '{log_path}'"
+                    ).format(
+                        log_path=log_path))
+                if log_path != constants.VALIDATIONS_LOG_BASEDIR:
+                    LOG.warning(
+                    (
+                        "Resorting to the preset '{default_log_path}'"
+                    ).format(
+                        default_log_path=constants.VALIDATIONS_LOG_BASEDIR))
+
+                    return create_log_dir()
+                else:
+                    raise RuntimeError()
         else:
+            LOG.warning(
+                (
+                    "Selected log directory '{log_path}' does not exist. "
+                    "Attempting to create it."
+                ).format(
+                    log_path=log_path))
+
             os.makedirs(log_path)
             return log_path
-    except (OSError, PermissionError):
+    except (OSError, PermissionError) as error:
         LOG.error(
             (
-                "Error while creating the log directory. "
-                "Please check the access rights for: '{}'"
-            ).format(log_path)
-        )
+                "Encountered an {error} while creating the log directory. "
+                "Please check the access rights for: '{log_path}'"
+            ).format(
+                error=error,
+                log_path=log_path))
+
         # Fallback in default path if log_path != from constants path
         if log_path != constants.VALIDATIONS_LOG_BASEDIR:
-            create_log_dir(constants.VALIDATIONS_LOG_BASEDIR)
+            LOG.debug(
+                (
+                    "Resorting to the preset '{default_log_path}'."
+                ).format(
+                    default_log_path=constants.VALIDATIONS_LOG_BASEDIR))
+
+            return create_log_dir()
         raise RuntimeError()
 
 
 def create_artifacts_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR,
-                         prefix=None):
-    """Create Ansible artifacts directory
+                         prefix=''):
+    """Create Ansible artifacts directory for the validation run
     :param log_path: Directory asbolute path
     :type log_path: `string`
     :param prefix: Playbook name
     :type prefix: `string`
-    :return: The UUID of the validation and the absolute path of the log file
+    :return: UUID of the validation run, absolute path of the validation artifacts directory
     :rtype: `string`, `string`
     """
     artifact_dir = os.path.join(log_path, 'artifacts')
     validation_uuid = str(uuid.uuid4())
-    log_dir = "{}/{}_{}_{}".format(artifact_dir, validation_uuid,
-                                   (prefix if prefix else ''), current_time())
+    validation_artifacts_dir = "{}/{}_{}_{}".format(
+        artifact_dir,
+        validation_uuid,
+        prefix,
+        current_time())
     try:
-        os.makedirs(log_dir)
-        return validation_uuid, log_dir
+        os.makedirs(validation_artifacts_dir)
+        return validation_uuid, validation_artifacts_dir
     except (OSError, PermissionError):
         LOG.exception(
             (
-                "Error while creating Ansible artifacts directory. "
-                "Please check the access rights for: '{}'"
-            ).format(log_dir)
-        )
+                "Error while creating Ansible artifacts log file. "
+                "Please check the access rights for '{}'"
+            ).format(validation_artifacts_dir))
 
         raise RuntimeError()
 

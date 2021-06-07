@@ -45,9 +45,11 @@ class TestValidationActions(TestCase):
                                               'My Validation Two Name',
                                              ['prep', 'pre-introspection'])]))
 
+    @mock.patch('validations_libs.utils.os.access', return_value=True)
+    @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
     @mock.patch('validations_libs.utils.get_validations_playbook',
                 return_value=['/tmp/foo/fake.yaml'])
-    def test_validation_skip_validation(self, mock_validation_play):
+    def test_validation_skip_validation(self, mock_validation_play, mock_exists, mock_access):
 
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
@@ -184,13 +186,17 @@ class TestValidationActions(TestCase):
 
         mock_ansible_run.assert_called_with(**run_called_args)
 
+    @mock.patch('validations_libs.utils.os.makedirs')
+    @mock.patch('validations_libs.utils.os.access', return_value=True)
+    @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
     @mock.patch('validations_libs.validation_actions.ValidationLogs.get_results',
                 side_effect=fakes.FAKE_SUCCESS_RUN)
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
     @mock.patch('validations_libs.ansible.Ansible.run')
     def test_validation_run_success(self, mock_ansible_run,
                                     mock_validation_dir,
-                                    mock_results):
+                                    mock_results, mock_exists, mock_access,
+                                    mock_makedirs):
 
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
@@ -222,11 +228,16 @@ class TestValidationActions(TestCase):
                           validations_dir='/tmp/foo'
                           )
 
+    @mock.patch('validations_libs.utils.os.makedirs')
+    @mock.patch('validations_libs.utils.os.access', return_value=True)
+    @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
     @mock.patch('validations_libs.validation_logs.ValidationLogs.get_results')
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
     @mock.patch('validations_libs.ansible.Ansible.run')
     def test_validation_run_failed(self, mock_ansible_run,
-                                   mock_validation_dir, mock_results):
+                                   mock_validation_dir, mock_results,
+                                   mock_exists, mock_access,
+                                   mock_makedirs):
 
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
