@@ -66,7 +66,7 @@ def create_artifacts_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR,
     :type log_path: `string`
     :param prefix: Playbook name
     :type prefix: `string`
-    :return: The UUID of the validation and the absolute Path of the log file
+    :return: The UUID of the validation and the absolute path of the log file
     :rtype: `string`, `string`
     """
     artifact_dir = os.path.join(log_path, 'artifacts')
@@ -79,10 +79,12 @@ def create_artifacts_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR,
     except (OSError, PermissionError):
         LOG.exception(
             (
-                "Error while creating Ansible artifacts log file."
-                "Please check the access rights for {}"
+                "Error while creating Ansible artifacts directory. "
+                "Please check the access rights for: '{}'"
             ).format(log_dir)
         )
+
+        raise RuntimeError()
 
 
 def parse_all_validations_on_disk(path, groups=None):
