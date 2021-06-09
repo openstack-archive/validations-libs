@@ -18,6 +18,9 @@ import json
 import logging
 from prettytable import PrettyTable
 import re
+import sys
+import time
+import threading
 import yaml
 
 try:
@@ -110,3 +113,38 @@ def read_extra_vars_file(extra_vars_file):
             "The extra_vars file must be properly formatted YAML/JSON."
             "Details: {}.").format(error)
         raise RuntimeError(error_msg)
+
+
+class Spinner(object):
+    """Animated spinner to indicate activity during processing"""
+    busy = False
+    delay = 0.1
+
+    @staticmethod
+    def spinning_cursor():
+        while 1:
+            for cursor in '|/-\\':
+                yield cursor
+
+    def __init__(self, delay=None):
+        self.spinner_generator = self.spinning_cursor()
+        if delay and float(delay):
+            self.delay = delay
+
+    def spinner_task(self):
+        while self.busy:
+            sys.stdout.write(next(self.spinner_generator))
+            sys.stdout.flush()
+            time.sleep(self.delay)
+            sys.stdout.write('\b')
+            sys.stdout.flush()
+
+    def __enter__(self):
+        self.busy = True
+        threading.Thread(target=self.spinner_task).start()
+
+    def __exit__(self, exception, value, tb):
+        self.busy = False
+        time.sleep(self.delay)
+        if exception is not None:
+            return False

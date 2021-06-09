@@ -14,11 +14,13 @@
 #
 import logging
 import os
+import sys
 import json
 import yaml
 
 from validations_libs.ansible import Ansible as v_ansible
 from validations_libs.group import Group
+from validations_libs.cli.common import Spinner
 from validations_libs.validation_logs import ValidationLogs, ValidationLog
 from validations_libs import constants
 from validations_libs import utils as v_utils
@@ -374,26 +376,49 @@ class ValidationActions(object):
                 validation_uuid, artifacts_dir = v_utils.create_artifacts_dir(
                     log_path=log_path, prefix=os.path.basename(playbook))
                 run_ansible = v_ansible(validation_uuid)
-                _playbook, _rc, _status = run_ansible.run(
-                    workdir=artifacts_dir,
-                    playbook=playbook,
-                    base_dir=base_dir,
-                    playbook_dir=validations_dir,
-                    parallel_run=True,
-                    inventory=inventory,
-                    output_callback=output_callback,
-                    callback_whitelist=callback_whitelist,
-                    quiet=quiet,
-                    extra_vars=extra_vars,
-                    limit_hosts=_hosts,
-                    extra_env_variables=extra_env_vars,
-                    ansible_cfg=ansible_cfg,
-                    gathering_policy='explicit',
-                    ansible_artifact_path=artifacts_dir,
-                    log_path=log_path,
-                    run_async=run_async,
-                    python_interpreter=python_interpreter,
-                    ssh_user=ssh_user)
+                if sys.__stdin__.isatty():
+                    with Spinner():
+                        _playbook, _rc, _status = run_ansible.run(
+                            workdir=artifacts_dir,
+                            playbook=playbook,
+                            base_dir=base_dir,
+                            playbook_dir=validations_dir,
+                            parallel_run=True,
+                            inventory=inventory,
+                            output_callback=output_callback,
+                            callback_whitelist=callback_whitelist,
+                            quiet=quiet,
+                            extra_vars=extra_vars,
+                            limit_hosts=_hosts,
+                            extra_env_variables=extra_env_vars,
+                            ansible_cfg=ansible_cfg,
+                            gathering_policy='explicit',
+                            ansible_artifact_path=artifacts_dir,
+                            log_path=log_path,
+                            run_async=run_async,
+                            python_interpreter=python_interpreter,
+                            ssh_user=ssh_user)
+                else:
+                    _playbook, _rc, _status = run_ansible.run(
+                        workdir=artifacts_dir,
+                        playbook=playbook,
+                        base_dir=base_dir,
+                        playbook_dir=validations_dir,
+                        parallel_run=True,
+                        inventory=inventory,
+                        output_callback=output_callback,
+                        callback_whitelist=callback_whitelist,
+                        quiet=quiet,
+                        extra_vars=extra_vars,
+                        limit_hosts=_hosts,
+                        extra_env_variables=extra_env_vars,
+                        ansible_cfg=ansible_cfg,
+                        gathering_policy='explicit',
+                        ansible_artifact_path=artifacts_dir,
+                        log_path=log_path,
+                        run_async=run_async,
+                        python_interpreter=python_interpreter,
+                        ssh_user=ssh_user)
                 results.append({'playbook': _playbook,
                                 'rc_code': _rc,
                                 'status': _status,
