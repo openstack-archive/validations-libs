@@ -42,10 +42,10 @@ class ValidationActions(object):
 
     """
 
-    def __init__(self, validation_path=None):
+    def __init__(self, validation_path=constants.ANSIBLE_VALIDATION_DIR):
+
         self.log = logging.getLogger(__name__ + ".ValidationActions")
-        self.validation_path = (validation_path if validation_path
-                                else constants.ANSIBLE_VALIDATION_DIR)
+        self.validation_path = validation_path
 
     def list_validations(self,
                          groups=None,
