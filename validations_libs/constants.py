@@ -16,7 +16,9 @@ import os
 
 DEFAULT_VALIDATIONS_BASEDIR = '/usr/share/ansible'
 
-ANSIBLE_VALIDATION_DIR = '/usr/share/ansible/validation-playbooks'
+ANSIBLE_VALIDATION_DIR = os.path.join(
+    DEFAULT_VALIDATIONS_BASEDIR,
+    'validation-playbooks')
 
 VALIDATION_GROUPS_INFO = os.path.join(
     DEFAULT_VALIDATIONS_BASEDIR,
