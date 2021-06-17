@@ -26,11 +26,8 @@ try:
 except ImportError:
     JUNIT_XML_FOUND = False
 
-from validations_libs import constants
 from validations_libs import utils as v_utils
 from validations_libs.cli import colors
-
-GROUP_FILE = constants.VALIDATION_GROUPS_INFO
 
 
 def print_dict(data):
