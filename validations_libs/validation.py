@@ -265,7 +265,7 @@ class Validation(object):
 
         >>> pl = '/foo/bar/val.yaml'
         >>> val = Validation(pl)
-        >>> print(val.get_data)
+        >>> print(val.get_formated_data)
         {'Description': 'description of val',
          'Groups': ['group1', 'group2'],
          'ID': 'val',
@@ -273,15 +273,11 @@ class Validation(object):
         """
         data = {}
         metadata = self.get_metadata
-        if metadata:
-            for key in metadata.keys():
-                if key in map(str.lower, self._col_keys):
-                    for k in self._col_keys:
-                        if key == k.lower():
-                            output_key = k
-                    data[output_key] = self.get_metadata.get(key)
-                else:
-                    # Get all other values:
-                    data[key] = self.get_metadata.get(key)
+
+        for key in metadata:
+            if key == 'id':
+                data[key.upper()] = metadata.get(key)
+            else:
+                data[key.capitalize()] = metadata.get(key)
 
         return data
