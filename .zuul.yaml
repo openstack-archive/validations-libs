@@ -28,6 +28,18 @@
       - ^requirements.txt$
 
 - job:
+    name: validations-libs-coverchange
+    nodeset: centos-8
+    parent: base
+    run: playbooks/coverchange.yaml
+    timeout: 1600
+    voting: false
+    required-projects:
+      - openstack/validations-libs
+    files:
+     - ^validations_libs/.*
+
+- job:
     name: tripleo-ci-centos-8-standalone-validation-libs
     parent: tripleo-ci-centos-8-standalone
     vars:
@@ -42,6 +54,7 @@
     check:
       jobs:
         - validations-libs-reqcheck
+        - validations-libs-coverchange
         - openstack-tox-linters
         - openstack-tox-cover
         - openstack-tox-py36
