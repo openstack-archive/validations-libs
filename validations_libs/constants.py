@@ -32,7 +32,8 @@ VALIDATION_GROUPS_INFO = os.path.join(
     DEFAULT_VALIDATIONS_BASEDIR,
     'groups.yaml')
 
-VALIDATIONS_LOG_BASEDIR = os.path.join(os.environ.get('HOME'), 'validations')
+# NOTE(fressi) The HOME folder environment variable may be undefined.
+VALIDATIONS_LOG_BASEDIR = os.path.expanduser('~/validations')
 
 VALIDATION_ANSIBLE_ARTIFACT_PATH = os.path.join(
     VALIDATIONS_LOG_BASEDIR,
