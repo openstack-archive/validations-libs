@@ -12,6 +12,14 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
+"""Default paths for validation playbook directory,
+validation groups definitions and validation logs
+are defined here.
+
+These paths are used in an absence of user defined overrides,
+or as a fallback, when custom locations fail.
+"""
+
 import os
 
 DEFAULT_VALIDATIONS_BASEDIR = '/usr/share/ansible'
