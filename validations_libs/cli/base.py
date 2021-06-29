@@ -19,6 +19,12 @@ from cliff import _argparse
 from cliff.command import Command
 from cliff.lister import Lister
 
+# Handle backward compatibility for Cliff 2.16.0 in stable/train:
+if hasattr(_argparse, 'SmartHelpFormatter'):
+    from cliff._argparse import SmartHelpFormatter
+else:
+    from cliff.command import _SmartHelpFormatter as SmartHelpFormatter
+
 
 class BaseCommand(Command):
     """Base Command client implementation class"""
@@ -29,7 +35,7 @@ class BaseCommand(Command):
             description=self.get_description(),
             epilog=self.get_epilog(),
             prog=prog_name,
-            formatter_class=_argparse.SmartHelpFormatter,
+            formatter_class=SmartHelpFormatter,
             conflict_handler='resolve',
         )
         for hook in self._hooks:
@@ -47,7 +53,7 @@ class BaseLister(Lister):
             description=self.get_description(),
             epilog=self.get_epilog(),
             prog=prog_name,
-            formatter_class=_argparse.SmartHelpFormatter,
+            formatter_class=SmartHelpFormatter,
             conflict_handler='resolve',
         )
 
