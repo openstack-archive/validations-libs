@@ -15,6 +15,7 @@
 #   under the License.
 
 from cliff.show import ShowOne
+from cliff.lister import Lister
 
 from validations_libs.validation_actions import ValidationActions
 from validations_libs import constants
@@ -50,30 +51,25 @@ class Show(ShowOne):
             return data.keys(), data.values()
 
 
-class ShowGroup(ShowOne):
+class ShowGroup(Lister):
     """Validation Show group client implementation class"""
 
     def get_parser(self, parser):
         """Argument parser for validation show group"""
         parser = super(ShowGroup, self).get_parser(parser)
+
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
                             help=("Path where the validation playbooks "
                                   "are located."))
-        parser.add_argument('--group', '-g',
-                            metavar='<group_name>',
-                            dest="group",
-                            help=("Show a specific group."))
+
         return parser
 
     def take_action(self, parsed_args):
         """Take validation action"""
-        # Get parameters:
-        validation_dir = parsed_args.validation_dir
-        group = parsed_args.group
 
-        v_actions = ValidationActions(validation_path=validation_dir)
-        return v_actions.group_information(group)
+        v_actions = ValidationActions(parsed_args.validation_dir)
+        return v_actions.group_information(constants.VALIDATION_GROUPS_INFO)
 
 
 class ShowParameter(ShowOne):

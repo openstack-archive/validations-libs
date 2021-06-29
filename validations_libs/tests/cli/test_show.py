@@ -48,21 +48,20 @@ class TestShowGroup(BaseCommand):
     @mock.patch('yaml.safe_load', return_value=fakes.GROUP)
     @mock.patch('six.moves.builtins.open')
     def test_show_validations_group_info(self, mock_open, mock_yaml, mock_actions):
-        arglist = ['--group', 'group.yaml']
-        verifylist = [('group', 'group.yaml')]
+        arglist = []
 
         mock_info = mock.MagicMock()
         mock_info.group_information = mock.MagicMock(return_value='foo')
         mock_actions.return_value = mock_info
 
-        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        parsed_args = self.check_parser(self.cmd, arglist, [])
 
         group_info = self.cmd.take_action(parsed_args)
 
         mock_actions.assert_called_once_with(
             validation_path=fakes.FAKE_VALIDATIONS_PATH)
 
-        mock_info.group_information.assert_called_once_with('group.yaml')
+        mock_info.group_information.assert_called_once()
 
         self.assertEqual('foo', group_info)
 
