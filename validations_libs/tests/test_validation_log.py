@@ -258,7 +258,14 @@ class TestValidationLog(TestCase):
         self.assertRaises(
             IOError,
             ValidationLog,
-            logfile='non-existing.yaml'
+            logfile='/tmp/fakelogs/non-existing.yaml'
+        )
+
+    def test_log_not_abs_path(self):
+        self.assertRaises(
+            ValueError,
+            ValidationLog,
+            logfile='fake.yaml'
         )
 
     @mock.patch('json.load')
