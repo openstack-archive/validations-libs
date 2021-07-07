@@ -13,7 +13,7 @@
 #   under the License.
 #
 import sys
-
+import copy
 try:
     from unittest import mock
 except ImportError:
@@ -43,7 +43,7 @@ class TestRun(BaseCommand):
 
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=fakes.FAKE_SUCCESS_RUN)
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
     def test_run_command_success(self, mock_run):
         arglist = ['--validation', 'foo']
         verifylist = [('validation_name', ['foo'])]
@@ -64,7 +64,7 @@ class TestRun(BaseCommand):
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=fakes.FAKE_SUCCESS_RUN)
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
     def test_run_command_extra_vars(self, mock_run, mock_user, mock_print,
                                     mock_log_dir):
         run_called_args = {
@@ -96,7 +96,7 @@ class TestRun(BaseCommand):
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=fakes.FAKE_SUCCESS_RUN)
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
     def test_run_command_extra_vars_twice(self, mock_run, mock_user,
                                           mock_print, mock_log_dir):
         run_called_args = {
@@ -140,7 +140,7 @@ class TestRun(BaseCommand):
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=fakes.FAKE_SUCCESS_RUN)
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
     def test_run_command_extra_vars_file(self, mock_run, mock_user, mock_open,
                                          mock_yaml, mock_log_dir):
 
@@ -172,7 +172,7 @@ class TestRun(BaseCommand):
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=fakes.FAKE_SUCCESS_RUN)
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
     def test_run_command_extra_env_vars(self, mock_run, mock_user, mock_log_dir):
         run_called_args = {
             'inventory': 'localhost',
@@ -202,7 +202,7 @@ class TestRun(BaseCommand):
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=fakes.FAKE_SUCCESS_RUN)
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
     def test_run_command_extra_env_vars_with_custom_callback(self,
                                                              mock_run,
                                                              mock_user,
@@ -236,7 +236,7 @@ class TestRun(BaseCommand):
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=fakes.FAKE_SUCCESS_RUN)
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
     def test_run_command_extra_env_vars_twice(self, mock_run, mock_user, mock_log_dir):
         run_called_args = {
             'inventory': 'localhost',
@@ -267,7 +267,7 @@ class TestRun(BaseCommand):
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=fakes.FAKE_SUCCESS_RUN)
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
     def test_run_command_extra_env_vars_and_extra_vars(self,
                                                        mock_run,
                                                        mock_user,
@@ -306,29 +306,32 @@ class TestRun(BaseCommand):
         self.assertRaises(Exception, self.check_parser, self.cmd,
                           arglist, verifylist)
 
+    @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
     @mock.patch('getpass.getuser',
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=fakes.FAKE_FAILED_RUN)
-    def test_run_command_failed_validation(self, mock_run, mock_user):
+                return_value=copy.deepcopy(fakes.FAKE_FAILED_RUN))
+    def test_run_command_failed_validation(self, mock_run, mock_user, mock_log_dir):
         run_called_args = {
             'inventory': 'localhost',
             'limit_hosts': None,
             'group': [],
-            'extra_vars': {'key': 'value'},
+            'extra_vars': None,
             'validations_dir': '/usr/share/ansible/validation-playbooks',
             'base_dir': '/usr/share/ansible',
             'validation_name': ['foo'],
-            'extra_env_vars': {'key2': 'value2'},
+            'extra_env_vars': None,
             'python_interpreter': sys.executable,
             'quiet': True,
-            'ssh_user': 'doe'}
+            'ssh_user': 'doe',
+            'log_path': mock_log_dir}
 
         arglist = ['--validation', 'foo']
         verifylist = [('validation_name', ['foo'])]
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.assertRaises(RuntimeError, self.cmd.take_action, parsed_args)
+        mock_run.assert_called_with(**run_called_args)
 
     @mock.patch('getpass.getuser',
                 return_value='doe')
