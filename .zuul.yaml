@@ -21,7 +21,7 @@
     parent: base
     run: playbooks/reqcheck.yaml
     timeout: 1600
-    voting: false
+    voting: true
     required-projects:
       - openstack/validations-libs
     files:
