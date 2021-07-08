@@ -36,22 +36,25 @@ class TestList(BaseCommand):
         arglist = ['--validation-dir', 'foo']
         verifylist = [('validation_dir', 'foo')]
 
-        list = [{'description': 'My Validation One Description',
-                 'groups': ['prep', 'pre-deployment'],
-                 'id': 'my_val1',
-                 'name': 'My Validation One Name',
-                 'parameters': {}
-                }, {
-                 'description': 'My Validation Two Description',
-                 'groups': ['prep', 'pre-introspection'],
-                 'id': 'my_val2',
-                 'name': 'My Validation Two Name',
-                 'parameters': {'min_value': 8}
-                }]
+        val_list = [
+            {'description': 'My Validation One Description',
+             'groups': ['prep', 'pre-deployment'],
+             'categories': ['os', 'system', 'ram'],
+             'id': 'my_val1',
+             'name': 'My Validation One Name',
+             'parameters': {}
+            }, {
+             'description': 'My Validation Two Description',
+             'groups': ['prep', 'pre-introspection'],
+             'categories': ['networking'],
+             'id': 'my_val2',
+             'name': 'My Validation Two Name',
+             'parameters': {'min_value': 8}
+            }]
 
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         result = self.cmd.take_action(parsed_args)
-        self.assertEqual(result, list)
+        self.assertEqual(result, val_list)
 
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'list_validations',
@@ -71,8 +74,21 @@ class TestList(BaseCommand):
         verifylist = [('validation_dir', 'foo'),
                       ('group', ['prep'])]
 
-        list = fakes.VALIDATION_LIST_RESULT
+        val_list = fakes.VALIDATION_LIST_RESULT
 
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         result = self.cmd.take_action(parsed_args)
-        self.assertEqual(result, list)
+        self.assertEqual(result, val_list)
+
+    @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
+                return_value=fakes.VALIDATIONS_LIST_GROUP)
+    def test_list_validations_by_category(self, mock_list):
+        arglist = ['--validation-dir', 'foo', '--category', 'networking']
+        verifylist = [('validation_dir', 'foo'),
+                      ('category', ['networking'])]
+
+        val_list = fakes.VALIDATION_LIST_RESULT
+
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        result = self.cmd.take_action(parsed_args)
+        self.assertEqual(result, val_list)

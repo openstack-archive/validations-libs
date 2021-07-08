@@ -128,66 +128,93 @@ def create_artifacts_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR,
         raise RuntimeError()
 
 
-def parse_all_validations_on_disk(path, groups=None):
-    """Return a list of validations metadata which can be sorted by Groups
+def parse_all_validations_on_disk(path, groups=None, categories=None):
+    """Return a list of validations metadata which can be sorted by Groups or by
+    Categories.
 
     :param path: The absolute path of the validations directory
     :type path: `string`
+
     :param groups: Groups of validations
     :type groups: `list`
-    :return: A list of validations metadata
+
+    :param categories: Categories of validations
+    :type categories: `list`
+
+    :return: A list of validations metadata.
     :rtype: `list`
 
     :Example:
 
     >>> path = '/foo/bar'
     >>> parse_all_validations_on_disk(path)
-    [{'description': 'Detect whether the node disks use Advanced Format.',
+    [{'categories': ['storage'],
+      'description': 'Detect whether the node disks use Advanced Format.',
       'groups': ['prep', 'pre-deployment'],
       'id': '512e',
       'name': 'Advanced Format 512e Support'},
-     {'description': 'Make sure that the server has enough CPU cores.',
+     {'categories': ['system'],
+      'description': 'Make sure that the server has enough CPU cores.',
       'groups': ['prep', 'pre-introspection'],
       'id': 'check-cpu',
       'name': 'Verify if the server fits the CPU core requirements'}]
     """
     if not isinstance(path, six.string_types):
-        raise TypeError("The 'path' argument should be a String")
+        raise TypeError("The 'path' argument must be a String")
 
     if not groups:
         groups = []
+    elif not isinstance(groups, list):
+        raise TypeError("The 'groups' argument must be a List")
 
-    if not isinstance(groups, list):
-        raise TypeError("The 'groups' argument should be a List")
+    if not categories:
+        categories = []
+    elif not isinstance(categories, list):
+        raise TypeError("The 'categories' argument must be a List")
 
     results = []
     validations_abspath = glob.glob("{path}/*.yaml".format(path=path))
 
     LOG.debug(
-        "Attempting to parse validations of groups `{}` from {}".format(
-            ','.join(groups),
-            validations_abspath
-        )
+        "Attempting to parse validations by:\n"
+        "  - groups: {}\n"
+        "  - categories: {}\n"
+        "from {}".format(groups, categories, validations_abspath)
     )
 
     for playbook in validations_abspath:
         val = Validation(playbook)
 
-        if not groups or set(groups).intersection(val.groups):
+        if not groups and not categories:
             results.append(val.get_metadata)
+            continue
+
+        if set(groups).intersection(val.groups) or \
+           set(categories).intersection(val.categories):
+            results.append(val.get_metadata)
+
     return results
 
 
-def get_validations_playbook(path, validation_id=None, groups=None):
-    """Get a list of validations playbooks paths either by their names
-    or their groups
+def get_validations_playbook(path,
+                             validation_id=None,
+                             groups=None,
+                             categories=None):
+    """Get a list of validations playbooks paths either by their names,
+    their groups or by their categories.
 
     :param path: Path of the validations playbooks
     :type path: `string`
+
     :param validation_id: List of validation name
     :type validation_id: `list`
+
     :param groups: List of validation group
     :type groups: `list`
+
+    :param categories: List of validation category
+    :type categories: `list`
+
     :return: A list of absolute validations playbooks path
     :rtype: `list`
 
@@ -196,24 +223,28 @@ def get_validations_playbook(path, validation_id=None, groups=None):
     >>> path = '/usr/share/validation-playbooks'
     >>> validation_id = ['512e','check-cpu']
     >>> groups = None
-    >>> get_validations_playbook(path, validation_id, groups)
+    >>> categories = None
+    >>> get_validations_playbook(path, validation_id, groups, categories)
     ['/usr/share/ansible/validation-playbooks/512e.yaml',
      '/usr/share/ansible/validation-playbooks/check-cpu.yaml',]
     """
     if not isinstance(path, six.string_types):
-        raise TypeError("The 'path' argument should be a String")
+        raise TypeError("The 'path' argument must be a String")
 
     if not validation_id:
         validation_id = []
-
-    if not isinstance(validation_id, list):
-        raise TypeError("The 'validation_id' argument should be a List")
+    elif not isinstance(validation_id, list):
+        raise TypeError("The 'validation_id' argument must be a List")
 
     if not groups:
         groups = []
+    elif not isinstance(groups, list):
+        raise TypeError("The 'groups' argument must be a List")
 
-    if not isinstance(groups, list):
-        raise TypeError("The 'groups' argument should be a List")
+    if not categories:
+        categories = []
+    elif not isinstance(categories, list):
+        raise TypeError("The 'categories' argument must be a List")
 
     pl = []
     for f in os.listdir(path):
@@ -223,9 +254,13 @@ def get_validations_playbook(path, validation_id=None, groups=None):
                 if os.path.splitext(f)[0] in validation_id or \
                         os.path.basename(f) in validation_id:
                     pl.append(pl_path)
+
+            val = Validation(pl_path)
             if groups:
-                val = Validation(pl_path)
                 if set(groups).intersection(val.groups):
+                    pl.append(pl_path)
+            if categories:
+                if set(categories).intersection(val.categories):
                     pl.append(pl_path)
     return pl
 
@@ -290,11 +325,12 @@ def get_validations_details(validation):
     >>> get_validations_details(validation)
     {'description': 'Verify that the server has enough something.',
      'groups': ['group1', 'group2'],
+     'categories': ['category1', 'category2'],
      'id': 'check-something',
      'name': 'Verify the server fits the something requirements'}
     """
     if not isinstance(validation, six.string_types):
-        raise TypeError("The 'validation' argument should be a String")
+        raise TypeError("The 'validation' argument must be a String")
 
     results = parse_all_validations_on_disk(constants.ANSIBLE_VALIDATION_DIR)
     for r in results:
@@ -323,12 +359,13 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
     >>> get_validations_data(validation)
     {'Description': 'Verify that the server has enough something',
      'Groups': ['group1', 'group2'],
+     'Categories': ['category1', 'category2'],
      'ID': 'check-something',
      'Name': 'Verify the server fits the something requirements',
      'Parameters': {'param1': 24}}
     """
     if not isinstance(validation, six.string_types):
-        raise TypeError("The 'validation' argument should be a String")
+        raise TypeError("The 'validation' argument must be a String")
 
     data = {}
     val_path = "{}/{}.yaml".format(path, validation)
@@ -348,7 +385,8 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
 
 def get_validations_parameters(validations_data,
                                validation_name=None,
-                               groups=None):
+                               groups=None,
+                               categories=None):
     """Return parameters for a list of validations
 
 
@@ -358,6 +396,8 @@ def get_validations_parameters(validations_data,
     :type validation_name: `list`
     :param groups: A list of validation groups
     :type groups: `list`
+    :param categories: A list of validation categories
+    :type categories: `list`
     :return: a dictionary containing the current parameters for
              each `validation_name` or `groups`
     :rtype: `dict`
@@ -372,24 +412,29 @@ def get_validations_parameters(validations_data,
      'check-ram': {'parameters': {'minimal_ram_gb': 24}}}
     """
     if not isinstance(validations_data, list):
-        raise TypeError("The 'validations_data' argument should be a List")
+        raise TypeError("The 'validations_data' argument must be a List")
 
     if not validation_name:
         validation_name = []
-
-    if not isinstance(validation_name, list):
-        raise TypeError("The 'validation_name' argument should be a List")
+    elif not isinstance(validation_name, list):
+        raise TypeError("The 'validation_name' argument must be a List")
 
     if not groups:
         groups = []
+    elif not isinstance(groups, list):
+        raise TypeError("The 'groups' argument must be a List")
 
-    if not isinstance(groups, list):
-        raise TypeError("The 'groups' argument should be a List")
+    if not categories:
+        categories = []
+    elif not isinstance(categories, list):
+        raise TypeError("The 'categories' argument must be a List")
 
     params = {}
     for val in validations_data:
         v = Validation(val)
-        if v.id in validation_name or set(groups).intersection(v.groups):
+        if v.id in validation_name or \
+           set(groups).intersection(v.groups) or \
+           set(categories).intersection(v.categories):
             params[v.id] = {
                 'parameters': v.get_vars
             }

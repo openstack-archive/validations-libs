@@ -90,3 +90,11 @@ class TestShowParameter(BaseCommand):
         arglist = ['--group', 'prep']
         verifylist = [('group', ['prep'])]
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+
+    @mock.patch('validations_libs.validation_actions.ValidationActions.'
+                'show_validations_parameters')
+    def test_show_validations_parameters_by_categories(self, mock_show):
+        arglist = ['--category', 'os']
+        verifylist = [('category', ['os'])]
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.cmd.take_action(parsed_args)

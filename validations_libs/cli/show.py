@@ -109,6 +109,15 @@ class ShowParameter(ShowOne):
                   "openshift-on-openstack")
         )
 
+        ex_group.add_argument(
+            '--category',
+            metavar='<category_id>[,<category_id>,...]',
+            action=CommaListAction,
+            default=[],
+            help=("List specific validations by category, "
+                  "if more than one category is required "
+                  "separate the category names with commas."))
+
         parser.add_argument(
             '--download',
             action='store',
@@ -134,10 +143,11 @@ class ShowParameter(ShowOne):
     def take_action(self, parsed_args):
         v_actions = ValidationActions(parsed_args.validation_dir)
         params = v_actions.show_validations_parameters(
-            parsed_args.validation_name,
-            parsed_args.group,
-            parsed_args.format_output,
-            parsed_args.download)
+            validations=parsed_args.validation_name,
+            groups=parsed_args.group,
+            categories=parsed_args.category,
+            output_format=parsed_args.format_output,
+            download_file=parsed_args.download)
 
         if parsed_args.download:
             self.app.LOG.info(

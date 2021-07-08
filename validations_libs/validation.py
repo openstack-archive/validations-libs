@@ -35,7 +35,7 @@ class Validation(object):
               name: Hello World
               description: This validation prints Hello World!
           roles:
-          - hello-world
+          - hello_world
 
     As shown here, the validation playbook requires three top-level
     directives:
@@ -50,9 +50,14 @@ class Validation(object):
     values are then reported by the API.
 
     The validations can be grouped together by specifying a ``groups``
-    metadata. Groups function similar to tags and a validation can thus be part
-    of many groups. Here is, for example, how to have a validation be part of
-    the `pre-deployment` and `hardware` groups.
+    and a ``categories`` metadata. ``groups`` are the deployment stage the
+    validations should run on and ``categories`` are the technical
+    classification for the validations.
+
+    Groups and Categories function similar to tags and a validation can thus be
+    part of many groups and many categories.
+
+    Here is an example:
 
     .. code-block:: yaml
 
@@ -64,12 +69,17 @@ class Validation(object):
               groups:
                 - pre-deployment
                 - hardware
+              categories:
+                - os
+                - networking
+                - storage
+                - security
           roles:
-          - hello-world
+          - hello_world
 
     """
 
-    _col_keys = ['ID', 'Name', 'Description', 'Groups']
+    _col_keys = ['ID', 'Name', 'Description', 'Groups', 'Categories']
 
     def __init__(self, validation_path):
         self.dict = self._get_content(validation_path)
@@ -96,8 +106,13 @@ class Validation(object):
                   groups:
                     - pre-deployment
                     - hardware
+                  categories:
+                    - os
+                    - networking
+                    - storage
+                    - security
               roles:
-              - hello-world
+              - hello_world
 
         :return: `true` if `vars` is found, `false` if not.
         :rtype: `boolean`
@@ -118,8 +133,13 @@ class Validation(object):
                   groups:
                     - pre-deployment
                     - hardware
+                  categories:
+                    - os
+                    - networking
+                    - storage
+                    - security
               roles:
-              - hello-world
+              - hello_world
 
         :return: `true` if `vars` and metadata are found, `false` if not.
         :rtype: `boolean`
@@ -142,6 +162,7 @@ class Validation(object):
         >>> print(val.get_metadata)
         {'description': 'Val1 desc.',
          'groups': ['group1', 'group2'],
+         'categories': ['category1', 'category2'],
          'id': 'val1',
          'name': 'The validation val1\'s name'}
         """
@@ -197,6 +218,7 @@ class Validation(object):
          'roles': ['val_role'],
          'vars': {'metadata': {'description': 'description of val ',
                                'groups': ['group1', 'group2'],
+                               'categories': ['category1', 'category2'],
                                'name': 'validation one'},
                                'var_name1': 'value1'}}
         """
@@ -220,6 +242,29 @@ class Validation(object):
         """
         if self.has_metadata_dict:
             return self.dict['vars']['metadata'].get('groups', [])
+        else:
+            raise NameError(
+                "No metadata found in validation {}".format(self.id)
+            )
+
+    @property
+    def categories(self):
+        """Get the validation list of categories
+
+        :return: A list of categories for the validation
+        :rtype: `list` or `None` if no metadata has been found
+        :raise: A `NameError` exception if no metadata has been found in the
+                playbook
+
+        :Example:
+
+        >>> pl = '/foo/bar/val.yaml'
+        >>> val = Validation(pl)
+        >>> print(val.categories)
+        ['category1', 'category2']
+        """
+        if self.has_metadata_dict:
+            return self.dict['vars']['metadata'].get('categories', [])
         else:
             raise NameError(
                 "No metadata found in validation {}".format(self.id)
@@ -256,7 +301,8 @@ class Validation(object):
         """Get basic information from a validation for output display
 
         :return: Basic information of a validation including the `Description`,
-                 the list of `Groups`, the `ID` and the `Name`.
+                 the list of 'Categories', the list of `Groups`, the `ID` and
+                 the `Name`.
         :rtype: `dict`
         :raise: A `NameError` exception if no metadata has been found in the
                 playbook
@@ -266,7 +312,8 @@ class Validation(object):
         >>> pl = '/foo/bar/val.yaml'
         >>> val = Validation(pl)
         >>> print(val.get_formated_data)
-        {'Description': 'description of val',
+        {'Categories': ['category1', 'category2'],
+         'Description': 'description of val',
          'Groups': ['group1', 'group2'],
          'ID': 'val',
          'Name': 'validation one'}

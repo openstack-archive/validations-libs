@@ -36,6 +36,13 @@ class ValidationList(Lister):
                                   "separate the group names with commas: "
                                   "--group pre-upgrade,prep | "
                                   "--group openshift-on-openstack"))
+        parser.add_argument('--category',
+                            metavar='<category_id>[,<category_id>,...]',
+                            action=CommaListAction,
+                            default=[],
+                            help=("List specific category of validations, "
+                                  "if more than one category is required "
+                                  "separate the category names with commas."))
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
                             help=("Path where the validation playbooks "
@@ -46,7 +53,9 @@ class ValidationList(Lister):
         """Take validation action"""
 
         group = parsed_args.group
+        category = parsed_args.category
         validation_dir = parsed_args.validation_dir
 
         v_actions = ValidationActions(validation_path=validation_dir)
-        return (v_actions.list_validations(group))
+        return (v_actions.list_validations(groups=group,
+                                           categories=category))

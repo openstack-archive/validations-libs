@@ -139,6 +139,15 @@ class Run(BaseCommand):
                   "--group pre-upgrade,prep | "
                   "--group openshift-on-openstack"))
 
+        ex_group.add_argument(
+            '--category',
+            metavar='<category_id>[,<category_id>,...]',
+            action=CommaListAction,
+            default=[],
+            help=("Run specific validations by category, "
+                  "if more than one category is required "
+                  "separate the category names with commas."))
+
         return parser
 
     def take_action(self, parsed_args):
@@ -168,6 +177,7 @@ class Run(BaseCommand):
                 inventory=parsed_args.inventory,
                 limit_hosts=parsed_args.limit,
                 group=parsed_args.group,
+                category=parsed_args.category,
                 extra_vars=extra_vars,
                 validations_dir=parsed_args.validation_dir,
                 base_dir=parsed_args.ansible_base_dir,

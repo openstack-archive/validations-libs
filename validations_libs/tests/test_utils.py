@@ -36,6 +36,7 @@ class TestUtils(TestCase):
     def test_get_validations_data(self, mock_exists, mock_open, mock_data):
         output = {'Name': 'Advanced Format 512e Support',
                   'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
+                  'Categories': ['os', 'storage'],
                   'ID': '512e',
                   'Parameters': {}}
         res = utils.get_validations_data('512e')
@@ -69,6 +70,12 @@ class TestUtils(TestCase):
                           path='/foo/playbook',
                           groups='foo1,foo2')
 
+    def test_parse_all_validations_on_disk_wrong_categories_type(self):
+        self.assertRaises(TypeError,
+                          utils.parse_all_validations_on_disk,
+                          path='/foo/playbook',
+                          categories='foo1,foo2')
+
     def test_get_validations_playbook_wrong_validation_id_type(self):
         self.assertRaises(TypeError,
                           utils.get_validations_playbook,
@@ -80,6 +87,36 @@ class TestUtils(TestCase):
                           utils.get_validations_playbook,
                           path='/foo/playbook',
                           groups='foo1,foo2')
+
+    def test_get_validations_playbook_wrong_categories_type(self):
+        self.assertRaises(TypeError,
+                          utils.get_validations_playbook,
+                          path='/foo/playbook',
+                          categories='foo1,foo2')
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('glob.glob')
+    def test_parse_all_validations_on_disk_by_group(self, mock_glob,
+                                                    mock_open,
+                                                    mock_load):
+        mock_glob.return_value = \
+            ['/foo/playbook/foo.yaml']
+        result = utils.parse_all_validations_on_disk('/foo/playbook',
+                                                     ['prep'])
+        self.assertEqual(result, [fakes.FAKE_METADATA])
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('glob.glob')
+    def test_parse_all_validations_on_disk_by_category(self, mock_glob,
+                                                       mock_open,
+                                                       mock_load):
+        mock_glob.return_value = \
+            ['/foo/playbook/foo.yaml']
+        result = utils.parse_all_validations_on_disk('/foo/playbook',
+                                                     categories=['os'])
+        self.assertEqual(result, [fakes.FAKE_METADATA])
 
     def test_get_validations_playbook_wrong_path_type(self):
         self.assertRaises(TypeError,
@@ -123,6 +160,18 @@ class TestUtils(TestCase):
         result = utils.get_validations_playbook('/foo/playbook',
                                                 groups=['no_group'])
         self.assertEqual(result, [])
+
+    @mock.patch('os.path.isfile')
+    @mock.patch('os.listdir')
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_playbook_by_category(self, mock_open, mock_load,
+                                                  mock_listdir, mock_isfile):
+        mock_listdir.return_value = ['foo.yaml']
+        mock_isfile.return_value = True
+        result = utils.get_validations_playbook('/foo/playbook',
+                                                categories=['os', 'storage'])
+        self.assertEqual(result, ['/foo/playbook/foo.yaml'])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')

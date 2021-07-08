@@ -30,20 +30,22 @@ class TestValidationActions(TestCase):
 
     def setUp(self):
         super(TestValidationActions, self).setUp()
-        self.column_name = ('ID', 'Name', 'Groups')
+        self.column_name = ('ID', 'Name', 'Groups', 'Categories')
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
                 return_value=fakes.VALIDATIONS_LIST)
     def test_validation_list(self, mock_validation_dir):
-        validations_list = ValidationActions(fakes.GROUPS_LIST, '/tmp/foo')
+        validations_list = ValidationActions('/tmp/foo')
 
         self.assertEqual(validations_list.list_validations(),
                          (self.column_name, [('my_val1',
                                               'My Validation One Name',
-                                              ['prep', 'pre-deployment']),
+                                              ['prep', 'pre-deployment'],
+                                              ['os', 'system', 'ram']),
                                              ('my_val2',
                                               'My Validation Two Name',
-                                             ['prep', 'pre-introspection'])]))
+                                              ['prep', 'pre-introspection'],
+                                              ['networking'])]))
 
     @mock.patch('validations_libs.utils.os.access', return_value=True)
     @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
@@ -348,6 +350,7 @@ class TestValidationActions(TestCase):
                              mock_parse_validation, mock_data, mock_log):
         data = {'Name': 'Advanced Format 512e Support',
                 'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
+                'Categories': ['os', 'storage'],
                 'ID': '512e',
                 'Parameters': {}}
         data.update({'Last execution date': '2019-11-25 13:40:14',
@@ -378,6 +381,27 @@ class TestValidationActions(TestCase):
                                   ('post', 'post-foo', 2),
                                   ('pre', 'pre-foo', 2)])
 
+    @mock.patch('six.moves.builtins.open')
+    def test_show_validations_parameters_wrong_validations_type(self, mock_open):
+        v_actions = ValidationActions()
+        self.assertRaises(TypeError,
+                          v_actions.show_validations_parameters,
+                          validations='foo')
+
+    @mock.patch('six.moves.builtins.open')
+    def test_show_validations_parameters_wrong_groups_type(self, mock_open):
+        v_actions = ValidationActions()
+        self.assertRaises(TypeError,
+                          v_actions.show_validations_parameters,
+                          groups=('foo'))
+
+    @mock.patch('six.moves.builtins.open')
+    def test_show_validations_parameters_wrong_categories_type(self, mock_open):
+        v_actions = ValidationActions()
+        self.assertRaises(TypeError,
+                          v_actions.show_validations_parameters,
+                          categories={'foo': 'bar'})
+
     @mock.patch('validations_libs.utils.get_validations_playbook',
                 return_value=['/foo/playbook/foo.yaml'])
     @mock.patch('validations_libs.utils.get_validations_parameters')
@@ -388,7 +412,7 @@ class TestValidationActions(TestCase):
         mock_get_param.return_value = {'foo':
                                        {'parameters': fakes.FAKE_METADATA}}
         v_actions = ValidationActions()
-        result = v_actions.show_validations_parameters('foo')
+        result = v_actions.show_validations_parameters(validations=['foo'])
         self.assertEqual(result, mock_get_param.return_value)
 
     @mock.patch('six.moves.builtins.open')
@@ -396,7 +420,7 @@ class TestValidationActions(TestCase):
         v_actions = ValidationActions()
         self.assertRaises(RuntimeError,
                           v_actions.show_validations_parameters,
-                          validation='foo', output_format='bar')
+                          validations=['foo'], output_format='bar')
 
     @mock.patch('validations_libs.validation_logs.ValidationLogs.'
                 'get_logfile_by_validation',
