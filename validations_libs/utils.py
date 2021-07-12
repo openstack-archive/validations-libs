@@ -128,9 +128,12 @@ def create_artifacts_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR,
         raise RuntimeError()
 
 
-def parse_all_validations_on_disk(path, groups=None, categories=None):
-    """Return a list of validations metadata which can be sorted by Groups or by
-    Categories.
+def parse_all_validations_on_disk(path,
+                                  groups=None,
+                                  categories=None,
+                                  products=None):
+    """Return a list of validations metadata which can be sorted by Groups, by
+    Categories or by Products.
 
     :param path: The absolute path of the validations directory
     :type path: `string`
@@ -141,6 +144,9 @@ def parse_all_validations_on_disk(path, groups=None, categories=None):
     :param categories: Categories of validations
     :type categories: `list`
 
+    :param products: Products of validations
+    :type products: `list`
+
     :return: A list of validations metadata.
     :rtype: `list`
 
@@ -149,11 +155,13 @@ def parse_all_validations_on_disk(path, groups=None, categories=None):
     >>> path = '/foo/bar'
     >>> parse_all_validations_on_disk(path)
     [{'categories': ['storage'],
+      'products': ['product1'],
       'description': 'Detect whether the node disks use Advanced Format.',
       'groups': ['prep', 'pre-deployment'],
       'id': '512e',
       'name': 'Advanced Format 512e Support'},
      {'categories': ['system'],
+      'products': ['product1'],
       'description': 'Make sure that the server has enough CPU cores.',
       'groups': ['prep', 'pre-introspection'],
       'id': 'check-cpu',
@@ -172,6 +180,11 @@ def parse_all_validations_on_disk(path, groups=None, categories=None):
     elif not isinstance(categories, list):
         raise TypeError("The 'categories' argument must be a List")
 
+    if not products:
+        products = []
+    elif not isinstance(products, list):
+        raise TypeError("The 'products' argument must be a List")
+
     results = []
     validations_abspath = glob.glob("{path}/*.yaml".format(path=path))
 
@@ -179,18 +192,20 @@ def parse_all_validations_on_disk(path, groups=None, categories=None):
         "Attempting to parse validations by:\n"
         "  - groups: {}\n"
         "  - categories: {}\n"
-        "from {}".format(groups, categories, validations_abspath)
+        "  - products: {}\n"
+        "from {}".format(groups, categories, products, validations_abspath)
     )
 
     for playbook in validations_abspath:
         val = Validation(playbook)
 
-        if not groups and not categories:
+        if not groups and not categories and not products:
             results.append(val.get_metadata)
             continue
 
         if set(groups).intersection(val.groups) or \
-           set(categories).intersection(val.categories):
+           set(categories).intersection(val.categories) or \
+           set(products).intersection(val.products):
             results.append(val.get_metadata)
 
     return results
@@ -199,9 +214,10 @@ def parse_all_validations_on_disk(path, groups=None, categories=None):
 def get_validations_playbook(path,
                              validation_id=None,
                              groups=None,
-                             categories=None):
+                             categories=None,
+                             products=None):
     """Get a list of validations playbooks paths either by their names,
-    their groups or by their categories.
+    their groups, by their categories or by their products.
 
     :param path: Path of the validations playbooks
     :type path: `string`
@@ -215,6 +231,9 @@ def get_validations_playbook(path,
     :param categories: List of validation category
     :type categories: `list`
 
+    :param products: List of validation product
+    :type products: `list`
+
     :return: A list of absolute validations playbooks path
     :rtype: `list`
 
@@ -224,7 +243,12 @@ def get_validations_playbook(path,
     >>> validation_id = ['512e','check-cpu']
     >>> groups = None
     >>> categories = None
-    >>> get_validations_playbook(path, validation_id, groups, categories)
+    >>> products = None
+    >>> get_validations_playbook(path=path,
+                                 validation_id=validation_id,
+                                 groups=groups,
+                                 categories=categories,
+                                 products=products)
     ['/usr/share/ansible/validation-playbooks/512e.yaml',
      '/usr/share/ansible/validation-playbooks/check-cpu.yaml',]
     """
@@ -246,6 +270,11 @@ def get_validations_playbook(path,
     elif not isinstance(categories, list):
         raise TypeError("The 'categories' argument must be a List")
 
+    if not products:
+        products = []
+    elif not isinstance(products, list):
+        raise TypeError("The 'products' argument must be a List")
+
     pl = []
     for f in os.listdir(path):
         pl_path = join(path, f)
@@ -261,6 +290,9 @@ def get_validations_playbook(path,
                     pl.append(pl_path)
             if categories:
                 if set(categories).intersection(val.categories):
+                    pl.append(pl_path)
+            if products:
+                if set(products).intersection(val.products):
                     pl.append(pl_path)
     return pl
 
@@ -326,6 +358,7 @@ def get_validations_details(validation):
     {'description': 'Verify that the server has enough something.',
      'groups': ['group1', 'group2'],
      'categories': ['category1', 'category2'],
+     'products': ['product1', 'product2'],
      'id': 'check-something',
      'name': 'Verify the server fits the something requirements'}
     """
@@ -360,6 +393,7 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
     {'Description': 'Verify that the server has enough something',
      'Groups': ['group1', 'group2'],
      'Categories': ['category1', 'category2'],
+     'products': ['product1', 'product2'],
      'ID': 'check-something',
      'Name': 'Verify the server fits the something requirements',
      'Parameters': {'param1': 24}}
@@ -386,18 +420,26 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
 def get_validations_parameters(validations_data,
                                validation_name=None,
                                groups=None,
-                               categories=None):
+                               categories=None,
+                               products=None):
     """Return parameters for a list of validations
 
 
     :param validations_data: A list of absolute validations playbooks path
     :type validations_data: `list`
+
     :param validation_name: A list of validation name
     :type validation_name: `list`
+
     :param groups: A list of validation groups
     :type groups: `list`
+
     :param categories: A list of validation categories
     :type categories: `list`
+
+    :param products: A list of validation products
+    :type products: `list`
+
     :return: a dictionary containing the current parameters for
              each `validation_name` or `groups`
     :rtype: `dict`
@@ -429,12 +471,18 @@ def get_validations_parameters(validations_data,
     elif not isinstance(categories, list):
         raise TypeError("The 'categories' argument must be a List")
 
+    if not products:
+        products = []
+    elif not isinstance(products, list):
+        raise TypeError("The 'products' argument must be a List")
+
     params = {}
     for val in validations_data:
         v = Validation(val)
         if v.id in validation_name or \
            set(groups).intersection(v.groups) or \
-           set(categories).intersection(v.categories):
+           set(categories).intersection(v.categories) or \
+           set(products).intersection(v.products):
             params[v.id] = {
                 'parameters': v.get_vars
             }

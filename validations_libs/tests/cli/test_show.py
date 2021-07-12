@@ -98,3 +98,11 @@ class TestShowParameter(BaseCommand):
         verifylist = [('category', ['os'])]
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
+
+    @mock.patch('validations_libs.validation_actions.ValidationActions.'
+                'show_validations_parameters')
+    def test_show_validations_parameters_by_products(self, mock_show):
+        arglist = ['--product', 'product1']
+        verifylist = [('product', ['product1'])]
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.cmd.take_action(parsed_args)

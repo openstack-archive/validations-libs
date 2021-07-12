@@ -47,9 +47,13 @@ class ValidationActions(object):
         self.validation_path = (validation_path if validation_path
                                 else constants.ANSIBLE_VALIDATION_DIR)
 
-    def list_validations(self, groups=None, categories=None):
+    def list_validations(self,
+                         groups=None,
+                         categories=None,
+                         products=None):
         """Get a list of the validations selected by group membership or by
-        category. With their names, group membership information and categories.
+        category. With their names, group membership information, categories and
+        products.
 
         This is used to print table from python ``Tuple`` with ``PrettyTable``.
 
@@ -59,18 +63,21 @@ class ValidationActions(object):
         :param categories: List of validation categories.
         :type categories: `list`
 
+        :param products: List of validation products.
+        :type products: `list`
+
         :return: Column names and a list of the selected validations
         :rtype: `tuple`
 
         .. code:: text
 
-            -------+-----------+----------------------+---------------+
-            | ID   | Name      | Groups               | Categories    |
-            +------+-----------+----------------------+---------------+
-            | val1 | val_name1 | ['group1']           | ['category1'] |
-            | val2 | val_name2 | ['group1', 'group2'] | ['category2'] |
-            | val3 | val_name3 | ['group4']           | ['category3'] |
-            +------+-----------+----------------------+---------------+
+            -------+-----------+----------------------+---------------+--------------+
+            | ID   | Name      | Groups               | Categories    | Products     |
+            +------+-----------+----------------------+---------------+--------------+
+            | val1 | val_name1 | ['group1']           | ['category1'] | ['product1'] |
+            | val2 | val_name2 | ['group1', 'group2'] | ['category2'] | ['product2'] |
+            | val3 | val_name3 | ['group4']           | ['category3'] | ['product3'] |
+            +------+-----------+----------------------+---------------+--------------+
 
         :Example:
 
@@ -81,16 +88,26 @@ class ValidationActions(object):
         >>> results = action.list_validations(groups=groups,
                                               categories=categories)
         >>> print(results
-        (('ID', 'Name', 'Groups', 'Categories'),
-         [('val1', 'val_name1', ['group1'], ['category1']),
-          ('val2', 'val_name2', ['group1', 'group2'], ['category2'])])
+        (('ID', 'Name', 'Groups', 'Categories', 'Products'),
+         [('val1',
+           'val_name1',
+           ['group1'],
+           ['category1'],
+           ['product1']),
+          ('val2',
+           'val_name2',
+           ['group1', 'group2'],
+           ['category2'],
+           ['product2'])])
         """
         self.log = logging.getLogger(__name__ + ".list_validations")
 
         validations = v_utils.parse_all_validations_on_disk(
             path=self.validation_path,
             groups=groups,
-            categories=categories)
+            categories=categories,
+            products=products
+        )
 
         self.log.debug(
             "Parsed {} validations.".format(len(validations))
@@ -98,10 +115,11 @@ class ValidationActions(object):
 
         return_values = [
             (val.get('id'), val.get('name'),
-             val.get('groups'), val.get('categories'))
+             val.get('groups'), val.get('categories'),
+             val.get('products'))
             for val in validations]
 
-        column_names = ('ID', 'Name', 'Groups', 'Categories')
+        column_names = ('ID', 'Name', 'Groups', 'Categories', 'Products')
 
         return (column_names, return_values)
 
@@ -241,17 +259,17 @@ class ValidationActions(object):
         return [path[1] for path in logs[-history_limit:]]
 
     def run_validations(self, validation_name=None, inventory='localhost',
-                        group=None, category=None, extra_vars=None,
-                        validations_dir=None, extra_env_vars=None,
-                        ansible_cfg=None, quiet=True, workdir=None,
-                        limit_hosts=None, run_async=False,
+                        group=None, category=None, product=None,
+                        extra_vars=None, validations_dir=None,
+                        extra_env_vars=None, ansible_cfg=None, quiet=True,
+                        workdir=None, limit_hosts=None, run_async=False,
                         base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
                         log_path=constants.VALIDATIONS_LOG_BASEDIR,
                         python_interpreter=None, skip_list=None,
                         callback_whitelist=None,
-                        output_callback='validation_stdout',
-                        ssh_user=None):
-        """Run one or multiple validations by name(s) or by group(s)
+                        output_callback='validation_stdout', ssh_user=None):
+        """Run one or multiple validations by name(s), by group(s) or by
+        product(s)
 
         :param validation_name: A list of validation names
         :type validation_name: ``list``
@@ -262,6 +280,8 @@ class ValidationActions(object):
         :type group: ``list``
         :param category: A list of category names
         :type category: ``list``
+        :param product: A list of product names
+        :type product: ``list``
         :param extra_vars: Set additional variables as a Dict or the absolute
                            path of a JSON or YAML file type.
         :type extra_vars: Either a Dict or the absolute path of JSON or YAML
@@ -345,20 +365,22 @@ class ValidationActions(object):
         playbooks = []
         validations_dir = (validations_dir if validations_dir
                            else self.validation_path)
-        if group or category:
+        if group or category or product:
             self.log.debug(
                 "Getting the validations list by:\n"
                 "  - groups: {}\n"
-                "  - categories: {}".format(group, category)
+                "  - categories: {}\n"
+                "  - products: {}".format(group, category, product)
             )
             validations = v_utils.parse_all_validations_on_disk(
-                path=validations_dir, groups=group, categories=category)
+                path=validations_dir, groups=group,
+                categories=category, products=product
+            )
             for val in validations:
                 playbooks.append(val.get('id') + '.yaml')
         elif validation_name:
             playbooks = v_utils.get_validations_playbook(validations_dir,
-                                                         validation_name,
-                                                         group)
+                                                         validation_name)
 
             if not playbooks or len(validation_name) != len(playbooks):
                 p = []
@@ -495,11 +517,12 @@ class ValidationActions(object):
                                     validations=None,
                                     groups=None,
                                     categories=None,
+                                    products=None,
                                     output_format='json',
                                     download_file=None):
         """
         Return Validations Parameters for one or several validations by their
-        names, their groups or by their categories.
+        names, their groups, by their categories or by their products.
 
         :param validations: List of validation name(s)
         :type validations: `list`
@@ -509,6 +532,9 @@ class ValidationActions(object):
 
         :param categories: List of validation category(ies)
         :type categories: `list`
+
+        :param products: List of validation product(s)
+        :type products: `list`
 
         :param output_format: Output format (Supported format are JSON or YAML)
         :type output_format: `string`
@@ -525,9 +551,10 @@ class ValidationActions(object):
         >>> validations = ['check-cpu', 'check-ram']
         >>> groups = None
         >>> categories = None
+        >>> products = None
         >>> output_format = 'json'
         >>> show_validations_parameters(validations, groups,
-                                        categories, output_format)
+                                        categories, products, output_format)
         {
             "check-cpu": {
                 "parameters": {
@@ -556,6 +583,11 @@ class ValidationActions(object):
         elif not isinstance(categories, list):
             raise TypeError("The 'categories' argument must be a List")
 
+        if not products:
+            products = []
+        elif not isinstance(products, list):
+            raise TypeError("The 'products' argument must be a List")
+
         supported_format = ['json', 'yaml']
 
         if output_format not in supported_format:
@@ -565,13 +597,17 @@ class ValidationActions(object):
             path=self.validation_path,
             validation_id=validations,
             groups=groups,
-            categories=categories)
+            categories=categories,
+            products=products
+        )
 
         params = v_utils.get_validations_parameters(
             validations_data=validation_playbooks,
             validation_name=validations,
             groups=groups,
-            categories=categories)
+            categories=categories,
+            products=products
+        )
 
         if download_file:
             params_only = {}

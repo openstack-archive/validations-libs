@@ -148,6 +148,15 @@ class Run(BaseCommand):
                   "if more than one category is required "
                   "separate the category names with commas."))
 
+        ex_group.add_argument(
+            '--product',
+            metavar='<product_id>[,<product_id>,...]',
+            action=CommaListAction,
+            default=[],
+            help=("Run specific validations by product, "
+                  "if more than one product is required "
+                  "separate the product names with commas."))
+
         return parser
 
     def take_action(self, parsed_args):
@@ -178,6 +187,7 @@ class Run(BaseCommand):
                 limit_hosts=parsed_args.limit,
                 group=parsed_args.group,
                 category=parsed_args.category,
+                product=parsed_args.product,
                 extra_vars=extra_vars,
                 validations_dir=parsed_args.validation_dir,
                 base_dir=parsed_args.ansible_base_dir,

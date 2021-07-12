@@ -30,7 +30,7 @@ class TestValidationActions(TestCase):
 
     def setUp(self):
         super(TestValidationActions, self).setUp()
-        self.column_name = ('ID', 'Name', 'Groups', 'Categories')
+        self.column_name = ('ID', 'Name', 'Groups', 'Categories', 'Products')
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
                 return_value=fakes.VALIDATIONS_LIST)
@@ -41,11 +41,13 @@ class TestValidationActions(TestCase):
                          (self.column_name, [('my_val1',
                                               'My Validation One Name',
                                               ['prep', 'pre-deployment'],
-                                              ['os', 'system', 'ram']),
+                                              ['os', 'system', 'ram'],
+                                              ['product1']),
                                              ('my_val2',
                                               'My Validation Two Name',
                                               ['prep', 'pre-introspection'],
-                                              ['networking'])]))
+                                              ['networking'],
+                                              ['product1'])]))
 
     @mock.patch('validations_libs.utils.os.access', return_value=True)
     @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
@@ -351,6 +353,7 @@ class TestValidationActions(TestCase):
         data = {'Name': 'Advanced Format 512e Support',
                 'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
                 'Categories': ['os', 'storage'],
+                'Products': ['product1'],
                 'ID': '512e',
                 'Parameters': {}}
         data.update({'Last execution date': '2019-11-25 13:40:14',
@@ -401,6 +404,13 @@ class TestValidationActions(TestCase):
         self.assertRaises(TypeError,
                           v_actions.show_validations_parameters,
                           categories={'foo': 'bar'})
+
+    @mock.patch('six.moves.builtins.open')
+    def test_show_validations_parameters_wrong_products_type(self, mock_open):
+        v_actions = ValidationActions()
+        self.assertRaises(TypeError,
+                          v_actions.show_validations_parameters,
+                          products={'foo': 'bar'})
 
     @mock.patch('validations_libs.utils.get_validations_playbook',
                 return_value=['/foo/playbook/foo.yaml'])

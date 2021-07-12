@@ -19,6 +19,7 @@ VALIDATIONS_LIST = [{
     'description': 'My Validation One Description',
     'groups': ['prep', 'pre-deployment'],
     'categories': ['os', 'system', 'ram'],
+    'products': ['product1'],
     'id': 'my_val1',
     'name': 'My Validation One Name',
     'parameters': {}
@@ -26,6 +27,7 @@ VALIDATIONS_LIST = [{
     'description': 'My Validation Two Description',
     'groups': ['prep', 'pre-introspection'],
     'categories': ['networking'],
+    'products': ['product1'],
     'id': 'my_val2',
     'name': 'My Validation Two Name',
     'parameters': {'min_value': 8}
@@ -35,16 +37,18 @@ VALIDATIONS_LIST_GROUP = [{
     'description': 'My Validation Two Description',
     'groups': ['prep', 'pre-introspection'],
     'categories': ['networking'],
+    'products': ['product1'],
     'id': 'my_val2',
     'name': 'My Validation Two Name',
     'parameters': {'min_value': 8}
 }]
 
 
-VALIDATION_LIST_RESULT = (('ID', 'Name', 'Groups', 'Categories'),
+VALIDATION_LIST_RESULT = (('ID', 'Name', 'Groups', 'Categories', 'Products'),
                           [('my_val2', 'My Validation Two Name',
                             ['prep', 'pre-introspection'],
-                            ['networking'])])
+                            ['networking'],
+                            ['product1'])])
 
 GROUPS_LIST = [
     ('group1', 'Group1 description'),
@@ -214,6 +218,7 @@ VALIDATIONS_LOGS_CONTENTS_LIST = [{
 VALIDATIONS_DATA = {'Description': 'My Validation One Description',
                     'Groups': ['prep', 'pre-deployment'],
                     'categories': ['os', 'system', 'ram'],
+                    'products': ['product1'],
                     'ID': 'my_val1',
                     'Name': 'My Validation One Name',
                     'parameters': {}}
@@ -229,6 +234,7 @@ FAKE_WRONG_PLAYBOOK = [{
             'description': 'foo',
             'groups': ['prep', 'pre-deployment'],
             'categories': ['os', 'storage'],
+            'products': ['product1'],
             'name': 'Advanced Format 512e Support'
         }
     }
@@ -239,6 +245,7 @@ FAKE_PLAYBOOK = [{'hosts': 'undercloud',
                   'vars': {'metadata': {'description': 'foo',
                                         'groups': ['prep', 'pre-deployment'],
                                         'categories': ['os', 'storage'],
+                                        'products': ['product1'],
                                         'name':
                                         'Advanced Format 512e Support'}}}]
 
@@ -247,6 +254,7 @@ FAKE_PLAYBOOK2 = [{'hosts': 'undercloud',
                    'vars': {'metadata': {'description': 'foo',
                                          'groups': ['prep', 'pre-deployment'],
                                          'categories': ['os', 'storage'],
+                                         'products': ['product1'],
                                          'name':
                                          'Advanced Format 512e Support'},
                             'foo': 'bar'}}]
@@ -264,11 +272,13 @@ FAKE_METADATA = {'id': 'foo',
                  'description': 'foo',
                  'groups': ['prep', 'pre-deployment'],
                  'categories': ['os', 'storage'],
+                 'products': ['product1'],
                  'name': 'Advanced Format 512e Support'}
 
 FORMATED_DATA = {'Description': 'foo',
                  'Groups': ['prep', 'pre-deployment'],
                  'Categories': ['os', 'storage'],
+                 'Products': ['product1'],
                  'ID': 'foo',
                  'Name': 'Advanced Format 512e Support'}
 

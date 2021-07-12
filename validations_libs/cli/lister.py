@@ -43,6 +43,13 @@ class ValidationList(Lister):
                             help=("List specific category of validations, "
                                   "if more than one category is required "
                                   "separate the category names with commas."))
+        parser.add_argument('--product',
+                            metavar='<product_id>[,<product_id>,...]',
+                            action=CommaListAction,
+                            default=[],
+                            help=("List specific product of validations, "
+                                  "if more than one product is required "
+                                  "separate the product names with commas."))
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
                             help=("Path where the validation playbooks "
@@ -54,8 +61,10 @@ class ValidationList(Lister):
 
         group = parsed_args.group
         category = parsed_args.category
+        product = parsed_args.product
         validation_dir = parsed_args.validation_dir
 
         v_actions = ValidationActions(validation_path=validation_dir)
         return (v_actions.list_validations(groups=group,
-                                           categories=category))
+                                           categories=category,
+                                           products=product))

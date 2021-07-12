@@ -118,6 +118,15 @@ class ShowParameter(ShowOne):
                   "if more than one category is required "
                   "separate the category names with commas."))
 
+        ex_group.add_argument(
+            '--product',
+            metavar='<product_id>[,<product_id>,...]',
+            action=CommaListAction,
+            default=[],
+            help=("List specific validations by product, "
+                  "if more than one product is required "
+                  "separate the product names with commas."))
+
         parser.add_argument(
             '--download',
             action='store',
@@ -146,6 +155,7 @@ class ShowParameter(ShowOne):
             validations=parsed_args.validation_name,
             groups=parsed_args.group,
             categories=parsed_args.category,
+            products=parsed_args.product,
             output_format=parsed_args.format_output,
             download_file=parsed_args.download)
 

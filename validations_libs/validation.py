@@ -49,13 +49,14 @@ class Validation(object):
     ``metadata`` section to read validation's name and description. These
     values are then reported by the API.
 
-    The validations can be grouped together by specifying a ``groups``
-    and a ``categories`` metadata. ``groups`` are the deployment stage the
-    validations should run on and ``categories`` are the technical
-    classification for the validations.
+    The validations can be grouped together by specifying a ``groups``, a
+    ``categories`` and a ``products`` metadata. ``groups`` are the deployment
+    stage the validations should run on, ``categories`` are the technical
+    classification for the validations and ``products`` are the specific
+    validations which should be executed against a specific product.
 
-    Groups and Categories function similar to tags and a validation can thus be
-    part of many groups and many categories.
+    Groups, Categories and Products function similar to tags and a validation
+    can thus be part of many groups and many categories.
 
     Here is an example:
 
@@ -74,12 +75,16 @@ class Validation(object):
                 - networking
                 - storage
                 - security
+              products:
+                - product1
+                - product2
           roles:
           - hello_world
 
     """
 
-    _col_keys = ['ID', 'Name', 'Description', 'Groups', 'Categories']
+    _col_keys = ['ID', 'Name', 'Description',
+                 'Groups', 'Categories', 'Products']
 
     def __init__(self, validation_path):
         self.dict = self._get_content(validation_path)
@@ -111,6 +116,9 @@ class Validation(object):
                     - networking
                     - storage
                     - security
+                  products:
+                    - product1
+                    - product2
               roles:
               - hello_world
 
@@ -138,6 +146,9 @@ class Validation(object):
                     - networking
                     - storage
                     - security
+                  products:
+                    - product1
+                    - product2
               roles:
               - hello_world
 
@@ -163,6 +174,7 @@ class Validation(object):
         {'description': 'Val1 desc.',
          'groups': ['group1', 'group2'],
          'categories': ['category1', 'category2'],
+         'products': ['product1', 'product2'],
          'id': 'val1',
          'name': 'The validation val1\'s name'}
         """
@@ -219,6 +231,7 @@ class Validation(object):
          'vars': {'metadata': {'description': 'description of val ',
                                'groups': ['group1', 'group2'],
                                'categories': ['category1', 'category2'],
+                               'products': ['product1', 'product2'],
                                'name': 'validation one'},
                                'var_name1': 'value1'}}
         """
@@ -271,6 +284,29 @@ class Validation(object):
             )
 
     @property
+    def products(self):
+        """Get the validation list of products
+
+        :return: A list of products for the validation
+        :rtype: `list` or `None` if no metadata has been found
+        :raise: A `NameError` exception if no metadata has been found in the
+                playbook
+
+        :Example:
+
+        >>> pl = '/foo/bar/val.yaml'
+        >>> val = Validation(pl)
+        >>> print(val.products)
+        ['product1', 'product2']
+        """
+        if self.has_metadata_dict:
+            return self.dict['vars']['metadata'].get('products', [])
+        else:
+            raise NameError(
+                "No metadata found in validation {}".format(self.id)
+            )
+
+    @property
     def get_id(self):
         """Get the validation id
 
@@ -313,6 +349,7 @@ class Validation(object):
         >>> val = Validation(pl)
         >>> print(val.get_formated_data)
         {'Categories': ['category1', 'category2'],
+         'Products': ['product1', 'product2'],
          'Description': 'description of val',
          'Groups': ['group1', 'group2'],
          'ID': 'val',

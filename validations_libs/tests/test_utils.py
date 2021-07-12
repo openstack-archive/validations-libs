@@ -37,6 +37,7 @@ class TestUtils(TestCase):
         output = {'Name': 'Advanced Format 512e Support',
                   'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
                   'Categories': ['os', 'storage'],
+                  'Products': ['product1'],
                   'ID': '512e',
                   'Parameters': {}}
         res = utils.get_validations_data('512e')
@@ -76,6 +77,12 @@ class TestUtils(TestCase):
                           path='/foo/playbook',
                           categories='foo1,foo2')
 
+    def test_parse_all_validations_on_disk_wrong_products_type(self):
+        self.assertRaises(TypeError,
+                          utils.parse_all_validations_on_disk,
+                          path='/foo/playbook',
+                          products='foo1,foo2')
+
     def test_get_validations_playbook_wrong_validation_id_type(self):
         self.assertRaises(TypeError,
                           utils.get_validations_playbook,
@@ -93,6 +100,12 @@ class TestUtils(TestCase):
                           utils.get_validations_playbook,
                           path='/foo/playbook',
                           categories='foo1,foo2')
+
+    def test_get_validations_playbook_wrong_products_type(self):
+        self.assertRaises(TypeError,
+                          utils.get_validations_playbook,
+                          path='/foo/playbook',
+                          products='foo1,foo2')
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
@@ -122,6 +135,18 @@ class TestUtils(TestCase):
         self.assertRaises(TypeError,
                           utils.get_validations_playbook,
                           path=['/foo/playbook'])
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('glob.glob')
+    def test_parse_all_validations_on_disk_by_product(self, mock_glob,
+                                                      mock_open,
+                                                      mock_load):
+        mock_glob.return_value = \
+            ['/foo/playbook/foo.yaml']
+        result = utils.parse_all_validations_on_disk('/foo/playbook',
+                                                     products=['product1'])
+        self.assertEqual(result, [fakes.FAKE_METADATA])
 
     @mock.patch('os.path.isfile')
     @mock.patch('os.listdir')
@@ -171,6 +196,18 @@ class TestUtils(TestCase):
         mock_isfile.return_value = True
         result = utils.get_validations_playbook('/foo/playbook',
                                                 categories=['os', 'storage'])
+        self.assertEqual(result, ['/foo/playbook/foo.yaml'])
+
+    @mock.patch('os.path.isfile')
+    @mock.patch('os.listdir')
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_validations_playbook_by_product(self, mock_open, mock_load,
+                                                 mock_listdir, mock_isfile):
+        mock_listdir.return_value = ['foo.yaml']
+        mock_isfile.return_value = True
+        result = utils.get_validations_playbook('/foo/playbook',
+                                                products=['product1'])
         self.assertEqual(result, ['/foo/playbook/foo.yaml'])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)

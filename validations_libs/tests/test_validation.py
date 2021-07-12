@@ -127,6 +127,28 @@ class TestValidation(TestCase):
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
+    def test_products(self, mock_open, mock_yaml):
+        val = Validation('/tmp/foo')
+        products = val.products
+        self.assertEqual(products, ['product1'])
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_products_with_no_metadata(self, mock_open, mock_yaml):
+        with self.assertRaises(NameError) as exc_mgr:
+            Validation('/tmp/foo').products
+        self.assertEqual('No metadata found in validation foo',
+                         str(exc_mgr.exception))
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK3)
+    @mock.patch('six.moves.builtins.open')
+    def test_products_with_no_existing_products(self, mock_open, mock_yaml):
+        val = Validation('/tmp/foo')
+        products = val.products
+        self.assertEqual(products, [])
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
     def test_get_ordered_dict(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_ordered_dict
