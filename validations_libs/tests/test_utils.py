@@ -58,6 +58,34 @@ class TestUtils(TestCase):
         result = utils.parse_all_validations_on_disk('/foo/playbook')
         self.assertEqual(result, [fakes.FAKE_METADATA])
 
+    def test_parse_all_validations_on_disk_wrong_path_type(self):
+        self.assertRaises(TypeError,
+                          utils.parse_all_validations_on_disk,
+                          path=['/foo/playbook'])
+
+    def test_parse_all_validations_on_disk_wrong_groups_type(self):
+        self.assertRaises(TypeError,
+                          utils.parse_all_validations_on_disk,
+                          path='/foo/playbook',
+                          groups='foo1,foo2')
+
+    def test_get_validations_playbook_wrong_validation_id_type(self):
+        self.assertRaises(TypeError,
+                          utils.get_validations_playbook,
+                          path='/foo/playbook',
+                          validation_id='foo1,foo2')
+
+    def test_get_validations_playbook_wrong_groups_type(self):
+        self.assertRaises(TypeError,
+                          utils.get_validations_playbook,
+                          path='/foo/playbook',
+                          groups='foo1,foo2')
+
+    def test_get_validations_playbook_wrong_path_type(self):
+        self.assertRaises(TypeError,
+                          utils.get_validations_playbook,
+                          path=['/foo/playbook'])
+
     @mock.patch('os.path.isfile')
     @mock.patch('os.listdir')
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
@@ -67,22 +95,8 @@ class TestUtils(TestCase):
         mock_listdir.return_value = ['foo.yaml']
         mock_isfile.return_value = True
         result = utils.get_validations_playbook('/foo/playbook',
-                                                validation_id='foo')
+                                                validation_id=['foo'])
         self.assertEqual(result, ['/foo/playbook/foo.yaml'])
-
-    @mock.patch('os.path.isfile')
-    @mock.patch('os.listdir')
-    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
-    def test_get_validations_playbook_by_string_id(self, mock_open, mock_load,
-                                                   mock_listdir, mock_isfile):
-        validation_id = "foo,foo2,foo3"
-        mock_listdir.return_value = ['foo.yaml', 'foo2.yaml', 'foo3.yaml']
-        mock_isfile.return_value = True
-        result = utils.get_validations_playbook('/foo/playbook', validation_id)
-        self.assertEqual(result, ['/foo/playbook/foo.yaml',
-                                  '/foo/playbook/foo2.yaml',
-                                  '/foo/playbook/foo3.yaml'])
 
     @mock.patch('os.path.isfile')
     @mock.patch('os.listdir')
@@ -92,7 +106,7 @@ class TestUtils(TestCase):
                                                   mock_listdir, mock_isfile):
         mock_listdir.return_value = ['foo.yaml']
         mock_isfile.return_value = True
-        result = utils.get_validations_playbook('/foo/playbook', 'foo', 'prep')
+        result = utils.get_validations_playbook('/foo/playbook', ['foo'], ['prep'])
         self.assertEqual(result, ['/foo/playbook/foo.yaml',
                                   '/foo/playbook/foo.yaml'])
 
@@ -107,7 +121,7 @@ class TestUtils(TestCase):
         mock_listdir.return_value = ['foo.yaml']
         mock_isfile.return_value = True
         result = utils.get_validations_playbook('/foo/playbook',
-                                                'no_group')
+                                                groups=['no_group'])
         self.assertEqual(result, [])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
@@ -149,12 +163,31 @@ class TestUtils(TestCase):
                           utils.get_validations_details,
                           validation=validation)
 
+    def test_get_validations_parameters_wrong_validations_data_type(self):
+        self.assertRaises(TypeError,
+                          utils.get_validations_parameters,
+                          validations_data='/foo/playbook1.yaml')
+
+    def test_get_validations_parameters_wrong_validation_name_type(self):
+        self.assertRaises(TypeError,
+                          utils.get_validations_parameters,
+                          validations_data=['/foo/playbook1.yaml',
+                                            '/foo/playbook2.yaml'],
+                          validation_name='playbook1,playbook2')
+
+    def test_get_validations_parameters_wrong_groups_type(self):
+        self.assertRaises(TypeError,
+                          utils.get_validations_parameters,
+                          validations_data=['/foo/playbook1.yaml',
+                                            '/foo/playbook2.yaml'],
+                          groups='group1,group2')
+
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
     @mock.patch('six.moves.builtins.open')
     def test_get_validations_parameters_no_group(self, mock_open, mock_load):
 
         result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
-                                                  'foo')
+                                                  ['foo'])
         output = {'foo': {'parameters': {'foo': 'bar'}}}
         self.assertEqual(result, output)
 
@@ -174,44 +207,6 @@ class TestUtils(TestCase):
         result = utils.get_validations_parameters(['/foo/playbook/foo.yaml'],
                                                   [], [])
         self.assertEqual(result, {})
-
-    @mock.patch('six.moves.builtins.open')
-    def test_convert_data(self, mock_open):
-        data_string = "check-cpu,check-ram,check-disk-space"
-        data_list = ["check-cpu", "check-ram", "check-disk-space"]
-        result = utils.convert_data(data_string)
-        self.assertEqual(result, data_list)
-
-    @mock.patch('six.moves.builtins.open')
-    def test_convert_data_with_spaces(self, mock_open):
-        data_string = "check-cpu, check-ram , check-disk-space"
-        data_list = ["check-cpu", "check-ram", "check-disk-space"]
-        result = utils.convert_data(data_string)
-        self.assertEqual(result, data_list)
-
-    @mock.patch('six.moves.builtins.open')
-    def test_convert_data_with_comma_at_end(self, mock_open):
-        data_string = "check-cpu,"
-        data_list = ["check-cpu"]
-        result = utils.convert_data(data_string)
-        self.assertEqual(result, data_list)
-
-    @mock.patch('six.moves.builtins.open')
-    def test_convert_data_with_list(self, mock_open):
-        data_list = ["check-cpu", "check-ram", "check-disk-space"]
-        result = utils.convert_data(data_list)
-        self.assertEqual(result, data_list)
-
-    @mock.patch('six.moves.builtins.open')
-    def test_convert_data_with_non_list(self, mock_open):
-        data_dict = {
-            "val1": "check-cpu",
-            "val2": "check-ram",
-            "val3": "check-disk-space"
-        }
-        self.assertRaises(TypeError,
-                          utils.convert_data,
-                          data=data_dict)
 
     @mock.patch('validations_libs.utils.LOG', autospec=True)
     @mock.patch('validations_libs.utils.os.makedirs')
