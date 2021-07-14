@@ -273,6 +273,58 @@ class TestValidationActions(TestCase):
                                          validations_dir='/tmp/foo')
         self.assertEqual(run_return, expected_run_return)
 
+    @mock.patch('validations_libs.ansible.Ansible._playbook_check',
+                side_effect=RuntimeError)
+    @mock.patch('validations_libs.utils.os.makedirs')
+    @mock.patch('validations_libs.utils.os.access', return_value=True)
+    @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
+    @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
+    def test_spinner_exception_failure_condition(self, mock_validation_dir,
+                                                 mock_exists, mock_access,
+                                                 mock_makedirs,
+                                                 mock_playbook_check):
+
+        mock_validation_dir.return_value = [{
+            'description': 'My Validation One Description',
+            'groups': ['prep', 'pre-deployment'],
+            'id': 'foo',
+            'name': 'My Validition One Name',
+            'parameters': {}}]
+        playbook = ['fake.yaml']
+        inventory = 'tmp/inventory.yaml'
+
+        run = ValidationActions()
+
+        self.assertRaises(RuntimeError, run.run_validations, playbook,
+                          inventory, group=fakes.GROUPS_LIST,
+                          validations_dir='/tmp/foo')
+
+    @mock.patch('validations_libs.ansible.Ansible._playbook_check',
+                side_effect=RuntimeError)
+    @mock.patch('validations_libs.utils.os.makedirs')
+    @mock.patch('validations_libs.utils.os.access', return_value=True)
+    @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
+    @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
+    @mock.patch('sys.__stdin__.isatty', return_value=True)
+    def test_spinner_forced_run(self, mock_stdin_isatty, mock_validation_dir,
+                                mock_exists, mock_access, mock_makedirs,
+                                mock_playbook_check):
+
+        mock_validation_dir.return_value = [{
+            'description': 'My Validation One Description',
+            'groups': ['prep', 'pre-deployment'],
+            'id': 'foo',
+            'name': 'My Validition One Name',
+            'parameters': {}}]
+        playbook = ['fake.yaml']
+        inventory = 'tmp/inventory.yaml'
+
+        run = ValidationActions()
+
+        self.assertRaises(RuntimeError, run.run_validations, playbook,
+                          inventory, group=fakes.GROUPS_LIST,
+                          validations_dir='/tmp/foo')
+
     @mock.patch('validations_libs.utils.get_validations_playbook',
                 return_value=[])
     def test_validation_run_no_validation(self, mock_get_val):
