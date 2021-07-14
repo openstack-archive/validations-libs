@@ -62,10 +62,11 @@ class ListHistory(BaseLister):
                 "{} last validations.").format(
                 parsed_args.history_limit))
 
-        actions = ValidationActions(parsed_args.validation_log_dir)
+        actions = ValidationActions()
 
         return actions.show_history(
             validation_ids=parsed_args.validation,
+            log_path=parsed_args.validation_log_dir,
             history_limit=parsed_args.history_limit)
 
 
