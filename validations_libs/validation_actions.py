@@ -343,8 +343,6 @@ class ValidationActions(object):
             except Exception as e:
                 raise(e)
         elif validation_name:
-            validation_name = v_utils.convert_data(validation_name)
-
             playbooks = v_utils.get_validations_playbook(validations_dir,
                                                          validation_name,
                                                          group)

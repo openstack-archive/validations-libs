@@ -133,10 +133,9 @@ def parse_all_validations_on_disk(path, groups=None):
 
     :param path: The absolute path of the validations directory
     :type path: `string`
-    :param groups: Groups of validations. Could be a `list` or a
-                   comma-separated `string` of groups
-    :type groups: `list` or `string`
-    :return: A list of validations metadata.
+    :param groups: Groups of validations
+    :type groups: `list`
+    :return: A list of validations metadata
     :rtype: `list`
 
     :Example:
@@ -152,13 +151,16 @@ def parse_all_validations_on_disk(path, groups=None):
       'id': 'check-cpu',
       'name': 'Verify if the server fits the CPU core requirements'}]
     """
+    if not isinstance(path, six.string_types):
+        raise TypeError("The 'path' argument should be a String")
 
-    results = []
     if not groups:
         groups = []
-    else:
-        groups = convert_data(groups)
 
+    if not isinstance(groups, list):
+        raise TypeError("The 'groups' argument should be a List")
+
+    results = []
     validations_abspath = glob.glob("{path}/*.yaml".format(path=path))
 
     LOG.debug(
@@ -183,9 +185,9 @@ def get_validations_playbook(path, validation_id=None, groups=None):
     :param path: Path of the validations playbooks
     :type path: `string`
     :param validation_id: List of validation name
-    :type validation_id: `list` or a `string` of comma-separated validations
+    :type validation_id: `list`
     :param groups: List of validation group
-    :type groups: `list` or a `string` of comma-separated groups
+    :type groups: `list`
     :return: A list of absolute validations playbooks path
     :rtype: `list`
 
@@ -198,15 +200,20 @@ def get_validations_playbook(path, validation_id=None, groups=None):
     ['/usr/share/ansible/validation-playbooks/512e.yaml',
      '/usr/share/ansible/validation-playbooks/check-cpu.yaml',]
     """
+    if not isinstance(path, six.string_types):
+        raise TypeError("The 'path' argument should be a String")
+
     if not validation_id:
         validation_id = []
-    else:
-        validation_id = convert_data(validation_id)
+
+    if not isinstance(validation_id, list):
+        raise TypeError("The 'validation_id' argument should be a List")
 
     if not groups:
         groups = []
-    else:
-        groups = convert_data(groups)
+
+    if not isinstance(groups, list):
+        raise TypeError("The 'groups' argument should be a List")
 
     pl = []
     for f in os.listdir(path):
@@ -287,7 +294,7 @@ def get_validations_details(validation):
      'name': 'Verify the server fits the something requirements'}
     """
     if not isinstance(validation, six.string_types):
-        raise TypeError("The input data should be a String")
+        raise TypeError("The 'validation' argument should be a String")
 
     results = parse_all_validations_on_disk(constants.ANSIBLE_VALIDATION_DIR)
     for r in results:
@@ -321,7 +328,7 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
      'Parameters': {'param1': 24}}
     """
     if not isinstance(validation, six.string_types):
-        raise TypeError("The input data should be a String")
+        raise TypeError("The 'validation' argument should be a String")
 
     data = {}
     val_path = "{}/{}.yaml".format(path, validation)
@@ -339,8 +346,9 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
     return data
 
 
-def get_validations_parameters(validations_data, validation_name=[],
-                               groups=[]):
+def get_validations_parameters(validations_data,
+                               validation_name=None,
+                               groups=None):
     """Return parameters for a list of validations
 
 
@@ -363,6 +371,21 @@ def get_validations_parameters(validations_data, validation_name=[],
     {'check-cpu': {'parameters': {'minimal_cpu_count': 8}},
      'check-ram': {'parameters': {'minimal_ram_gb': 24}}}
     """
+    if not isinstance(validations_data, list):
+        raise TypeError("The 'validations_data' argument should be a List")
+
+    if not validation_name:
+        validation_name = []
+
+    if not isinstance(validation_name, list):
+        raise TypeError("The 'validation_name' argument should be a List")
+
+    if not groups:
+        groups = []
+
+    if not isinstance(groups, list):
+        raise TypeError("The 'groups' argument should be a List")
+
     params = {}
     for val in validations_data:
         v = Validation(val)
@@ -372,41 +395,3 @@ def get_validations_parameters(validations_data, validation_name=[],
             }
 
     return params
-
-
-def convert_data(data=''):
-    """Transform a string containing comma-separated validation or group name
-    into a list. If `data` is already a list, it will simply return `data`.
-
-    :param data: A string or a list
-    :type data: `string` or `list`
-    :return: A list of data
-    :rtype: `list`
-    :raises: a `TypeError` exception if `data` is not a list or a string
-
-    :Example:
-
-    >>> data = "check-cpu,check-ram,check-disk-space"
-    >>> convert_data(data)
-    ['check-cpu', 'check-ram', 'check-disk-space']
-    ...
-    >>> data = "check-cpu , check-ram , check-disk-space"
-    >>> convert_data(data)
-    ['check-cpu', 'check-ram', 'check-disk-space']
-    ...
-    >>> data = "check-cpu,"
-    >>> convert_data(data)
-    ['check-cpu']
-    ...
-    >>> data = ['check-cpu', 'check-ram', 'check-disk-space']
-    >>> convert_data(data)
-    ['check-cpu', 'check-ram', 'check-disk-space']
-    """
-    if isinstance(data, six.string_types):
-        return [
-            conv_data.strip() for conv_data in data.split(',') if conv_data
-        ]
-    elif not isinstance(data, list):
-        raise TypeError("The input data should be either a List or a String")
-    else:
-        return data
