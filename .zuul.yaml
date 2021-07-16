@@ -72,6 +72,11 @@
               - ^README.rst
               - ^validations_libs/.*
         - validations-libs-functional
+        - tripleo-ci-centos-8-undercloud-containers: &undercloud_containers_job_params
+            dependencies:
+              - openstack-tox-linters
+              - openstack-tox-cover
+              - validations-libs-functional
     gate:
       jobs:
         - openstack-tox-linters
@@ -81,6 +86,10 @@
         - validations-libs-functional
         - tripleo-ci-centos-8-standalone-validation-libs:
             vars: *standalone_consumer_job_vars
+            dependencies:
+              - openstack-tox-linters
+              - validations-libs-functional
+        - tripleo-ci-centos-8-undercloud-containers:
             dependencies:
               - openstack-tox-linters
               - validations-libs-functional
