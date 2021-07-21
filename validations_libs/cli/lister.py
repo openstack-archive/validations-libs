@@ -22,20 +22,18 @@ from validations_libs.cli.parseractions import CommaListAction
 
 
 class ValidationList(Lister):
-    """Validation List client implementation class"""
+    """List the Validations Catalog"""
 
     def get_parser(self, parser):
         """Argument parser for validation run"""
         parser = super(ValidationList, self).get_parser(parser)
         parser.add_argument('--group', '-g',
-                            metavar='<group>[,<group>,...]',
+                            metavar='<group_id>[,<group_id>,...]',
                             action=CommaListAction,
                             default=[],
                             help=("List specific group of validations, "
                                   "if more than one group is required "
-                                  "separate the group names with commas: "
-                                  "--group pre-upgrade,prep | "
-                                  "--group openshift-on-openstack"))
+                                  "separate the group names with commas."))
         parser.add_argument('--category',
                             metavar='<category_id>[,<category_id>,...]',
                             action=CommaListAction,

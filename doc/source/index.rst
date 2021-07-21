@@ -16,6 +16,7 @@ Contents
    readme
    contributing
    testing
+   cli
    reference/index
 
 Indices and tables

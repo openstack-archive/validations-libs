@@ -30,7 +30,7 @@ class ListHistory(BaseLister):
         parser = super(ListHistory, self).get_parser(parser)
 
         parser.add_argument('--validation',
-                            metavar="<validation>",
+                            metavar="<validation_id>",
                             type=str,
                             help='Display execution history for a validation')
         parser.add_argument('--limit',
@@ -71,7 +71,7 @@ class ListHistory(BaseLister):
 
 
 class GetHistory(BaseCommand):
-    """Display details about a Validation execution"""
+    """Display details about a specific Validation execution"""
 
     def get_parser(self, parser):
         parser = super(GetHistory, self).get_parser(parser)

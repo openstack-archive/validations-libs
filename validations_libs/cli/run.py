@@ -25,17 +25,20 @@ from validations_libs.cli.parseractions import CommaListAction, KeyValueAction
 
 
 class Run(BaseCommand):
-    """Validation Run client implementation class"""
+    """Run Validations by name(s), group(s), category(ies) or by product(s)"""
 
     def get_parser(self, parser):
         """Argument parser for validation run"""
         parser = super(Run, self).get_parser(parser)
         parser.add_argument(
-            '--limit', action='store', required=False, help=(
+            '--limit',
+            action='store',
+            metavar="<host1>[,<host2>,<host3>,...]",
+            required=False,
+            help=(
                 "A string that identifies a single node or comma-separated "
                 "list of nodes to be upgraded in parallel in this upgrade "
-                " run invocation. For example: --limit \"compute-0,"
-                "compute-1,compute-5\"."))
+                "run invocation."))
 
         parser.add_argument(
             '--ssh-user',
@@ -80,15 +83,15 @@ class Run(BaseCommand):
             default="{}".format(
                 sys.executable if sys.executable else "/usr/bin/python"
             ),
-            help=("Python interpreter for Ansible execution. "))
+            help=("Python interpreter for Ansible execution."))
 
         parser.add_argument(
             '--extra-env-vars',
             action=KeyValueAction,
             default=None,
-            metavar="key1=<val1> [--extra-vars key3=<val3>]",
+            metavar="key1=<val1> [--extra-env-vars key2=<val2>]",
             help=(
-                " Add extra environment variables you may need "
+                "Add extra environment variables you may need "
                 "to provide to your Ansible execution "
                 "as KEY=VALUE pairs. Note that if you pass the same "
                 "KEY multiple times, the last given VALUE for that same KEY "
@@ -98,7 +101,7 @@ class Run(BaseCommand):
         extra_vars_group.add_argument(
             '--extra-vars',
             default=None,
-            metavar="key1=<val1> [--extra-vars key3=<val3>]",
+            metavar="key1=<val1> [--extra-vars key2=<val2>]",
             action=KeyValueAction,
             help=(
                 "Add Ansible extra variables to the validation(s) execution "
@@ -109,11 +112,11 @@ class Run(BaseCommand):
         extra_vars_group.add_argument(
             '--extra-vars-file',
             action='store',
+            metavar="/tmp/my_vars_file.[json|yaml]",
             default=None,
             help=(
-                "Add a JSON/YAML file containing extra variable "
-                "to a validation: "
-                "--extra-vars-file /home/stack/vars.[json|yaml]."))
+                "Absolute or relative Path to a JSON/YAML file containing extra variable(s) "
+                "to pass to one or multiple validation(s) execution."))
 
         ex_group = parser.add_mutually_exclusive_group(required=True)
         ex_group.add_argument(
@@ -124,20 +127,16 @@ class Run(BaseCommand):
             default=[],
             help=("Run specific validations, "
                   "if more than one validation is required "
-                  "separate the names with commas: "
-                  "--validation check-ftype,512e | "
-                  "--validation 512e"))
+                  "separate the names with commas."))
 
         ex_group.add_argument(
             '--group', '-g',
-            metavar='<group>[,<group>,...]',
+            metavar='<group_id>[,<group_id>,...]',
             action=CommaListAction,
             default=[],
             help=("Run specific group validations, "
                   "if more than one group is required "
-                  "separate the group names with commas: "
-                  "--group pre-upgrade,prep | "
-                  "--group openshift-on-openstack"))
+                  "separate the group names with commas."))
 
         ex_group.add_argument(
             '--category',

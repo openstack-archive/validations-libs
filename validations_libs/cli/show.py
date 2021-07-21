@@ -23,7 +23,7 @@ from validations_libs.cli.parseractions import CommaListAction
 
 
 class Show(ShowOne):
-    """Validation Show client implementation class"""
+    """Show detailed informations about a Validation"""
 
     def get_parser(self, parser):
         """Argument parser for validation show"""
@@ -52,7 +52,7 @@ class Show(ShowOne):
 
 
 class ShowGroup(Lister):
-    """Validation Show group client implementation class"""
+    """Show detailed informations about Validation Groups"""
 
     def get_parser(self, parser):
         """Argument parser for validation show group"""
@@ -73,7 +73,12 @@ class ShowGroup(Lister):
 
 
 class ShowParameter(ShowOne):
-    """Display Validations Parameters"""
+    """Show Validation(s) parameter(s)
+
+    Display Validation(s) Parameter(s) which could be overriden during an
+    execution. It could be filtered by **validation_id**, **group(s)**,
+    **category(ies)** or by **products**.
+    """
 
     def get_parser(self, parser):
         parser = super(ShowParameter, self).get_parser(parser)
@@ -92,9 +97,7 @@ class ShowParameter(ShowOne):
             default=[],
             help=("List specific validations, "
                   "if more than one validation is required "
-                  "separate the names with commas: "
-                  "--validation check-ftype,512e | "
-                  "--validation 512e")
+                  "separate the names with commas.")
         )
 
         ex_group.add_argument(
@@ -104,9 +107,7 @@ class ShowParameter(ShowOne):
             default=[],
             help=("List specific group validations, "
                   "if more than one group is required "
-                  "separate the group names with commas: "
-                  "pre-upgrade,prep | "
-                  "openshift-on-openstack")
+                  "separate the group names with commas.")
         )
 
         ex_group.add_argument(

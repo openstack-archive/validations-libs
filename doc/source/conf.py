@@ -27,6 +27,7 @@ sys.path.insert(0, os.path.join(os.path.abspath('.'), '_exts'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
+    'cliff.sphinxext',
     'sphinxcontrib.apidoc',
     'sphinxcontrib.rsvgconverter',
     'sphinx.ext.viewcode',
@@ -40,6 +41,7 @@ apidoc_output_dir = 'reference/api'
 apidoc_excluded_paths = []
 apidoc_separate_modules = True
 
+autoprogram_cliff_application = 'validation'
 
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/validations-libs'
