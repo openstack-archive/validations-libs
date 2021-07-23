@@ -60,7 +60,7 @@
         - openstack-tox-py36
         - openstack-tox-py39
         - tripleo-ci-centos-8-standalone-validation-libs: &standalone_consumer_job_params
-            vars:
+            vars: &standalone_consumer_job_vars
               build_container_images: true
             dependencies:
               - openstack-tox-linters
@@ -80,7 +80,7 @@
         - openstack-tox-docs: *tripleo-docs
         - validations-libs-functional
         - tripleo-ci-centos-8-standalone-validation-libs:
-            vars: *standalone_consumer_job_params
+            vars: *standalone_consumer_job_vars
             dependencies:
               - openstack-tox-linters
               - validations-libs-functional
