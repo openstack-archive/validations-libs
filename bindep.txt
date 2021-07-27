@@ -42,3 +42,6 @@ gzip
 
 # Required to build language docs
 gettext
+
+# PDF Docs package dependencies
+tex-gyre [platform:dpkg doc]
