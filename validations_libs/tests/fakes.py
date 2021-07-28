@@ -57,9 +57,9 @@ VALIDATION_LIST_RESULT = (('ID', 'Name', 'Groups', 'Categories', 'Products'),
                             ['product1'])])
 
 GROUPS_LIST = [
-    ('group1', 'Group1 description'),
-    ('group2', 'Group2 description'),
-    ('group3', 'Group3 description'),
+    'group1',
+    'group2',
+    'group3'
 ]
 
 BAD_VALIDATIONS_LOGS_CONTENTS_LIST = [{

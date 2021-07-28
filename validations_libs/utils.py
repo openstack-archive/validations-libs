@@ -382,36 +382,6 @@ def get_validation_group_name_list(groups_path=None):
     return gp.get_groups_keys_list
 
 
-def get_validations_details(validation):
-    """Return information details for a validation
-
-    :param validation: Name of the validation
-    :type validation: `string`
-    :return: The information of the validation
-    :rtype: `dict`
-    :raises: a `TypeError` exception if `validation` is not a string
-
-    :Example:
-
-    >>> validation = "check-something"
-    >>> get_validations_details(validation)
-    {'description': 'Verify that the server has enough something.',
-     'groups': ['group1', 'group2'],
-     'categories': ['category1', 'category2'],
-     'products': ['product1', 'product2'],
-     'id': 'check-something',
-     'name': 'Verify the server fits the something requirements'}
-    """
-    if not isinstance(validation, six.string_types):
-        raise TypeError("The 'validation' argument must be a String")
-
-    results = parse_all_validations_on_disk(constants.ANSIBLE_VALIDATION_DIR)
-    for r in results:
-        if r['id'] == validation:
-            return r
-    return {}
-
-
 def get_validations_data(
         validation,
         path=constants.ANSIBLE_VALIDATION_DIR,

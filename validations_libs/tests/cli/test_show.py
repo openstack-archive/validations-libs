@@ -17,6 +17,8 @@ try:
 except ImportError:
     import mock
 
+from validations_libs import group
+from validations_libs.validation_actions import ValidationActions
 from validations_libs.cli import show
 from validations_libs.tests import fakes
 from validations_libs.tests.cli.fakes import BaseCommand
@@ -48,22 +50,17 @@ class TestShowGroup(BaseCommand):
     @mock.patch('yaml.safe_load', return_value=fakes.GROUP)
     @mock.patch('six.moves.builtins.open')
     def test_show_validations_group_info(self, mock_open, mock_yaml, mock_actions):
-        arglist = []
 
-        mock_info = mock.MagicMock()
-        mock_info.group_information = mock.MagicMock(return_value='foo')
-        mock_actions.return_value = mock_info
+        method_calls = [
+            mock.call(fakes.FAKE_VALIDATIONS_PATH),
+            mock.call().group_information(validation_config={})]
+
+        arglist = []
 
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
-        group_info = self.cmd.take_action(parsed_args)
-
-        mock_actions.assert_called_once_with(
-            validation_path=fakes.FAKE_VALIDATIONS_PATH)
-
-        mock_info.group_information.assert_called_once()
-
-        self.assertEqual('foo', group_info)
+        self.cmd.take_action(parsed_args)
+        mock_actions.assert_called_with(fakes.FAKE_VALIDATIONS_PATH)
 
 
 class TestShowParameter(BaseCommand):
@@ -73,10 +70,15 @@ class TestShowParameter(BaseCommand):
         self.cmd = show.ShowParameter(self.app, None)
 
     @mock.patch('six.moves.builtins.open')
-    def test_show_validations_parameters_by_group(self, mock_open):
+    @mock.patch('validations_libs.validation_actions.ValidationActions.'
+                'show_validations_parameters', autospec=True)
+    def test_show_validations_parameters_by_group(self, mock_show, mock_open):
         arglist = ['--group', 'prep']
         verifylist = [('group', ['prep'])]
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.cmd.take_action(parsed_args)
+
+        mock_show.assert_called_once()
 
     def test_show_parameter_exclusive_group(self):
         arglist = ['--validation', 'foo', '--group', 'bar']
@@ -86,23 +88,32 @@ class TestShowParameter(BaseCommand):
                           arglist, verifylist)
 
     @mock.patch('six.moves.builtins.open')
-    def test_show_validations_parameters_by_validations(self, mock_open):
+    @mock.patch('validations_libs.validation_actions.ValidationActions.'
+                'show_validations_parameters', autospec=True)
+    def test_show_validations_parameters_by_validations(self, mock_show, mock_open):
         arglist = ['--group', 'prep']
         verifylist = [('group', ['prep'])]
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.cmd.take_action(parsed_args)
+
+        mock_show.assert_called_once()
 
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
-                'show_validations_parameters')
+                'show_validations_parameters', autospec=True)
     def test_show_validations_parameters_by_categories(self, mock_show):
         arglist = ['--category', 'os']
         verifylist = [('category', ['os'])]
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
 
+        mock_show.assert_called_once()
+
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
-                'show_validations_parameters')
+                'show_validations_parameters', autospec=True)
     def test_show_validations_parameters_by_products(self, mock_show):
         arglist = ['--product', 'product1']
         verifylist = [('product', ['product1'])]
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
+
+        mock_show.assert_called_once()

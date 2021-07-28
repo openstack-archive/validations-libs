@@ -42,10 +42,23 @@ class ValidationActions(object):
 
     """
 
-    def __init__(self, validation_path=constants.ANSIBLE_VALIDATION_DIR):
-
+    def __init__(self, validation_path=constants.ANSIBLE_VALIDATION_DIR,
+                 groups_path=constants.VALIDATION_GROUPS_INFO,
+                 log_path=constants.VALIDATIONS_LOG_BASEDIR):
+        """
+        :param groups_path: The absolute path to the validation groups
+                           definition file.
+                           (Defaults to ``constants.VALIDATION_GROUPS_INFO``)
+        :type groups_path: ``string``
+        :param log_path: The absolute path of the validations logs directory
+                           (Defaults to ``constants.VALIDATIONS_LOG_BASEDIR``)
+        :type log_path: ``string``
+        """
         self.log = logging.getLogger(__name__ + ".ValidationActions")
         self.validation_path = validation_path
+        self.log_path = log_path
+
+        self.groups_path = groups_path
 
     def list_validations(self,
                          groups=None,
@@ -84,7 +97,7 @@ class ValidationActions(object):
             | val3 | val_name3 | ['group4']           | ['category3'] | ['product3'] |
             +------+-----------+----------------------+---------------+--------------+
 
-        :Example:
+        :example:
 
         >>> path = "/foo/bar"
         >>> groups = ['group1']
@@ -130,13 +143,16 @@ class ValidationActions(object):
         return (column_names, return_values)
 
     def show_validations(self, validation,
-                         log_path=constants.VALIDATIONS_LOG_BASEDIR,
+                         log_path=None,
                          validation_config=None):
         """Display detailed information about a Validation
 
         :param validation: The name of the validation
         :type validation: `string`
-        :param log_path: The absolute path of the validations logs
+        :param log_path: The absolute path of the validations logs.
+                         The 'log_path' argument is deprecated and
+                         will be removed in the next release.
+                         Use the 'log_path' argument of the init method.
         :type log_path: `string`
         :param validation_config: A dictionary of configuration for Validation
                                   loaded from an validation.cfg file.
@@ -146,7 +162,7 @@ class ValidationActions(object):
         :return: The detailed information for a validation
         :rtype: `dict`
 
-        :Example:
+        :example:
 
         >>> path = "/foo/bar"
         >>> validation = 'foo'
@@ -166,7 +182,14 @@ class ValidationActions(object):
         """
         self.log = logging.getLogger(__name__ + ".show_validations")
         # Get validation data:
-        vlog = ValidationLogs(log_path)
+        if log_path:
+            self.log.warning((
+                "The 'log_path' argument is deprecated and"
+                " will be removed in the next release. "
+                "Use the 'log_path' argument of the init method."))
+            vlog = ValidationLogs(log_path)
+        else:
+            vlog = ValidationLogs(self.log_path)
         data = v_utils.get_validations_data(
                 validation,
                 self.validation_path,
@@ -185,75 +208,91 @@ class ValidationActions(object):
         data.update(data_format)
         return data
 
-    def _skip_hosts(self, skip_list, playbook, limit_hosts=None):
+    def _skip_hosts(self, skip_list, limit_hosts=None):
         """Check Ansible Hosts and return an updated limit_hosts
-        :param skip_list: The list of the validation to skip
-        :type validation_name: ``dict``
-        :param playbook: The name of the playbook
-        :type base_dir: ``string``
+        :param skip_list: list of hosts to skip with reasons why
+        :type skip_list: `dict`
         :param limit_hosts: Limit the execution to the hosts.
         :type limit_hosts: ``string``
 
         :return the limit hosts according the skip_list or None if the
                 validation should be skipped on ALL hosts.
-        :example
-            limit_hosts = 'cloud1,cloud2'
-            skip_list = {'xyz': {'hosts': 'cloud1',
-                                          'reason': None,
-                                          'lp': None}
-                        }
-            >>> _skip_hosts(skip_list, playbook, limit_hosts='cloud1,cloud2')
-            'cloud2,!cloud1'
+        :example:
 
+        >>> v_actions = ValidationActions()
+        >>> limit_hosts = 'cloud1,cloud2'
+        >>> skip_list = {
+        ... 'xyz': {
+        ...     'hosts': 'cloud1',
+        ...     'reason': None,
+        ...     'lp': None}}
+        >>> v_actions._skip_hosts(skip_list, validation, limit_hosts='cloud1,cloud2')
+        '!cloud1,cloud2'
         """
-        hosts = skip_list[playbook].get('hosts', 'all')
+        hosts = skip_list.get('hosts', 'all')
         if hosts.lower() == 'all':
             return None
-        else:
-            _hosts = ['!{}'.format(hosts)]
-            if limit_hosts:
-                # check if skipped hosts is already in limit host
-                _hosts.extend([limit for limit in limit_hosts.split(',')
-                               if hosts not in limit])
-            return ','.join(_hosts)
+        _hosts = ['!{}'.format(hosts)]
+        if limit_hosts:
+            # check if skipped hosts is already in limit host
+            _hosts.extend([limit for limit in limit_hosts.split(',')
+                           if hosts not in limit])
+        return ','.join(_hosts)
 
     def _skip_playbook(self, skip_list, playbook, limit_hosts=None):
-        """Check if playbook is in the ski plist
-        :param skip_list: The list of the validation to skip
-        :type validation_name: ``dict``
+        """Check if playbook is in the skiplist
+        :param skip_list: Dictionary of validations to skip.
+        :type skip_list: `dictionary`
         :param playbook: The name of the playbook
-        :type base_dir: ``string``
+        :type playbook: `string`
         :param limit_hosts: Limit the execution to the hosts.
-        :type limit_hosts: ``string``
+        :type limit_hosts: `string`
 
         :return a tuple of playbook and hosts
-        :example
-            skip_list = {'xyz': {'hosts': 'cloud1',
-                                          'reason': None,
-                                          'lp': None}
-                        }
-            If playbook not in skip list:
-            >>> _skip_playbook(skip_list, 'foo', None)
-            ('foo', None)
+        :rtype: `tuple`
 
-            If playbook in the skip list, but with restriction only on
-            host cloud1:
-            >>> _skip_playbook(skip_list, 'xyz', None)
-            ('xyz', '!cloud1')
+        :example:
 
-            If playbook in the skip list, and should be skip on ALL hosts:
-            skip_list = {'xyz': {'hosts': 'ALL',
-                                 'reason': None,
-                                 'lp': None}
-                        }
-            >>> _skip_playbook(skip_list, 'xyz', None)
-            (None, None)
+        >>> skip_list = {
+        ... 'xyz': {
+        ...     'hosts': 'cloud1',
+        ...     'reason': None,
+        ...     'lp': None}}
 
+        If playbook is not in skip list:
+        >>> v_actions = ValidationActions()
+        >>> v_actions._skip_playbook(skip_list, 'foo', None)
+        ('foo', None)
+
+        If playbook is in the skip list, but with restriction only on
+        host cloud1:
+        >>> v_actions = ValidationActions()
+        >>> v_actions._skip_playbook(skip_list, 'xyz', None)
+        ('xyz', '!cloud1')
+
+        If playbook in the skip list, and should be skip on ALL hosts:
+        >>> skip_list = {
+        ... 'xyz': {
+        ...     'hosts': 'ALL',
+        ...     'reason': None,
+        ...     'lp': None}}
+        >>> v_actions = ValidationActions()
+        >>> v_actions._skip_playbook(skip_list, 'xyz', None)
+        (None, None)
         """
         if skip_list:
-            if playbook in skip_list.keys():
-                _hosts = self._skip_hosts(skip_list, playbook,
-                                          limit_hosts)
+            if playbook in skip_list:
+
+                self.log.info((
+                    "Validation '{}' skipped on following hosts '{}' "
+                    "with reason: '{}'.").format(
+                        playbook,
+                        skip_list[playbook].get('hosts', 'All'),
+                        skip_list[playbook].get('reason', None)))
+
+                _hosts = self._skip_hosts(
+                    skip_list[playbook],
+                    limit_hosts)
                 if _hosts:
                     return playbook, _hosts
                 else:
@@ -266,6 +305,14 @@ class ValidationActions(object):
         with the last time the file was modified serving as a key.
         Finally we take the last `n` logs, where `n` == `history_limit`
         and return them while discarding the time information.
+
+        :param logs: List of validation log file paths
+        :type logs: `list`
+        :param history_limit: number of entries to display
+        :type history_limit: `int`
+
+        :return: List of time-modified, path tuples of length =< history_limit
+        :rtype: `list`
         """
 
         history_limit = min(history_limit, len(logs))
@@ -280,17 +327,16 @@ class ValidationActions(object):
                         group=None, category=None, product=None,
                         extra_vars=None, validations_dir=None,
                         extra_env_vars=None, ansible_cfg=None, quiet=True,
-                        workdir=None, limit_hosts=None, run_async=False,
+                        limit_hosts=None, run_async=False,
                         base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
-                        log_path=constants.VALIDATIONS_LOG_BASEDIR,
-                        python_interpreter=None, skip_list=None,
+                        log_path=None, python_interpreter=None, skip_list=None,
                         callback_whitelist=None,
                         output_callback='validation_stdout', ssh_user=None,
                         validation_config=None):
         """Run one or multiple validations by name(s), by group(s) or by
         product(s)
 
-        :param validation_name: A list of validation names
+        :param validation_name: A list of validation names.
         :type validation_name: ``list``
         :param inventory: Either proper inventory file, or a comma-separated
                           list. (Defaults to ``localhost``)
@@ -315,8 +361,6 @@ class ValidationActions(object):
         :type ansible_cfg: ``string``
         :param quiet: Disable all output (Defaults to ``True``)
         :type quiet: ``Boolean``
-        :param workdir: Location of the working directory
-        :type workdir: ``string``
         :param limit_hosts: Limit the execution to the hosts.
         :type limit_hosts: ``string``
         :param run_async: Enable the Ansible asynchronous mode
@@ -329,6 +373,9 @@ class ValidationActions(object):
         :param log_path: The absolute path of the validations logs directory
                          (Defaults to
                          ``constants.VALIDATIONS_LOG_BASEDIR``)
+                         The absolute path of the validations logs directory.
+                         The 'log_path' argument is deprecated and will be removed in the next release.
+                         Use the 'log_path' argument of the init method.
         :type log_path: ``string``
         :param python_interpreter: Path to the Python interpreter to be
                                    used for module execution on remote targets,
@@ -359,7 +406,7 @@ class ValidationActions(object):
                  Status, Status_by_Host, UUID and Unreachable_Hosts)
         :rtype: ``list``
 
-        :Example:
+        :example:
 
         >>> path = "/u/s/a"
         >>> validation_name = ['foo', 'bar']
@@ -402,27 +449,45 @@ class ValidationActions(object):
             for val in validations:
                 playbooks.append("{path}/{id}.yaml".format(**val))
         elif validation_name:
+            self.log.debug(
+                "Getting the {} validation.".format(
+                    validation_name))
+
             playbooks = v_utils.get_validations_playbook(
                     validations_dir,
                     validation_name,
                     validation_config=validation_config)
 
             if not playbooks or len(validation_name) != len(playbooks):
-                p = []
+                found_playbooks = []
                 for play in playbooks:
-                    p.append(os.path.basename(os.path.splitext(play)[0]))
+                    found_playbooks.append(
+                        os.path.basename(os.path.splitext(play)[0]))
 
-                unknown_validation = list(set(validation_name) - set(p))
+                unknown_validations = list(
+                    set(validation_name) - set(found_playbooks))
 
-                msg = "Validation {} not found in {}.".format(
-                    unknown_validation, validations_dir)
+                msg = (
+                    "Following validations were not found in '{}': {}"
+                    ).format(validations_dir, ', '.join(unknown_validations))
 
                 raise RuntimeError(msg)
         else:
             raise RuntimeError("No validations found")
+        if log_path:
+            self.log.warning((
+                "The 'log_path' argument is deprecated and"
+                " will be removed in the next release. "
+                "Use the 'log_path' argument of the init method."))
+            log_path = v_utils.create_log_dir(log_path)
+        else:
+            log_path = v_utils.create_log_dir(self.log_path)
 
-        log_path = v_utils.create_log_dir(log_path)
-        self.log.debug('Running the validations with Ansible')
+        self.log.debug((
+            'Running the validations with Ansible.\n'
+            'Gathered playbooks:\n -{}').format(
+                '\n -'.join(playbooks)))
+
         results = []
         for playbook in playbooks:
             # Check if playbook should be skipped and on which hosts
@@ -485,17 +550,6 @@ class ValidationActions(object):
                                 'validations': _playbook.split('.')[0],
                                 'UUID': validation_uuid,
                                 })
-                # Print hosts which has been skipped:
-                if _hosts:
-                    skipped_hosts = [h.replace('!', '')
-                                     for h in _hosts.split(',') if '!' in h]
-                    if skipped_hosts:
-                        msg = ("Validation {} has been skipped "
-                               "on hosts: {}").format(_play,
-                                                      ','.join(skipped_hosts))
-                        self.log.info(msg)
-            else:
-                self.log.info('Skipping Validations: {}'.format(playbook))
 
         if run_async:
             return results
@@ -504,7 +558,7 @@ class ValidationActions(object):
         vlog = ValidationLogs(log_path)
         return vlog.get_results(uuid)
 
-    def group_information(self, groups, validation_config=None):
+    def group_information(self, groups=None, validation_config=None):
         """Get Information about Validation Groups
 
         This is used to print table from python ``Tuple`` with ``PrettyTable``.
@@ -519,7 +573,10 @@ class ValidationActions(object):
             | group3   | Description of group3    |                     1 |
             +----------+--------------------------+-----------------------+
 
-        :param groups: The absolute path of the groups.yaml file
+        :param groups: The absolute path of the groups.yaml file.
+                       The argument is deprecated and will be removed
+                       in the next release.
+                       Use the 'groups_path' argument of the init method.
         :type groups: ``string``
         :param validation_config: A dictionary of configuration for Validation
                                   loaded from an validation.cfg file.
@@ -529,19 +586,27 @@ class ValidationActions(object):
                  the numbers of validation belonging to them.
         :rtype: ``tuple``
 
-        :Example:
+        :example:
 
         >>> groups = "/foo/bar/groups.yaml"
-        >>> actions = ValidationActions(constants.ANSIBLE_VALIDATION_DIR)
-        >>> group_info = actions.group_information(groups)
+        >>> actions = ValidationActions(constants.ANSIBLE_VALIDATION_DIR, groups)
+        >>> group_info = actions.group_information()
         >>> print(group_info)
         (('Groups', 'Desciption', 'Number of Validations'),
          [('group1', 'Description of group1', 3),
           ('group2', 'Description of group2', 12),
           ('group3', 'Description of group3', 1)])
         """
-        val_gp = Group(groups)
-        group_definitions = val_gp.get_formated_group
+        if groups:
+            self.log.warning((
+                "The 'groups' argument is deprecated and"
+                " will be removed in the next release. "
+                "Use the 'groups_path' argument of the init method."))
+            val_group = Group(groups)
+        else:
+            val_group = Group(self.groups_path)
+
+        group_definitions = val_group.get_formated_groups
 
         group_info = []
 
@@ -599,7 +664,7 @@ class ValidationActions(object):
         :return: A JSON or a YAML dump (By default, JSON).
                  if `download_file` is used, a file containing only the
                  parameters will be created in the file system.
-        :exemple:
+        :example:
 
         >>> validations = ['check-cpu', 'check-ram']
         >>> groups = None
@@ -620,26 +685,8 @@ class ValidationActions(object):
                 }
             }
         }
+
         """
-        if not validations:
-            validations = []
-        elif not isinstance(validations, list):
-            raise TypeError("The 'validations' argument must be a List")
-
-        if not groups:
-            groups = []
-        elif not isinstance(groups, list):
-            raise TypeError("The 'groups' argument must be a List")
-
-        if not categories:
-            categories = []
-        elif not isinstance(categories, list):
-            raise TypeError("The 'categories' argument must be a List")
-
-        if not products:
-            products = []
-        elif not isinstance(products, list):
-            raise TypeError("The 'products' argument must be a List")
 
         supported_format = ['json', 'yaml']
 
@@ -667,7 +714,7 @@ class ValidationActions(object):
             params_only = {}
             try:
                 with open(download_file, 'w') as parameters_file:
-                    for val_name in params.keys():
+                    for val_name in params:
                         params_only.update(params[val_name].get('parameters'))
 
                     if output_format == 'json':
@@ -698,7 +745,7 @@ class ValidationActions(object):
         return params
 
     def show_history(self, validation_ids=None, extension='json',
-                     log_path=constants.VALIDATIONS_LOG_BASEDIR,
+                     log_path=None,
                      history_limit=None):
         """Return validation executions history
 
@@ -706,7 +753,10 @@ class ValidationActions(object):
         :type validation_ids: a list of strings
         :param extension: The log file extension (Defaults to ``json``)
         :type extension: ``string``
-        :param log_path: The absolute path of the validations logs directory
+        :param log_path: The absolute path of the validations logs directory.
+                         The 'log_path' argument is deprecated and will
+                         be removed in the next release.
+                         Use the 'log_path' argument of the init method.
         :type log_path: ``string``
         :param history_limit: The number of most recent history logs
                               to be displayed.
@@ -716,7 +766,7 @@ class ValidationActions(object):
                  history
         :rtype: ``tuple``
 
-        :Example:
+        :example:
 
         >>> actions = ValidationActions(constants.ANSIBLE_VALIDATION_DIR)
         >>> print(actions.show_history())
@@ -754,8 +804,17 @@ class ValidationActions(object):
          'PASSED',
          '2020-11-13T11:47:50.279662Z',
          '0:00:02.237')])
+
         """
-        vlogs = ValidationLogs(log_path)
+        if log_path:
+            self.log.warning((
+                "The 'log_path' argument is deprecated and"
+                " will be removed in the next release. "
+                "Use the 'log_path' argument of the init method."))
+            vlogs = ValidationLogs(log_path)
+        else:
+            vlogs = ValidationLogs(self.log_path)
+
         if validation_ids:
             if not isinstance(validation_ids, list):
                 validation_ids = [validation_ids]
@@ -794,13 +853,16 @@ class ValidationActions(object):
         :type uuid: ``string``
         :param status: The status of the execution (Defaults to FAILED)
         :type status: ``string``
-        :param log_path: The absolute path of the validations logs directory
+        :param log_path: The absolute path of the validations logs directory.
+                         The 'log_path' argument is deprecated and will
+                         be removed in the next release.
+                         Use the 'log_path' argument of the init method.
         :type log_path: ``string``
 
         :return: A list of validations execution with details and by status
         :rtype: ``tuple``
 
-        :Example:
+        :example:
 
         >>> actions = ValidationActions(validation_path='/foo/bar')
         >>> status = actions.get_status(validation_id='foo'))
@@ -831,7 +893,15 @@ class ValidationActions(object):
              'failed': True,
              'msg': 'Debug mode is not disabled.'})])
         """
-        vlogs = ValidationLogs(log_path)
+        if log_path:
+            self.log.warning((
+                "The 'log_path' argument is deprecated and"
+                " will be removed in the next release. "
+                "Use the 'log_path' argument of the init method."))
+            vlogs = ValidationLogs(log_path)
+        else:
+            vlogs = ValidationLogs(self.log_path)
+
         if validation_id:
             logs = vlogs.get_logfile_by_validation(validation_id)
         elif uuid:
