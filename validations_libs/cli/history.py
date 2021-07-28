@@ -62,11 +62,10 @@ class ListHistory(BaseLister):
             ("Limiting output to the maximum of "
              "{} last validations.").format(history_limit))
 
-        actions = ValidationActions()
+        actions = ValidationActions(log_path=parsed_args.validation_log_dir)
 
         return actions.show_history(
             validation_ids=parsed_args.validation,
-            log_path=parsed_args.validation_log_dir,
             history_limit=history_limit)
 
 

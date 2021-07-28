@@ -29,7 +29,8 @@ class TestListHistory(BaseCommand):
         self.cmd = history.ListHistory(self.app, None)
 
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
-                'show_history')
+                'show_history',
+                autospec=True)
     def test_list_history(self, mock_history):
         arglist = ['--validation-log-dir', '/foo/log/dir']
         verifylist = [('validation_log_dir', '/foo/log/dir')]
@@ -80,7 +81,8 @@ class TestGetHistory(BaseCommand):
 
     @mock.patch('validations_libs.validation_logs.ValidationLogs.'
                 'get_logfile_content_by_uuid',
-                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
+                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST,
+                autospec=True)
     def test_get_history(self, mock_logs):
         arglist = ['123']
         verifylist = [('uuid', '123')]
@@ -91,7 +93,8 @@ class TestGetHistory(BaseCommand):
 
     @mock.patch('validations_libs.validation_logs.ValidationLogs.'
                 'get_logfile_content_by_uuid',
-                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
+                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST,
+                autospec=True)
     def test_get_history_from_log_dir(self, mock_logs):
         arglist = ['123', '--validation-log-dir', '/foo/log/dir']
         verifylist = [('uuid', '123'), ('validation_log_dir', '/foo/log/dir')]
@@ -102,7 +105,8 @@ class TestGetHistory(BaseCommand):
 
     @mock.patch('validations_libs.validation_logs.ValidationLogs.'
                 'get_logfile_content_by_uuid',
-                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
+                return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST,
+                autospec=True)
     def test_get_history_full_arg(self, mock_logs):
         arglist = ['123', '--full']
         verifylist = [('uuid', '123'), ('full', True)]

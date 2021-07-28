@@ -68,10 +68,10 @@ class Group(object):
         return self.data
 
     @property
-    def get_formated_group(self):
-        """Get a formated content for output display
+    def get_formated_groups(self):
+        """Get a formated list of groups for output display
 
-        :return:
+        :return: information about parsed groups
         :rtype: `list` of `tuples`
 
         :Example:

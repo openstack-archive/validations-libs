@@ -40,7 +40,7 @@ class TestGroup(TestCase):
     def test_get_formated_group(self, mock_open, mock_yaml):
         grp = Group('/tmp/foo')
         ret = [('no-op', 'noop-foo'), ('post', 'post-foo'), ('pre', 'pre-foo')]
-        data = grp.get_formated_group
+        data = grp.get_formated_groups
         self.assertEqual(data, ret)
 
     @mock.patch('yaml.safe_load', return_value=fakes.GROUP)

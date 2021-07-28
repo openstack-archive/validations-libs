@@ -20,8 +20,6 @@ except ImportError:
     import mock
     from mock import ANY
 
-import json
-
 from unittest import TestCase
 
 from validations_libs.tests import fakes
@@ -62,8 +60,7 @@ class TestValidationActions(TestCase):
         skip_list = {'fake': {'hosts': 'ALL',
                               'reason': None,
                               'lp': None
-                             }
-                    }
+                             }}
 
         run = ValidationActions()
         run_return = run.run_validations(playbook, inventory,
@@ -124,9 +121,8 @@ class TestValidationActions(TestCase):
                              }
                     }
 
-        run = ValidationActions()
+        run = ValidationActions(log_path='/var/log/validations')
         run_return = run.run_validations(playbook, inventory,
-                                         log_path='/var/log/validations',
                                          validations_dir='/tmp/foo',
                                          skip_list=skip_list,
                                          limit_hosts='!cloud1')
@@ -185,9 +181,8 @@ class TestValidationActions(TestCase):
                              }
                     }
 
-        run = ValidationActions()
+        run = ValidationActions(log_path='/var/log/validations')
         run_return = run.run_validations(playbook, inventory,
-                                         log_path='/var/log/validations',
                                          validations_dir='/tmp/foo',
                                          skip_list=skip_list,
                                          limit_hosts='cloud,cloud1,!cloud2')
@@ -256,9 +251,8 @@ class TestValidationActions(TestCase):
 
         run = ValidationActions()
         self.assertRaises(RuntimeError, run.run_validations,
-                          validation_name='fake.yaml',
-                          validations_dir='/tmp/foo'
-                          )
+                          validation_name=['fake'],
+                          validations_dir='/tmp/foo')
 
     @mock.patch('validations_libs.utils.get_validations_playbook')
     def test_validation_run_not_all_found(self, mock_validation_play):
@@ -271,7 +265,7 @@ class TestValidationActions(TestCase):
                           validations_dir='/tmp/foo')
         except RuntimeError as runtime_error:
             self.assertEqual(
-                    "Validation ['foo'] not found in /tmp/foo.",
+                    "Following validations were not found in '/tmp/foo': foo",
                     str(runtime_error))
         else:
             self.fail("Runtime error exception should have been raised")
@@ -435,7 +429,7 @@ class TestValidationActions(TestCase):
     @mock.patch('six.moves.builtins.open')
     def test_group_information(self, mock_open, mock_yaml, mock_data):
         v_actions = ValidationActions()
-        col, values = v_actions.group_information('512e')
+        col, values = v_actions.group_information()
         self.assertEqual(col, ('Groups', 'Description',
                                'Number of Validations'))
         self.assertEqual(values, [('no-op', 'noop-foo', 1),

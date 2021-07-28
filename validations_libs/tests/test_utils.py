@@ -354,22 +354,6 @@ class TestUtils(TestCase):
         result = utils.get_validation_group_name_list('/foo/groups.yaml')
         self.assertEqual(result, ['no-op', 'post', 'pre'])
 
-    @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
-                return_value=[fakes.FAKE_METADATA])
-    @mock.patch('yaml.safe_load', return_value=fakes.GROUP)
-    @mock.patch('six.moves.builtins.open')
-    def test_get_validations_details(self, mock_open, mock_load, mock_parse):
-
-        result = utils.get_validations_details('foo')
-        self.assertEqual(result, fakes.FAKE_METADATA)
-
-    @mock.patch('six.moves.builtins.open')
-    def test_get_validations_details_wrong_type(self, mock_open):
-        validation = ['foo']
-        self.assertRaises(TypeError,
-                          utils.get_validations_details,
-                          validation=validation)
-
     def test_get_validations_parameters_wrong_validations_data_type(self):
         self.assertRaises(TypeError,
                           utils.get_validations_parameters,
