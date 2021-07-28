@@ -26,8 +26,8 @@ class TestColors(TestCase):
         RED = "\033[1;31m"
         GREEN = "\033[0;32m"
         CYAN = "\033[36m"
-        RESET = "\033[0;0m"
         YELLOW = "\033[0;33m"
+        self.RESET = "\033[0;0m"
 
         self.status_color = {
             'starting': CYAN,
@@ -50,7 +50,7 @@ class TestColors(TestCase):
             color = self.status_color[status]
             colored_output = colors.color_output("fizz", status=status)
             #Checking reset color
-            self.assertEqual(colored_output[-6:], '\033[0;0m')
+            self.assertEqual(colored_output[-6:], self.RESET)
             #Checking output color
             self.assertEqual(colored_output[:len(color)], color)
             #Checking output string
@@ -61,7 +61,7 @@ class TestColors(TestCase):
         color = self.status_color['UNKNOWN']
         colored_output = colors.color_output("buzz")
         #Checking reset color
-        self.assertEqual(colored_output[-6:], '\033[0;0m')
+        self.assertEqual(colored_output[-6:], self.RESET)
         #Checking output color
         self.assertEqual(colored_output[:len(color)], color)
         #Checking output string

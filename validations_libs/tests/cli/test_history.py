@@ -16,7 +16,6 @@ try:
     from unittest import mock
 except ImportError:
     import mock
-from unittest import TestCase
 
 from validations_libs.cli import history
 from validations_libs.tests import fakes
