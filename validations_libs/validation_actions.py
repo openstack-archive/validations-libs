@@ -502,14 +502,23 @@ class ValidationActions(object):
           ('group3', 'Description of group3', 1)])
         """
         val_gp = Group(groups)
-        group = val_gp.get_formated_group
+        group_definitions = val_gp.get_formated_group
 
         group_info = []
-        # Get validations number by groups
-        for gp in group:
-            validations = v_utils.parse_all_validations_on_disk(
-                self.validation_path, gp[0])
-            group_info.append((gp[0], gp[1], len(validations)))
+
+        validations = v_utils.parse_all_validations_on_disk(
+                path=self.validation_path,
+                groups=[group[0] for group in group_definitions])
+
+        # Get validations number by group
+        for group in group_definitions:
+            n_matches = len(
+                [val for val in validations if group[0] in val['groups']])
+            group_info.append((
+                group[0],
+                group[1],
+                n_matches))
+
         column_name = ("Groups", "Description", "Number of Validations")
         return (column_name, group_info)
 

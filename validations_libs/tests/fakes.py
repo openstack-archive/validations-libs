@@ -17,7 +17,7 @@ from validations_libs import constants
 
 VALIDATIONS_LIST = [{
     'description': 'My Validation One Description',
-    'groups': ['prep', 'pre-deployment'],
+    'groups': ['prep', 'pre-deployment', 'no-op', 'post'],
     'categories': ['os', 'system', 'ram'],
     'products': ['product1'],
     'id': 'my_val1',
@@ -25,7 +25,7 @@ VALIDATIONS_LIST = [{
     'parameters': {}
 }, {
     'description': 'My Validation Two Description',
-    'groups': ['prep', 'pre-introspection'],
+    'groups': ['prep', 'pre-introspection', 'post', 'pre'],
     'categories': ['networking'],
     'products': ['product1'],
     'id': 'my_val2',

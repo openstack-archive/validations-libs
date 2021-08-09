@@ -40,12 +40,12 @@ class TestValidationActions(TestCase):
         self.assertEqual(validations_list.list_validations(),
                          (self.column_name, [('my_val1',
                                               'My Validation One Name',
-                                              ['prep', 'pre-deployment'],
+                                              ['prep', 'pre-deployment', 'no-op', 'post'],
                                               ['os', 'system', 'ram'],
                                               ['product1']),
                                              ('my_val2',
                                               'My Validation Two Name',
-                                              ['prep', 'pre-introspection'],
+                                              ['prep', 'pre-introspection', 'post', 'pre'],
                                               ['networking'],
                                               ['product1'])]))
 
@@ -380,9 +380,9 @@ class TestValidationActions(TestCase):
         col, values = v_actions.group_information('512e')
         self.assertEqual(col, ('Groups', 'Description',
                                'Number of Validations'))
-        self.assertEqual(values, [('no-op', 'noop-foo', 2),
+        self.assertEqual(values, [('no-op', 'noop-foo', 1),
                                   ('post', 'post-foo', 2),
-                                  ('pre', 'pre-foo', 2)])
+                                  ('pre', 'pre-foo', 1)])
 
     @mock.patch('six.moves.builtins.open')
     def test_show_validations_parameters_wrong_validations_type(self, mock_open):

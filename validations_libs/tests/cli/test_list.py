@@ -37,7 +37,7 @@ class TestList(BaseCommand):
 
         val_list = [
             {'description': 'My Validation One Description',
-             'groups': ['prep', 'pre-deployment'],
+             'groups': ['prep', 'pre-deployment', 'no-op', 'post'],
              'categories': ['os', 'system', 'ram'],
              'products': ['product1'],
              'id': 'my_val1',
@@ -45,7 +45,7 @@ class TestList(BaseCommand):
              'parameters': {}
             }, {
              'description': 'My Validation Two Description',
-             'groups': ['prep', 'pre-introspection'],
+             'groups': ['prep', 'pre-introspection', 'post', 'pre'],
              'categories': ['networking'],
              'products': ['product1'],
              'id': 'my_val2',
