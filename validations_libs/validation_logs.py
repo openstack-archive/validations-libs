@@ -288,6 +288,26 @@ class ValidationLog(object):
         return ', '.join(filter(None, duration))
 
     @property
+    def get_reason(self):
+        """Return validation reason
+
+        :return: hostname: reason of the failure
+        :rtype: ``string``
+        """
+        reason = []
+        if self.get_status == 'FAILED':
+            for v_output in self.content['validation_output']:
+                for h in v_output['task']['hosts']:
+                    msg = v_output['task']['hosts'][h].get('msg',
+                                                           'Unknown')
+                    msg = msg[:50] + '\n' + msg[50:]
+                    reason.append('{}: {}'.format(h, msg))
+            if not self.content['validation_output']:
+                if self.get_unreachable_hosts:
+                    reason.append('Unreachable')
+        return ',\n'.join(reason)
+
+    @property
     def get_start_time(self):
         """Return Ansible start time
 
@@ -539,5 +559,6 @@ class ValidationLogs(object):
             data['Status_by_Host'] = vlog.get_hosts_status
             data['Unreachable_Hosts'] = vlog.get_unreachable_hosts
             data['Duration'] = vlog.get_duration
+            data['Reasons'] = vlog.get_reason
             res.append(data)
         return res

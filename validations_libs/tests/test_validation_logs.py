@@ -199,12 +199,35 @@ class TestValidationLogs(TestCase):
         self.assertEqual(content, [{
             'UUID': '123',
             'Validations': 'foo',
+            'Reasons': '',
             'Status': 'PASSED',
             'Status_by_Host': 'undercloud,PASSED',
             'Host_Group': 'undercloud',
             'Unreachable_Hosts': '',
             'Duration': '0:00:03.753',
             'Validations': 'foo'}])
+
+    @mock.patch('validations_libs.validation_logs.ValidationLogs.'
+                'get_logfile_by_uuid_validation_id')
+    @mock.patch('json.load',
+                return_value=fakes.FAILED_VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('six.moves.builtins.open')
+    def test_get_failed_results(self, mock_open, mock_json,
+                                mock_get_validation):
+        mock_get_validation.return_value = \
+            ['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json']
+        vlogs = ValidationLogs('/tmp/foo')
+        content = vlogs.get_results(uuid='123', validation_id='foo')
+        self.assertEqual(content, [{
+            'UUID': '123',
+            'Validations': 'foo',
+            'Status': 'FAILED',
+            'Status_by_Host': 'undercloud,FAILED',
+            'Host_Group': 'undercloud',
+            'Unreachable_Hosts': '',
+            'Duration': '',
+            'Validations': 'foo',
+            'Reasons': "localhost: Fake Failed\n"}])
 
     def test_get_results_none(self):
         vlogs = ValidationLogs('/tmp/foo')
@@ -224,6 +247,7 @@ class TestValidationLogs(TestCase):
             {
                 'UUID': '123',
                 'Validations': 'foo',
+                'Reasons': '',
                 'Status': 'PASSED',
                 'Status_by_Host': 'undercloud,PASSED',
                 'Host_Group': 'undercloud',
@@ -233,6 +257,7 @@ class TestValidationLogs(TestCase):
             {
                 'UUID': '123',
                 'Validations': 'foo',
+                'Reasons': '',
                 'Status': 'PASSED',
                 'Status_by_Host': 'undercloud,PASSED',
                 'Host_Group': 'undercloud',

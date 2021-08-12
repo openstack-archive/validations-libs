@@ -106,7 +106,24 @@ FAILED_VALIDATIONS_LOGS_CONTENTS_LIST = [{
             'unreachable': 0
         }
     },
-    'validation_output': []
+    'validation_output': [
+        {
+            "task": {
+                "hosts": {
+                    "localhost": {
+                        "_ansible_no_log": False,
+                        "action": "fail",
+                        "changed": False,
+                        "failed": True,
+                        "failed_when_result": True,
+                        "msg": "Fake Failed"
+                    }
+                },
+                "name": "Verify Fake requirements",
+                "status": "FAILED"
+            }
+        }
+    ]
 }]
 
 VALIDATIONS_LOGS_CONTENTS_LIST = [{
