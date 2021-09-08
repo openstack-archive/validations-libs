@@ -18,6 +18,7 @@ import getpass
 import sys
 
 from validations_libs import constants
+from validations_libs.cli import constants as cli_constants
 from validations_libs.validation_actions import ValidationActions
 from validations_libs.cli import common
 from validations_libs.cli.base import BaseCommand
@@ -37,44 +38,41 @@ class Run(BaseCommand):
             required=False,
             help=(
                 "A string that identifies a single node or comma-separated "
-                "list of nodes to be upgraded in parallel in this upgrade "
-                "run invocation."))
+                "list of nodes to be validated in this run invocation.\n"))
 
         parser.add_argument(
             '--ssh-user',
             dest='ssh_user',
             default=getpass.getuser(),
-            help=("SSH user name for the Ansible ssh connection."))
+            help=("SSH user name for the Ansible ssh connection.\n"))
 
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
-                            help=("Path where the validation playbooks "
-                                  "is located."))
+                            help=cli_constants.PLAY_PATH_DESC)
 
         parser.add_argument('--ansible-base-dir', dest='ansible_base_dir',
                             default=constants.DEFAULT_VALIDATIONS_BASEDIR,
                             help=("Path where the ansible roles, library "
-                                  "and plugins are located."))
+                                  "and plugins are located.\n"))
 
         parser.add_argument(
             '--validation-log-dir',
             dest='validation_log_dir',
             default=constants.VALIDATIONS_LOG_BASEDIR,
-            help=(
-                "Path where the log files and artifacts will be located. "))
+            help=cli_constants.LOG_PATH_DESC)
 
         parser.add_argument('--inventory', '-i', type=str,
                             default="localhost",
-                            help="Path of the Ansible inventory.")
+                            help="Path of the Ansible inventory.\n")
 
         parser.add_argument('--output-log', dest='output_log',
                             default=None,
-                            help=("Path where the run result will be stored."))
+                            help=("Path where the run result will be stored.\n"))
 
         parser.add_argument('--junitxml', dest='junitxml',
                             default=None,
                             help=("Path where the run result in JUnitXML "
-                                  "format will be stored."))
+                                  "format will be stored.\n"))
 
         parser.add_argument(
             '--python-interpreter',
@@ -83,7 +81,7 @@ class Run(BaseCommand):
             default="{}".format(
                 sys.executable if sys.executable else "/usr/bin/python"
             ),
-            help=("Python interpreter for Ansible execution."))
+            help=("Python interpreter for Ansible execution.\n"))
 
         parser.add_argument(
             '--extra-env-vars',
@@ -95,7 +93,7 @@ class Run(BaseCommand):
                 "to provide to your Ansible execution "
                 "as KEY=VALUE pairs. Note that if you pass the same "
                 "KEY multiple times, the last given VALUE for that same KEY "
-                "will override the other(s)"))
+                "will override the other(s).\n"))
 
         parser.add_argument('--skiplist', dest='skip_list',
                             default=None,
@@ -114,7 +112,7 @@ class Run(BaseCommand):
                 "Add Ansible extra variables to the validation(s) execution "
                 "as KEY=VALUE pair(s). Note that if you pass the same "
                 "KEY multiple times, the last given VALUE for that same KEY "
-                "will override the other(s)"))
+                "will override the other(s).\n"))
 
         extra_vars_group.add_argument(
             '--extra-vars-file',
@@ -123,7 +121,7 @@ class Run(BaseCommand):
             default=None,
             help=(
                 "Absolute or relative Path to a JSON/YAML file containing extra variable(s) "
-                "to pass to one or multiple validation(s) execution."))
+                "to pass to one or multiple validation(s) execution.\n"))
 
         ex_group = parser.add_mutually_exclusive_group(required=True)
         ex_group.add_argument(
@@ -134,16 +132,16 @@ class Run(BaseCommand):
             default=[],
             help=("Run specific validations, "
                   "if more than one validation is required "
-                  "separate the names with commas."))
+                  "separate the names with commas.\n"))
 
         ex_group.add_argument(
             '--group', '-g',
             metavar='<group_id>[,<group_id>,...]',
             action=CommaListAction,
             default=[],
-            help=("Run specific group validations, "
+            help=("Run specific validations by group, "
                   "if more than one group is required "
-                  "separate the group names with commas."))
+                  "separate the group names with commas.\n"))
 
         ex_group.add_argument(
             '--category',
@@ -152,7 +150,7 @@ class Run(BaseCommand):
             default=[],
             help=("Run specific validations by category, "
                   "if more than one category is required "
-                  "separate the category names with commas."))
+                  "separate the category names with commas.\n"))
 
         ex_group.add_argument(
             '--product',
@@ -161,7 +159,7 @@ class Run(BaseCommand):
             default=[],
             help=("Run specific validations by product, "
                   "if more than one product is required "
-                  "separate the product names with commas."))
+                  "separate the product names with commas.\n"))
         return parser
 
     def take_action(self, parsed_args):

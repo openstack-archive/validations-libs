@@ -14,19 +14,20 @@
 #
 from unittest import TestCase
 import yaml
+import sys
+import importlib
+from validations_libs.cli import common
 
 try:
     from unittest import mock
 except ImportError:
     import mock
 
-from validations_libs.cli import common
-
 
 class TestCommon(TestCase):
 
     def setUp(self):
-        super(TestCommon, self).setUp()
+        return super().setUp()
 
     def test_read_cli_data_file_with_example_file(self):
         example_data = {'check-cpu': {'hosts': 'undercloud',
@@ -45,3 +46,22 @@ class TestCommon(TestCase):
     @mock.patch('yaml.safe_load', side_effect=yaml.YAMLError)
     def test_read_cli_data_file_yaml_error(self, mock_yaml):
         self.assertRaises(RuntimeError, common.read_cli_data_file, 'foo')
+
+    @mock.patch('cliff._argparse', spec={})
+    def test_argparse_conditional_false(self, mock_argparse):
+        """Test if the imporst are properly resolved based
+        on presence of the `SmartHelpFormatter` in the namespace
+        of the cliff._argparse.
+        If the attribute isn't in the namespace, and it shouldn't be
+        because the object is mocked to behave as a dictionary,
+        the next statement after conditional will trigger `ImportError`.
+        Because relevant class in the cliff module is mocked with side effect.
+        """
+        sys.modules[
+            'cliff.command.SmartHelpFormatter'] = mock.MagicMock(
+                side_effect=ImportError)
+
+        self.assertRaises(
+            ImportError,
+            importlib.reload,
+            common)

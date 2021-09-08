@@ -18,6 +18,7 @@ from validations_libs.validation_actions import ValidationActions
 from validations_libs import constants
 from validations_libs.cli.base import BaseLister
 from validations_libs.cli.parseractions import CommaListAction
+from validations_libs.cli import constants as cli_constants
 
 
 class ValidationList(BaseLister):
@@ -30,27 +31,20 @@ class ValidationList(BaseLister):
                             metavar='<group_id>[,<group_id>,...]',
                             action=CommaListAction,
                             default=[],
-                            help=("List specific group of validations, "
-                                  "if more than one group is required "
-                                  "separate the group names with commas."))
+                            help=cli_constants.VAL_GROUP_DESC)
         parser.add_argument('--category',
                             metavar='<category_id>[,<category_id>,...]',
                             action=CommaListAction,
                             default=[],
-                            help=("List specific category of validations, "
-                                  "if more than one category is required "
-                                  "separate the category names with commas."))
+                            help=cli_constants.VAL_CAT_DESC)
         parser.add_argument('--product',
                             metavar='<product_id>[,<product_id>,...]',
                             action=CommaListAction,
                             default=[],
-                            help=("List specific product of validations, "
-                                  "if more than one product is required "
-                                  "separate the product names with commas."))
+                            help=cli_constants.VAL_PROD_DESC)
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
-                            help=("Path where the validation playbooks "
-                                  "are located."))
+                            help=cli_constants.PLAY_PATH_DESC)
         return parser
 
     def take_action(self, parsed_args):
