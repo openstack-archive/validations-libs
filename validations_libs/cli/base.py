@@ -22,14 +22,9 @@ from cliff.command import Command
 from cliff.lister import Lister
 from cliff.show import ShowOne
 
-from validations_libs import constants
+from validations_libs.cli import constants as cli_constants
 from validations_libs import utils
-
-# Handle backward compatibility for Cliff 2.16.0 in stable/train:
-if hasattr(_argparse, 'SmartHelpFormatter'):
-    from cliff._argparse import SmartHelpFormatter
-else:
-    from cliff.command import _SmartHelpFormatter as SmartHelpFormatter
+from validations_libs.cli.common import ValidationHelpFormatter
 
 
 class Base:
@@ -71,7 +66,7 @@ class BaseCommand(Command):
             description=self.get_description(),
             epilog=self.get_epilog(),
             prog=prog_name,
-            formatter_class=SmartHelpFormatter,
+            formatter_class=ValidationHelpFormatter,
             conflict_handler='resolve',
         )
         for hook in self._hooks:
@@ -81,8 +76,7 @@ class BaseCommand(Command):
             '--config',
             dest='config',
             default=utils.find_config_file(),
-            help=("Config file path for Validation.")
-        )
+            help=cli_constants.CONF_FILE_DESC)
 
         return parser
 
@@ -98,7 +92,7 @@ class BaseLister(Lister):
             description=self.get_description(),
             epilog=self.get_epilog(),
             prog=prog_name,
-            formatter_class=SmartHelpFormatter,
+            formatter_class=ValidationHelpFormatter,
             conflict_handler='resolve',
         )
 
@@ -109,8 +103,7 @@ class BaseLister(Lister):
             '--config',
             dest='config',
             default=utils.find_config_file(),
-            help=("Config file path for Validation.")
-        )
+            help=cli_constants.CONF_FILE_DESC)
 
         return vf_parser
 
@@ -126,7 +119,6 @@ class BaseShow(ShowOne):
             '--config',
             dest='config',
             default=utils.find_config_file(),
-            help=("Config file path for Validation.")
-        )
+            help=cli_constants.CONF_FILE_DESC)
 
         return parser

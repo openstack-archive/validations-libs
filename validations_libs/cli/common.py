@@ -14,6 +14,8 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
+from argparse import ArgumentDefaultsHelpFormatter
+from cliff import _argparse
 import json
 import logging
 from prettytable import PrettyTable
@@ -29,8 +31,27 @@ try:
 except ImportError:
     JUNIT_XML_FOUND = False
 
-from validations_libs import utils as v_utils
 from validations_libs.cli import colors
+from validations_libs import utils
+
+# Handle backward compatibility for Cliff 2.16.0 in stable/train:
+if hasattr(_argparse, 'SmartHelpFormatter'):
+    from cliff._argparse import SmartHelpFormatter
+else:
+    from cliff.command import _SmartHelpFormatter as SmartHelpFormatter
+
+
+class ValidationHelpFormatter(ArgumentDefaultsHelpFormatter, SmartHelpFormatter):
+    """Composite CLI help formatter, providing both default argument values,
+    and correct new line treatment.
+    """
+
+    def _get_help_string(self, action):
+        default_value = action.default
+        if isinstance(default_value, list) or isinstance(default_value, str):
+            if len(default_value) > 0:
+                return super()._get_help_string(action)
+        return super(ArgumentDefaultsHelpFormatter, self)._get_help_string(action)
 
 
 def print_dict(data):
