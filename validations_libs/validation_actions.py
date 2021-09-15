@@ -188,8 +188,8 @@ class ValidationActions(object):
             'cloud2,!cloud1'
 
         """
-        hosts = skip_list[playbook].get('hosts')
-        if hosts == 'ALL' or hosts is None:
+        hosts = skip_list[playbook].get('hosts', 'all')
+        if hosts.lower() == 'all':
             return None
         else:
             _hosts = ['!{}'.format(hosts)]
@@ -464,8 +464,17 @@ class ValidationActions(object):
                                 'validations': _playbook.split('.')[0],
                                 'UUID': validation_uuid,
                                 })
+                # Print hosts which has been skipped:
+                if _hosts:
+                    skipped_hosts = [h.replace('!', '')
+                                     for h in _hosts.split(',') if '!' in h]
+                    if skipped_hosts:
+                        msg = ("Validation {} has been skipped "
+                               "on hosts: {}").format(_play,
+                                                      ','.join(skipped_hosts))
+                        self.log.info(msg)
             else:
-                self.log.debug('Skipping Validations: {}'.format(playbook))
+                self.log.info('Skipping Validations: {}'.format(playbook))
 
         if run_async:
             return results

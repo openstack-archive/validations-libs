@@ -59,4 +59,31 @@ Then run validations::
 
     validation.py run --validation check-ftype,512e --inventory /etc/ansible/hosts
 
+
+Skip list
+=========
+
+You can provide a file with a list of Validations to skip via the run command::
+
+    validation.py run --validation check-ftype,512e --inventory /etc/ansible/hosts --skiplist my-skip-list.yaml
+
+This file should be formed as::
+
+    validation-name:
+      hosts: targeted_hostname
+      reason: reason to ignore the file
+      lp: bug number
+
+The framework will skip the validation against the ``hosts`` key.
+In order to skip the validation on every hosts, you can set ``all`` value such
+as::
+
+    hosts: all
+
+If no hosts key is provided for a given validation, it will be considered as ``hosts: all``.
+
+.. note::
+    The ``reason`` and ``lp`` key are for tracking and documentation purposes,
+    the framework won't use those keys.
+
 .. _Apache_license: http://www.apache.org/licenses/LICENSE-2.0

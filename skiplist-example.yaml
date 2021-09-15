@@ -1,0 +1,11 @@
+check-ram:
+  hosts: all
+  # reason and lp key is not mandatory for the VF. Those values are in the list
+  # in order to track the reason and eventually the related bug number of the
+  # skipped validation.
+  reason: Wrong ram value
+  lp: https://lp.fake.net
+check-cpu:
+  hosts: undercloud
+  reason: Unstable validation
+  lp: https://lp.fake.net

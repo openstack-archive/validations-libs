@@ -83,7 +83,8 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'log_path': mock_log_dir,
-            'validation_config': {}
+            'validation_config': {},
+            'skip_list': None
             }
 
         arglist = ['--validation', 'foo',
@@ -121,7 +122,8 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'log_path': mock_log_dir,
-            'validation_config': {}
+            'validation_config': {},
+            'skip_list': None
             }
 
         arglist = ['--validation', 'foo',
@@ -172,7 +174,8 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'log_path': mock_log_dir,
-            'validation_config': {}
+            'validation_config': {},
+            'skip_list': None
             }
 
         arglist = ['--validation', 'foo',
@@ -208,7 +211,8 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'log_path': mock_log_dir,
-            'validation_config': {}
+            'validation_config': {},
+            'skip_list': None
             }
 
         arglist = ['--validation', 'foo',
@@ -248,7 +252,8 @@ class TestRun(BaseCommand):
             'python_interpreter': sys.executable,
             'quiet': False,
             'ssh_user': 'doe',
-            'validation_config': {}
+            'validation_config': {},
+            'skip_list': None
             }
 
         arglist = ['--validation', 'foo',
@@ -285,7 +290,8 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'log_path': mock_log_dir,
-            'validation_config': {}
+            'validation_config': {},
+            'skip_list': None
             }
 
         arglist = ['--validation', 'foo',
@@ -325,7 +331,8 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'log_path': mock_log_dir,
-            'validation_config': {}
+            'validation_config': {},
+            'skip_list': None
             }
 
         arglist = ['--validation', 'foo',
@@ -372,7 +379,8 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'log_path': mock_log_dir,
-            'validation_config': {}
+            'validation_config': {},
+            'skip_list': None
             }
 
         arglist = ['--validation', 'foo']
@@ -405,7 +413,8 @@ class TestRun(BaseCommand):
             'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe',
-            'validation_config': {}
+            'validation_config': {},
+            'skip_list': None
             }
 
         arglist = ['--validation', 'foo']
@@ -442,7 +451,8 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'log_path': mock_log_dir,
-            'validation_config': {}
+            'validation_config': {},
+            'skip_list': None
             }
 
         self._set_args(arglist)
@@ -479,10 +489,73 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'log_path': mock_log_dir,
-            'validation_config': {}
+            'validation_config': {},
+            'skip_list': None
             }
 
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
         mock_run.assert_called_with(**run_called_args)
+
+    @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
+    @mock.patch('yaml.safe_load', return_value={'key': 'value'})
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('getpass.getuser',
+                return_value='doe')
+    @mock.patch('validations_libs.validation_actions.ValidationActions.'
+                'run_validations',
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
+    @mock.patch('validations_libs.utils.load_config', return_value={})
+    def test_run_command_with_skip_list(self, mock_config, mock_run,
+                                        mock_user, mock_open,
+                                        mock_yaml, mock_log_dir):
+
+        run_called_args = {
+            'inventory': 'localhost',
+            'limit_hosts': None,
+            'group': [],
+            'category': [],
+            'product': [],
+            'extra_vars': None,
+            'validations_dir': '/usr/share/ansible/validation-playbooks',
+            'base_dir': '/usr/share/ansible',
+            'validation_name': ['foo'],
+            'extra_env_vars': None,
+            'python_interpreter': sys.executable,
+            'quiet': True,
+            'ssh_user': 'doe',
+            'log_path': mock_log_dir,
+            'validation_config': {},
+            'skip_list': {'key': 'value'}
+            }
+
+        arglist = ['--validation', 'foo',
+                   '--skiplist', '/foo/skip.yaml']
+        verifylist = [('validation_name', ['foo']),
+                      ('skip_list', '/foo/skip.yaml')]
+        self._set_args(arglist)
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.cmd.take_action(parsed_args)
+        mock_run.assert_called_with(**run_called_args)
+
+    @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
+    @mock.patch('yaml.safe_load', return_value=[{'key': 'value'}])
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('getpass.getuser',
+                return_value='doe')
+    @mock.patch('validations_libs.validation_actions.ValidationActions.'
+                'run_validations',
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
+    @mock.patch('validations_libs.utils.load_config', return_value={})
+    def test_run_command_with_skip_list_bad_format(self, mock_config, mock_run,
+                                                   mock_user, mock_open,
+                                                   mock_yaml, mock_log_dir):
+
+        arglist = ['--validation', 'foo',
+                   '--skiplist', '/foo/skip.yaml']
+        verifylist = [('validation_name', ['foo']),
+                      ('skip_list', '/foo/skip.yaml')]
+        self._set_args(arglist)
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.assertRaises(RuntimeError, self.cmd.take_action, parsed_args)

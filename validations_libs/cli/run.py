@@ -97,6 +97,13 @@ class Run(BaseCommand):
                 "KEY multiple times, the last given VALUE for that same KEY "
                 "will override the other(s)"))
 
+        parser.add_argument('--skiplist', dest='skip_list',
+                            default=None,
+                            help=("Path where the skip list is stored. "
+                                  "An example of the skiplist format could "
+                                  "be found at the root of the "
+                                  "validations-libs repository."))
+
         extra_vars_group = parser.add_mutually_exclusive_group(required=False)
         extra_vars_group.add_argument(
             '--extra-vars',
@@ -184,8 +191,14 @@ class Run(BaseCommand):
                 "Loading extra vars file {}".format(
                     parsed_args.extra_vars_file))
 
-            extra_vars = common.read_extra_vars_file(
+            extra_vars = common.read_cli_data_file(
                 parsed_args.extra_vars_file)
+
+        skip_list = None
+        if parsed_args.skip_list:
+            skip_list = common.read_cli_data_file(parsed_args.skip_list)
+            if not isinstance(skip_list, dict):
+                raise RuntimeError("Wrong format for the skiplist.")
 
         try:
             results = v_actions.run_validations(
@@ -203,7 +216,8 @@ class Run(BaseCommand):
                 quiet=quiet_mode,
                 ssh_user=parsed_args.ssh_user,
                 log_path=parsed_args.validation_log_dir,
-                validation_config=config)
+                validation_config=config,
+                skip_list=skip_list)
         except RuntimeError as e:
             raise RuntimeError(e)
 

@@ -102,16 +102,16 @@ def write_junitxml(output_junitxml, results):
         output.write(to_xml_report_string([ts]))
 
 
-def read_extra_vars_file(extra_vars_file):
-    """Read file containing extra variables.
+def read_cli_data_file(data_file):
+    """Read CLI data (YAML/JSON) file.
     """
     try:
-        with open(extra_vars_file, 'r') as env_file:
-            return yaml.safe_load(env_file.read())
-    except yaml.YAMLError as error:
+        with open(data_file, 'r') as _file:
+            return yaml.safe_load(_file.read())
+    except (yaml.YAMLError, IOError) as error:
         error_msg = (
-            "The extra_vars file must be properly formatted YAML/JSON."
-            "Details: {}.").format(error)
+            "The file {} must be properly formatted YAML/JSON."
+            "Details: {}.").format(data_file, error)
         raise RuntimeError(error_msg)
 
 
