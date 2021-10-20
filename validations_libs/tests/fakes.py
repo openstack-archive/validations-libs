@@ -13,6 +13,7 @@
 #   under the License.
 #
 
+from pathlib import PosixPath
 from validations_libs import constants
 
 VALIDATIONS_LIST = [{
@@ -319,10 +320,19 @@ FAKE_FAILED_RUN = [{'Duration': '0:00:01.761',
 FAKE_VALIDATIONS_PATH = '/usr/share/ansible/validation-playbooks'
 
 DEFAULT_CONFIG = {'validation_dir': '/usr/share/ansible/validation-playbooks',
+                  'enable_community_validations': True,
                   'ansible_base_dir': '/usr/share/ansible/',
                   'output_log': 'output.log',
                   'history_limit': 15,
                   'fit_width': True}
+
+CONFIG_WITH_COMMUNITY_VAL_DISABLED = {
+    'validation_dir': '/usr/share/ansible/validation-playbooks',
+    'enable_community_validations': False,
+    'ansible_base_dir': '/usr/share/ansible/',
+    'output_log': 'output.log',
+    'history_limit': 15,
+    'fit_width': True}
 
 WRONG_HISTORY_CONFIG = {'default': {'history_limit': 0}}
 
@@ -334,6 +344,46 @@ ANSIBLE_ENVIRONNMENT_CONFIG = {'ANSIBLE_CALLBACK_WHITELIST':
                                'validation_stdout,validation_json,'
                                'profile_tasks',
                                'ANSIBLE_STDOUT_CALLBACK': 'validation_stdout'}
+
+COVAL_SUBDIR = [PosixPath("/foo/bar/community-validations/roles"),
+                PosixPath("/foo/bar/community-validations/playbooks"),
+                PosixPath("/foo/bar/community-validations/library"),
+                PosixPath("/foo/bar/community-validations/lookup_plugins")]
+
+COVAL_MISSING_SUBDIR = [PosixPath("/foo/bar/community-validations/roles"),
+                        PosixPath("/foo/bar/community-validations/playbooks")]
+
+FAKE_COVAL_ITERDIR1 = iter(COVAL_SUBDIR)
+
+FAKE_COVAL_MISSING_SUBDIR_ITERDIR1 = iter(COVAL_MISSING_SUBDIR)
+
+FAKE_ROLES_ITERDIR1 = iter([PosixPath("/u/s/a/roles/role_1"),
+                            PosixPath("/u/s/a/roles/role_2"),
+                            PosixPath("/u/s/a/roles/role_3"),
+                            PosixPath("/u/s/a/roles/role_4"),
+                            PosixPath("/u/s/a/roles/role_5"),
+                            PosixPath("/u/s/a/roles/my_val")])
+
+FAKE_ROLES_ITERDIR2 = iter([PosixPath("/u/s/a/roles/role_1"),
+                            PosixPath("/u/s/a/roles/role_2"),
+                            PosixPath("/u/s/a/roles/role_3"),
+                            PosixPath("/u/s/a/roles/role_4"),
+                            PosixPath("/u/s/a/roles/role_5"),
+                            PosixPath("/u/s/a/roles/role_6")])
+
+FAKE_PLAYBOOKS_ITERDIR1 = iter([PosixPath("/u/s/a/plays/play_1.yaml"),
+                                PosixPath("/u/s/a/plays/play_2.yaml"),
+                                PosixPath("/u/s/a/plays/play_3.yaml"),
+                                PosixPath("/u/s/a/plays/play_4.yaml"),
+                                PosixPath("/u/s/a/plays/play_5.yaml"),
+                                PosixPath("/u/s/a/plays/my-val.yaml")])
+
+FAKE_PLAYBOOKS_ITERDIR2 = iter([PosixPath("/u/s/a/plays/play_1.yaml"),
+                                PosixPath("/u/s/a/plays/play_2.yaml"),
+                                PosixPath("/u/s/a/plays/play_3.yaml"),
+                                PosixPath("/u/s/a/plays/play_4.yaml"),
+                                PosixPath("/u/s/a/plays/play_5.yaml"),
+                                PosixPath("/u/s/a/plays/play_6.yaml")])
 
 
 def fake_ansible_runner_run_return(status='successful', rc=0):

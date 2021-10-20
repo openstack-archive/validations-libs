@@ -20,10 +20,11 @@ import logging
 import os
 import site
 import six
-import sys
+import subprocess
 import uuid
 
 from os.path import join
+from pathlib import Path
 from validations_libs import constants
 from validations_libs.group import Group
 from validations_libs.validation import Validation
@@ -583,3 +584,114 @@ def find_config_file(config_file_name='validation.cfg'):
         if _check_path(current_path):
             return current_path
     return current_path
+
+
+def run_command_and_log(log, cmd, cwd=None,
+                        env=None, retcode_only=True):
+    """Run command and log output
+
+    :param log: Logger instance for logging
+    :type log: `Logger`
+
+    :param cmd: Command to run in list form
+    :type cmd: ``List``
+
+    :param cwd: Current working directory for execution
+    :type cmd: ``String``
+
+    :param env: Modified environment for command run
+    :type env: ``List``
+
+    :param retcode_only: Returns only retcode instead or proc object
+    :type retcdode_only: ``Boolean``
+    """
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, shell=False,
+                            cwd=cwd, env=env)
+    if retcode_only:
+        while True:
+            try:
+                line = proc.stdout.readline()
+            except StopIteration:
+                break
+            if line != b'':
+                if isinstance(line, bytes):
+                    line = line.decode('utf-8')
+                log.debug(line.rstrip())
+            else:
+                break
+        proc.stdout.close()
+        return proc.wait()
+    return proc
+
+
+def check_community_validations_dir(
+        basedir=constants.COMMUNITY_VALIDATIONS_BASEDIR,
+        subdirs=constants.COMMUNITY_VALIDATIONS_SUBDIR):
+    """Check presence of the community validations directory structure
+
+    The community validations are stored and located in:
+
+    .. code-block:: console
+
+        /home/<username>/community-validations
+        ├── library
+        ├── lookup_plugins
+        ├── playbooks
+        └── roles
+
+    This function checks for the presence of the community-validations directory
+    in the $HOME of the user running the validation CLI. If the primary
+    directory doesn't exist, this function will create it and will check if the
+    four subdirectories are present and will create them otherwise.
+
+    :param basedir: Absolute path of the community validations
+    :type basedir: ``pathlib.PosixPath``
+
+    :param subdirs: List of Absolute path of the community validations subdirs
+    :type subdirs: ``list`` of ``pathlib.PosixPath``
+
+    :rtype: ``NoneType``
+    """
+    recreated_comval_dir = []
+
+    def create_subdir(subdir):
+        for _dir in subdir:
+            LOG.debug(
+                f"Missing {Path(_dir).name} directory in {basedir}:"
+            )
+            Path.mkdir(_dir)
+            recreated_comval_dir.append(_dir)
+            LOG.debug(
+                f"└── {_dir} directory created successfully..."
+            )
+
+    if Path(basedir).exists and Path(basedir).is_dir():
+        _subdirectories = [x for x in basedir.iterdir() if x.is_dir()]
+        missing_dirs = [
+            _dir for _dir in subdirs
+            if _dir not in _subdirectories
+        ]
+
+        create_subdir(missing_dirs)
+    else:
+        LOG.debug(
+            f"The community validations {basedir} directory is not present:"
+        )
+        Path.mkdir(basedir)
+        recreated_comval_dir.append(basedir)
+        LOG.debug(f"└── {basedir} directory created...")
+        create_subdir(subdirs)
+
+    LOG.debug(
+        (
+            f"The {basedir} directory and its required subtree are present "
+            f"and correct:\n"
+            f"{basedir}/\n"
+            "├── library            OK\n"
+            "├── lookup_plugins     OK\n"
+            "├── playbooks          OK\n"
+            "└── roles              OK\n"
+        )
+    )
+    return recreated_comval_dir

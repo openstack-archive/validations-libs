@@ -13,11 +13,16 @@
 #   under the License.
 #
 
+import logging
+import os
+import subprocess
+
 try:
     from unittest import mock
 except ImportError:
     import mock
 
+from pathlib import PosixPath
 from unittest import TestCase
 
 from validations_libs import utils, constants
@@ -426,3 +431,132 @@ class TestUtils(TestCase):
         self.assertEqual(
             results['ansible_environment']['ANSIBLE_STDOUT_CALLBACK'],
             fakes.ANSIBLE_ENVIRONNMENT_CONFIG['ANSIBLE_STDOUT_CALLBACK'])
+
+    @mock.patch('validations_libs.utils.LOG', autospec=True)
+    @mock.patch('pathlib.Path.exists',
+                return_value=False)
+    @mock.patch('pathlib.Path.is_dir',
+                return_value=False)
+    @mock.patch('pathlib.Path.iterdir',
+                return_value=iter([]))
+    @mock.patch('pathlib.Path.mkdir')
+    def test_check_creation_community_validations_dir(self, mock_mkdir,
+                                                      mock_iterdir,
+                                                      mock_isdir,
+                                                      mock_exists,
+                                                      mock_log):
+        basedir = PosixPath('/foo/bar/community-validations')
+        subdir = fakes.COVAL_SUBDIR
+        result = utils.check_community_validations_dir(basedir, subdir)
+        self.assertEqual(result,
+                         [PosixPath('/foo/bar/community-validations'),
+                          PosixPath("/foo/bar/community-validations/roles"),
+                          PosixPath("/foo/bar/community-validations/playbooks"),
+                          PosixPath("/foo/bar/community-validations/library"),
+                          PosixPath("/foo/bar/community-validations/lookup_plugins")]
+                         )
+
+    @mock.patch('validations_libs.utils.LOG', autospec=True)
+    @mock.patch('pathlib.Path.is_dir', return_value=True)
+    @mock.patch('pathlib.Path.exists', return_value=True)
+    @mock.patch('pathlib.Path.iterdir',
+                return_value=fakes.FAKE_COVAL_MISSING_SUBDIR_ITERDIR1)
+    @mock.patch('pathlib.Path.mkdir')
+    def test_check_community_validations_dir_with_missing_subdir(self,
+                                                                 mock_mkdir,
+                                                                 mock_iterdir,
+                                                                 mock_exists,
+                                                                 mock_isdir,
+                                                                 mock_log):
+        basedir = PosixPath('/foo/bar/community-validations')
+        subdir = fakes.COVAL_SUBDIR
+        result = utils.check_community_validations_dir(basedir, subdir)
+        self.assertEqual(result,
+                         [PosixPath('/foo/bar/community-validations/library'),
+                          PosixPath('/foo/bar/community-validations/lookup_plugins')])
+
+
+class TestRunCommandAndLog(TestCase):
+    def setUp(self):
+        self.mock_logger = mock.Mock(spec=logging.Logger)
+
+        self.mock_process = mock.Mock()
+        self.mock_process.stdout.readline.side_effect = ['foo\n', 'bar\n']
+        self.mock_process.wait.side_effect = [0]
+        self.mock_process.returncode = 0
+
+        mock_sub = mock.patch('subprocess.Popen',
+                              return_value=self.mock_process)
+        self.mock_popen = mock_sub.start()
+        self.addCleanup(mock_sub.stop)
+
+        self.cmd = ['exit', '0']
+        self.e_cmd = ['exit', '1']
+        self.log_calls = [mock.call('foo'),
+                          mock.call('bar')]
+
+    def test_success_default(self):
+        retcode = utils.run_command_and_log(self.mock_logger, self.cmd)
+        self.mock_popen.assert_called_once_with(self.cmd,
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.STDOUT,
+                                                shell=False,
+                                                cwd=None, env=None)
+        self.assertEqual(retcode, 0)
+        self.mock_logger.debug.assert_has_calls(self.log_calls,
+                                                any_order=False)
+
+    @mock.patch('subprocess.Popen')
+    def test_error_subprocess(self, mock_popen):
+        mock_process = mock.Mock()
+        mock_process.stdout.readline.side_effect = ['Error\n']
+        mock_process.wait.side_effect = [1]
+        mock_process.returncode = 1
+
+        mock_popen.return_value = mock_process
+
+        retcode = utils.run_command_and_log(self.mock_logger, self.e_cmd)
+        mock_popen.assert_called_once_with(self.e_cmd, stdout=subprocess.PIPE,
+                                           stderr=subprocess.STDOUT,
+                                           shell=False, cwd=None,
+                                           env=None)
+
+        self.assertEqual(retcode, 1)
+        self.mock_logger.debug.assert_called_once_with('Error')
+
+    def test_success_env(self):
+        test_env = os.environ.copy()
+        retcode = utils.run_command_and_log(self.mock_logger, self.cmd,
+                                            env=test_env)
+        self.mock_popen.assert_called_once_with(self.cmd,
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.STDOUT,
+                                                shell=False,
+                                                cwd=None, env=test_env)
+        self.assertEqual(retcode, 0)
+        self.mock_logger.debug.assert_has_calls(self.log_calls,
+                                                any_order=False)
+
+    def test_success_cwd(self):
+        test_cwd = '/usr/local/bin'
+        retcode = utils.run_command_and_log(self.mock_logger, self.cmd,
+                                            cwd=test_cwd)
+        self.mock_popen.assert_called_once_with(self.cmd,
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.STDOUT,
+                                                shell=False,
+                                                cwd=test_cwd, env=None)
+        self.assertEqual(retcode, 0)
+        self.mock_logger.debug.assert_has_calls(self.log_calls,
+                                                any_order=False)
+
+    def test_success_no_retcode(self):
+        run = utils.run_command_and_log(self.mock_logger, self.cmd,
+                                        retcode_only=False)
+        self.mock_popen.assert_called_once_with(self.cmd,
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.STDOUT,
+                                                shell=False,
+                                                cwd=None, env=None)
+        self.assertEqual(run, self.mock_process)
+        self.mock_logger.debug.assert_not_called()
