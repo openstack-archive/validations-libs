@@ -15,8 +15,10 @@
 
 try:
     from unittest import mock
+    from unittest.mock import ANY
 except ImportError:
     import mock
+    from mock import ANY
 
 import json
 
@@ -209,7 +211,8 @@ class TestValidationActions(TestCase):
             'groups': ['prep', 'pre-deployment'],
             'id': 'foo',
             'name': 'My Validition One Name',
-            'parameters': {}}]
+            'parameters': {},
+            'path': '/tmp/foobar/validation-playbooks'}]
 
         mock_ansible_run.return_value = ('foo.yaml', 0, 'successful')
 
@@ -224,6 +227,29 @@ class TestValidationActions(TestCase):
                                          validations_dir='/tmp/foo')
         self.assertEqual(run_return, expected_run_return)
 
+        mock_ansible_run.assert_called_with(
+            workdir=ANY,
+            playbook='/tmp/foobar/validation-playbooks/foo.yaml',
+            base_dir='/usr/share/ansible',
+            playbook_dir='/tmp/foobar/validation-playbooks',
+            parallel_run=True,
+            inventory='tmp/inventory.yaml',
+            output_callback='validation_stdout',
+            callback_whitelist=None,
+            quiet=True,
+            extra_vars=None,
+            limit_hosts=None,
+            extra_env_variables=None,
+            ansible_cfg_file=None,
+            gathering_policy='explicit',
+            ansible_artifact_path=ANY,
+            log_path=ANY,
+            run_async=False,
+            python_interpreter=None,
+            ssh_user=None,
+            validation_cfg_file=None
+        )
+
     @mock.patch('validations_libs.utils.get_validations_playbook')
     def test_validation_run_wrong_validation_name(self, mock_validation_play):
         mock_validation_play.return_value = []
@@ -231,6 +257,31 @@ class TestValidationActions(TestCase):
         run = ValidationActions()
         self.assertRaises(RuntimeError, run.run_validations,
                           validation_name='fake.yaml',
+                          validations_dir='/tmp/foo'
+                          )
+
+    @mock.patch('validations_libs.utils.get_validations_playbook')
+    def test_validation_run_not_all_found(self, mock_validation_play):
+
+        mock_validation_play.return_value = ['/tmp/foo/fake.yaml']
+        run = ValidationActions()
+        try:
+            run.run_validations(
+                          validation_name=['fake', 'foo'],
+                          validations_dir='/tmp/foo')
+        except RuntimeError as runtime_error:
+            self.assertEqual(
+                    "Validation ['foo'] not found in /tmp/foo.",
+                    str(runtime_error))
+        else:
+            self.fail("Runtime error exception should have been raised")
+
+    @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
+    def test_validation_run_not_enough_params(self, mock_validation_play):
+        mock_validation_play.return_value = []
+
+        run = ValidationActions()
+        self.assertRaises(RuntimeError, run.run_validations,
                           validations_dir='/tmp/foo'
                           )
 
@@ -250,7 +301,8 @@ class TestValidationActions(TestCase):
             'groups': ['prep', 'pre-deployment'],
             'id': 'foo',
             'name': 'My Validition One Name',
-            'parameters': {}}]
+            'parameters': {},
+            'path': '/usr/share/ansible/validation-playbooks'}]
 
         mock_ansible_run.return_value = ('foo.yaml', 0, 'failed')
 
@@ -295,7 +347,8 @@ class TestValidationActions(TestCase):
             'groups': ['prep', 'pre-deployment'],
             'id': 'foo',
             'name': 'My Validition One Name',
-            'parameters': {}}]
+            'parameters': {},
+            'path': '/usr/share/ansible/validation-playbooks'}]
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
 
@@ -321,7 +374,8 @@ class TestValidationActions(TestCase):
             'groups': ['prep', 'pre-deployment'],
             'id': 'foo',
             'name': 'My Validition One Name',
-            'parameters': {}}]
+            'parameters': {},
+            'path': '/usr/share/ansible/validation-playbooks'}]
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
 
@@ -357,7 +411,9 @@ class TestValidationActions(TestCase):
                 'Categories': ['os', 'storage'],
                 'Products': ['product1'],
                 'ID': '512e',
-                'Parameters': {}}
+                'Parameters': {},
+                'Path': '/tmp'
+                }
         data.update({'Last execution date': '2019-11-25 13:40:14',
                      'Number of execution': 'Total: 1, Passed: 0, Failed: 1'})
         validations_show = ValidationActions()

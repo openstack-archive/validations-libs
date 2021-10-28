@@ -44,8 +44,46 @@ class TestUtils(TestCase):
                   'Categories': ['os', 'storage'],
                   'Products': ['product1'],
                   'ID': '512e',
-                  'Parameters': {}}
+                  'Parameters': {},
+                  'Path': '/tmp'}
         res = utils.get_validations_data('512e')
+        self.assertEqual(res, output)
+
+    @mock.patch('validations_libs.validation.Validation._get_content',
+                return_value=fakes.FAKE_PLAYBOOK[0])
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('os.path.exists', side_effect=(False, True))
+    def test_get_community_validations_data(self, mock_exists, mock_open, mock_data):
+        """
+            The main difference between this test and test_get_validations_data
+            is that this one tries to load first the validations_commons validation
+            then it fails as os.path.exists returns false and then looks for it in the
+            community validations.
+        """
+        output = {'Name': 'Advanced Format 512e Support',
+                  'Description': 'foo', 'Groups': ['prep', 'pre-deployment'],
+                  'Categories': ['os', 'storage'],
+                  'Products': ['product1'],
+                  'ID': '512e',
+                  'Parameters': {},
+                  'Path': '/tmp'}
+        res = utils.get_validations_data('512e')
+        self.assertEqual(res, output)
+
+    @mock.patch('validations_libs.validation.Validation._get_content',
+                return_value=fakes.FAKE_PLAYBOOK[0])
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('os.path.exists', side_effect=(False, True))
+    def test_get_community_disabled_validations_data(self, mock_exists, mock_open, mock_data):
+        """
+            This test is similar to test_get_community_validations_data in the sense that it
+            doesn't find the validations_commons one and should look for community validations
+            but the setting is disabled by the config so it shouldn't find any validations
+        """
+        output = {}
+        res = utils.get_validations_data(
+                '512e',
+                validation_config={'default': {"enable_community_validations": False}})
         self.assertEqual(res, output)
 
     @mock.patch('os.path.exists', return_value=True)
@@ -60,10 +98,32 @@ class TestUtils(TestCase):
     @mock.patch('glob.glob')
     def test_parse_all_validations_on_disk(self, mock_glob, mock_open,
                                            mock_load):
-        mock_glob.return_value = \
-            ['/foo/playbook/foo.yaml']
+        mock_glob.side_effect = \
+            (['/foo/playbook/foo.yaml'], [])
         result = utils.parse_all_validations_on_disk('/foo/playbook')
         self.assertEqual(result, [fakes.FAKE_METADATA])
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('glob.glob')
+    def test_parse_community_validations_on_disk(
+                self, mock_glob, mock_open, mock_load):
+        mock_glob.side_effect = \
+            ([], ['/foo/playbook/foo.yaml'])
+        result = utils.parse_all_validations_on_disk('/foo/playbook')
+        self.assertEqual(result, [fakes.FAKE_METADATA])
+
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    @mock.patch('glob.glob')
+    def test_parse_all_community_disabled_validations_on_disk(
+                self, mock_glob, mock_open, mock_load):
+        mock_glob.side_effect = \
+            ([], ['/foo/playbook/foo.yaml'])
+        result = utils.parse_all_validations_on_disk(
+                '/foo/playbook',
+                validation_config={'default': {"enable_community_validations": False}})
+        self.assertEqual(result, [])
 
     def test_parse_all_validations_on_disk_wrong_path_type(self):
         self.assertRaises(TypeError,
@@ -118,8 +178,8 @@ class TestUtils(TestCase):
     def test_parse_all_validations_on_disk_by_group(self, mock_glob,
                                                     mock_open,
                                                     mock_load):
-        mock_glob.return_value = \
-            ['/foo/playbook/foo.yaml']
+        mock_glob.side_effect = \
+            (['/foo/playbook/foo.yaml'], [])
         result = utils.parse_all_validations_on_disk('/foo/playbook',
                                                      ['prep'])
         self.assertEqual(result, [fakes.FAKE_METADATA])
@@ -130,8 +190,8 @@ class TestUtils(TestCase):
     def test_parse_all_validations_on_disk_by_category(self, mock_glob,
                                                        mock_open,
                                                        mock_load):
-        mock_glob.return_value = \
-            ['/foo/playbook/foo.yaml']
+        mock_glob.side_effect = \
+            (['/foo/playbook/foo.yaml'], [])
         result = utils.parse_all_validations_on_disk('/foo/playbook',
                                                      categories=['os'])
         self.assertEqual(result, [fakes.FAKE_METADATA])
@@ -147,31 +207,80 @@ class TestUtils(TestCase):
     def test_parse_all_validations_on_disk_by_product(self, mock_glob,
                                                       mock_open,
                                                       mock_load):
-        mock_glob.return_value = \
-            ['/foo/playbook/foo.yaml']
+        mock_glob.side_effect = (['/foo/playbook/foo.yaml'], [])
         result = utils.parse_all_validations_on_disk('/foo/playbook',
                                                      products=['product1'])
         self.assertEqual(result, [fakes.FAKE_METADATA])
 
     @mock.patch('os.path.isfile')
-    @mock.patch('os.listdir')
+    @mock.patch('glob.glob')
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     def test_get_validations_playbook_by_id(self, mock_open, mock_load,
-                                            mock_listdir, mock_isfile):
-        mock_listdir.return_value = ['foo.yaml']
+                                            mock_glob, mock_isfile):
+        mock_glob.side_effect = (['/foo/playbook/foo.yaml'], [])
         mock_isfile.return_value = True
         result = utils.get_validations_playbook('/foo/playbook',
                                                 validation_id=['foo'])
         self.assertEqual(result, ['/foo/playbook/foo.yaml'])
 
     @mock.patch('os.path.isfile')
-    @mock.patch('os.listdir')
+    @mock.patch('glob.glob')
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_community_playbook_by_id(self, mock_open, mock_load,
+                                          mock_glob, mock_isfile):
+        mock_glob.side_effect = (
+                [],
+                ['/home/foo/community-validations/playbooks/foo.yaml'])
+        mock_isfile.return_value = True
+        # AP this needs a bit of an explanation. We look at the explicity at
+        #  the /foo/playbook directory but the community validation path is
+        #  implicit and we find there the id that we are looking for.
+        result = utils.get_validations_playbook('/foo/playbook',
+                                                validation_id=['foo'])
+        self.assertEqual(result, ['/home/foo/community-validations/playbooks/foo.yaml'])
+
+    @mock.patch('os.path.isfile')
+    @mock.patch('glob.glob')
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_community_disabled_playbook_by_id(
+                self, mock_open, mock_load, mock_glob, mock_isfile):
+        mock_glob.side_effect = (
+                [],
+                ['/home/foo/community-validations/playbooks/foo.yaml'])
+        mock_isfile.return_value = True
+        # The validations_commons validation is not found and community_vals is disabled
+        #  So no validation should be found.
+        result = utils.get_validations_playbook(
+                '/foo/playbook',
+                validation_id=['foo'],
+                validation_config={'default': {"enable_community_validations": False}})
+        self.assertEqual(result, [])
+
+    @mock.patch('os.path.isfile')
+    @mock.patch('glob.glob')
+    @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
+    @mock.patch('six.moves.builtins.open')
+    def test_get_community_playbook_by_id_not_found(
+                self, mock_open, mock_load, mock_glob, mock_isfile):
+        mock_glob.side_effect = (
+                [],
+                ['/home/foo/community-validations/playbooks/foo.yaml/'])
+        # the is file fails
+        mock_isfile.return_value = False
+        result = utils.get_validations_playbook('/foo/playbook',
+                                                validation_id=['foo'])
+        self.assertEqual(result, [])
+
+    @mock.patch('os.path.isfile')
+    @mock.patch('glob.glob')
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     def test_get_validations_playbook_by_id_group(self, mock_open, mock_load,
-                                                  mock_listdir, mock_isfile):
-        mock_listdir.return_value = ['foo.yaml']
+                                                  mock_glob, mock_isfile):
+        mock_glob.side_effect = (['/foo/playbook/foo.yaml'], [])
         mock_isfile.return_value = True
         result = utils.get_validations_playbook('/foo/playbook', ['foo'], ['prep'])
         self.assertEqual(result, ['/foo/playbook/foo.yaml',
@@ -192,24 +301,24 @@ class TestUtils(TestCase):
         self.assertEqual(result, [])
 
     @mock.patch('os.path.isfile')
-    @mock.patch('os.listdir')
+    @mock.patch('glob.glob')
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     def test_get_validations_playbook_by_category(self, mock_open, mock_load,
-                                                  mock_listdir, mock_isfile):
-        mock_listdir.return_value = ['foo.yaml']
+                                                  mock_glob, mock_isfile):
+        mock_glob.side_effect = (['/foo/playbook/foo.yaml'], [])
         mock_isfile.return_value = True
         result = utils.get_validations_playbook('/foo/playbook',
                                                 categories=['os', 'storage'])
         self.assertEqual(result, ['/foo/playbook/foo.yaml'])
 
     @mock.patch('os.path.isfile')
-    @mock.patch('os.listdir')
+    @mock.patch('glob.glob')
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
     @mock.patch('six.moves.builtins.open')
     def test_get_validations_playbook_by_product(self, mock_open, mock_load,
-                                                 mock_listdir, mock_isfile):
-        mock_listdir.return_value = ['foo.yaml']
+                                                 mock_glob, mock_isfile):
+        mock_glob.side_effect = (['/foo/playbook/foo.yaml'], [])
         mock_isfile.return_value = True
         result = utils.get_validations_playbook('/foo/playbook',
                                                 products=['product1'])

@@ -126,8 +126,16 @@ class Ansible(object):
                          gathering_policy, module_path, key,
                          extra_env_variables, ansible_timeout,
                          callback_whitelist, base_dir, python_interpreter,
-                         env={}):
+                         env={}, validation_cfg_file=None):
         """Handle Ansible env var for Ansible config execution"""
+        community_roles = ""
+        community_library = ""
+        community_lookup = ""
+        if utils.community_validations_on(validation_cfg_file):
+            community_roles = f"{constants.COMMUNITY_ROLES_DIR}:"
+            community_library = f"{constants.COMMUNITY_LIBRARY_DIR}:"
+            community_lookup = f"{constants.COMMUNITY_LOOKUP_DIR}:"
+
         cwd = os.getcwd()
         env['ANSIBLE_SSH_ARGS'] = (
             '-o UserKnownHostsFile={} '
@@ -159,10 +167,12 @@ class Ansible(object):
             '{}:{}:'
             '/usr/share/ansible/plugins/modules:'
             '/usr/share/ceph-ansible/library:'
+            '{community_path}'
             '{}/library'.format(
                 os.path.join(workdir, 'modules'),
                 os.path.join(cwd, 'modules'),
-                base_dir
+                base_dir,
+                community_path=community_library
             )
         )
         env['ANSIBLE_LOOKUP_PLUGINS'] = os.path.expanduser(
@@ -170,10 +180,12 @@ class Ansible(object):
             '{}:{}:'
             '/usr/share/ansible/plugins/lookup:'
             '/usr/share/ceph-ansible/plugins/lookup:'
+            '{community_path}'
             '{}/lookup_plugins'.format(
                 os.path.join(workdir, 'lookup'),
                 os.path.join(cwd, 'lookup'),
-                base_dir
+                base_dir,
+                community_path=community_lookup
             )
         )
         env['ANSIBLE_CALLBACK_PLUGINS'] = os.path.expanduser(
@@ -215,10 +227,12 @@ class Ansible(object):
             '/usr/share/ansible/roles:'
             '/usr/share/ceph-ansible/roles:'
             '/etc/ansible/roles:'
+            '{community_path}'
             '{}/roles'.format(
                 os.path.join(workdir, 'roles'),
                 os.path.join(cwd, 'roles'),
-                base_dir
+                base_dir,
+                community_path=community_roles
             )
         )
         env['ANSIBLE_CALLBACK_WHITELIST'] = callback_whitelist
@@ -421,7 +435,8 @@ class Ansible(object):
                                          connection, gathering_policy,
                                          module_path, key, extra_env_variables,
                                          ansible_timeout, callback_whitelist,
-                                         base_dir, python_interpreter))
+                                         base_dir, python_interpreter,
+                                         validation_cfg_file=validation_cfg_file))
 
         if 'ANSIBLE_CONFIG' not in env and not ansible_cfg_file:
             ansible_cfg_file = os.path.join(ansible_artifact_path,

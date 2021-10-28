@@ -248,7 +248,8 @@ FAKE_PLAYBOOK = [{'hosts': 'undercloud',
                                         'categories': ['os', 'storage'],
                                         'products': ['product1'],
                                         'name':
-                                        'Advanced Format 512e Support'}}}]
+                                        'Advanced Format 512e Support',
+                                        'path': '/tmp'}}}]
 
 FAKE_PLAYBOOK2 = [{'hosts': 'undercloud',
                    'roles': ['advanced_format_512e_support'],
@@ -274,14 +275,16 @@ FAKE_METADATA = {'id': 'foo',
                  'groups': ['prep', 'pre-deployment'],
                  'categories': ['os', 'storage'],
                  'products': ['product1'],
-                 'name': 'Advanced Format 512e Support'}
+                 'name': 'Advanced Format 512e Support',
+                 'path': '/tmp'}
 
 FORMATED_DATA = {'Description': 'foo',
                  'Groups': ['prep', 'pre-deployment'],
                  'Categories': ['os', 'storage'],
                  'Products': ['product1'],
                  'ID': 'foo',
-                 'Name': 'Advanced Format 512e Support'}
+                 'Name': 'Advanced Format 512e Support',
+                 'Path': '/tmp'}
 
 GROUP = {'no-op': [{'description': 'noop-foo'}],
          'pre': [{'description': 'pre-foo'}],

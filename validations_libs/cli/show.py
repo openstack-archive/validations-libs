@@ -44,7 +44,8 @@ class Show(BaseShow):
         validation_name = parsed_args.validation_name
 
         v_actions = ValidationActions(validation_path=validation_dir)
-        data = v_actions.show_validations(validation_name)
+        data = v_actions.show_validations(
+                validation_name, validation_config=self.base.config)
 
         if data:
             return data.keys(), data.values()
@@ -69,7 +70,9 @@ class ShowGroup(BaseLister):
         """Take validation action"""
 
         v_actions = ValidationActions(parsed_args.validation_dir)
-        return v_actions.group_information(constants.VALIDATION_GROUPS_INFO)
+        return v_actions.group_information(
+                constants.VALIDATION_GROUPS_INFO,
+                validation_config=self.base.config)
 
 
 class ShowParameter(BaseShow):
@@ -160,7 +163,8 @@ class ShowParameter(BaseShow):
             categories=parsed_args.category,
             products=parsed_args.product,
             output_format=parsed_args.format_output,
-            download_file=parsed_args.download)
+            download_file=parsed_args.download,
+            validation_config=self.base.config)
 
         if parsed_args.download:
             self.app.LOG.info(
