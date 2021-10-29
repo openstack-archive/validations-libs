@@ -24,7 +24,7 @@ Vagrant.configure("2") do |config|
     pushd vc-dev
     sudo python3 -m pip install . -r requirements.txt
     popd
-    sudo ln -s /usr/local/share/ansible/validations-playbooks /usr/share/ansible/validations-playbooks
+    sudo ln -s /usr/local/share/ansible /usr/share/ansible
     sudo mkdir -p /var/log/validations
   NONROOTSHELL
 end
