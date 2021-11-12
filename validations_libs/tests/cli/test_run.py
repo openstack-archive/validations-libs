@@ -365,15 +365,6 @@ class TestRun(BaseCommand):
 
         self.assertDictEqual(call_args, run_called_args)
 
-    def test_run_command_exclusive_wrong_extra_vars(self):
-        arglist = ['--validation', 'foo',
-                   '--extra-vars', 'key=value1,key=value2']
-        verifylist = [('validation_name', ['foo']),
-                      ('extra_vars', {'key': 'value2'})]
-
-        self.assertRaises(Exception, self.check_parser, self.cmd,
-                          arglist, verifylist)
-
     @mock.patch('validations_libs.utils.find_config_file',
                 return_value="/etc/validations_foo.cfg")
     @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')

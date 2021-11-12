@@ -58,5 +58,5 @@ KEYVALUEACTION_VALUES = {
     'invalid_noeq': 'foo>bar',
     'invalid_multieq': 'foo===bar',
     'invalid_nokey': '=bar',
-    'invalid_multikey': 'foo=bar,fizz=buzz'
+    'invalid_multikey': 'foo=bar,baz=,fizz=buzz,baz'
 }
