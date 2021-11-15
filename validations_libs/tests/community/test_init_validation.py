@@ -84,13 +84,25 @@ class TestCommunityValidation(TestCase):
                          constants.COMMUNITY_PLAYBOOKS_DIR)
 
     @mock.patch('pathlib.Path.iterdir',
+                return_value=fakes.FAKE_ROLES_ITERDIR2)
+    @mock.patch('pathlib.Path.is_dir')
+    @mock.patch('pathlib.Path.exists', side_effect=[False, True])
+    def test_role_already_exists_in_comval(self,
+                                           mock_play_path_exists,
+                                           mock_path_is_dir,
+                                           mock_path_iterdir):
+        validation_name = "my-val"
+        co_val = cv(validation_name)
+        self.assertTrue(co_val.is_role_exists())
+
+    @mock.patch('pathlib.Path.iterdir',
                 return_value=fakes.FAKE_ROLES_ITERDIR1)
     @mock.patch('pathlib.Path.is_dir')
-    @mock.patch('pathlib.Path.exists', return_value=False)
-    def test_role_already_exists(self,
-                                 mock_path_exists,
-                                 mock_path_is_dir,
-                                 mock_path_iterdir):
+    @mock.patch('pathlib.Path.exists', side_effect=[True, False])
+    def test_role_already_exists_in_non_comval(self,
+                                               mock_play_path_exists,
+                                               mock_path_is_dir,
+                                               mock_path_iterdir):
         validation_name = "my-val"
         co_val = cv(validation_name)
         self.assertTrue(co_val.is_role_exists())
@@ -98,7 +110,7 @@ class TestCommunityValidation(TestCase):
     @mock.patch('pathlib.Path.iterdir',
                 return_value=fakes.FAKE_ROLES_ITERDIR2)
     @mock.patch('pathlib.Path.is_dir')
-    @mock.patch('pathlib.Path.exists', return_value=False)
+    @mock.patch('pathlib.Path.exists', side_effect=[True, False])
     def test_role_not_exists(self,
                              mock_path_exists,
                              mock_path_is_dir,
@@ -110,11 +122,11 @@ class TestCommunityValidation(TestCase):
     @mock.patch('pathlib.Path.iterdir',
                 return_value=fakes.FAKE_PLAYBOOKS_ITERDIR1)
     @mock.patch('pathlib.Path.is_file')
-    @mock.patch('pathlib.Path.exists', return_value=True)
-    def test_playbook_already_exists(self,
-                                     mock_path_exists,
-                                     mock_path_is_file,
-                                     mock_path_iterdir):
+    @mock.patch('pathlib.Path.exists', side_effect=[True, False])
+    def test_playbook_already_exists_in_non_comval(self,
+                                                   mock_path_exists,
+                                                   mock_path_is_file,
+                                                   mock_path_iterdir):
         validation_name = "my_val"
         co_val = cv(validation_name)
         self.assertTrue(co_val.is_playbook_exists())
@@ -122,7 +134,19 @@ class TestCommunityValidation(TestCase):
     @mock.patch('pathlib.Path.iterdir',
                 return_value=fakes.FAKE_PLAYBOOKS_ITERDIR2)
     @mock.patch('pathlib.Path.is_file')
-    @mock.patch('pathlib.Path.exists', return_value=False)
+    @mock.patch('pathlib.Path.exists', side_effect=[False, True])
+    def test_playbook_already_exists_in_comval(self,
+                                               mock_path_exists,
+                                               mock_path_is_file,
+                                               mock_path_iterdir):
+        validation_name = "my_val"
+        co_val = cv(validation_name)
+        self.assertTrue(co_val.is_playbook_exists())
+
+    @mock.patch('pathlib.Path.iterdir',
+                return_value=fakes.FAKE_PLAYBOOKS_ITERDIR2)
+    @mock.patch('pathlib.Path.is_file')
+    @mock.patch('pathlib.Path.exists', side_effect=[True, False])
     def test_playbook_not_exists(self,
                                  mock_path_exists,
                                  mock_path_is_file,
@@ -136,6 +160,7 @@ class TestCommunityValidation(TestCase):
         co_val = cv(validation_name)
         self.assertRaises(RuntimeError, co_val.execute)
 
+    @mock.patch('validations_libs.community.init_validation.CommunityValidation.create_playbook')
     @mock.patch('validations_libs.utils.run_command_and_log',
                 return_value=0)
     @mock.patch('validations_libs.community.init_validation.CommunityValidation.role_basedir',
@@ -145,7 +170,8 @@ class TestCommunityValidation(TestCase):
     def test_exec_new_role_with_galaxy(self,
                                        mock_log,
                                        mock_role_basedir,
-                                       mock_run):
+                                       mock_run,
+                                       mock_create_playbook):
         validation_name = "my_val"
         cmd = ['ansible-galaxy', 'init', '-v',
                '--offline', validation_name,
@@ -154,6 +180,7 @@ class TestCommunityValidation(TestCase):
         co_val.execute()
         mock_run.assert_called_once_with(mock_log, cmd)
 
+    @mock.patch('validations_libs.community.init_validation.CommunityValidation.create_playbook')
     @mock.patch('validations_libs.utils.run_command_and_log',
                 return_value=1)
     @mock.patch('validations_libs.community.init_validation.CommunityValidation.role_basedir',
@@ -163,10 +190,62 @@ class TestCommunityValidation(TestCase):
     def test_exec_new_role_with_galaxy_and_error(self,
                                                  mock_log,
                                                  mock_role_basedir,
-                                                 mock_run):
+                                                 mock_run,
+                                                 mock_create_playbook):
         validation_name = "my_val"
         cmd = ['ansible-galaxy', 'init', '-v',
                '--offline', validation_name,
                '--init-path', mock_role_basedir]
         co_val = cv(validation_name)
         self.assertRaises(RuntimeError, co_val.execute)
+
+    @mock.patch(
+        'validations_libs.community.init_validation.CommunityValidation.create_playbook',
+        side_effect=PermissionError)
+    @mock.patch('validations_libs.utils.run_command_and_log',
+                return_value=0)
+    @mock.patch('validations_libs.community.init_validation.CommunityValidation.role_basedir',
+                return_value=PosixPath("/foo/bar/roles"))
+    @mock.patch('validations_libs.community.init_validation.LOG',
+                autospec=True)
+    def test_validation_init_create_playbook_with_issue(self,
+                                                        mock_log,
+                                                        mock_role_basedir,
+                                                        mock_run,
+                                                        mock_create_playbook):
+        validation_name = "foo_bar"
+        cmd = ['ansible-galaxy', 'init', '-v',
+               '--offline', validation_name,
+               '--init-path', mock_role_basedir]
+        co_val = cv(validation_name)
+        self.assertRaises(RuntimeError, co_val.execute)
+
+    @mock.patch('builtins.open')
+    @mock.patch('validations_libs.community.init_validation.CommunityValidation.playbook_path',
+                return_value='/foo/bar/playbooks/my-val.yaml')
+    @mock.patch('validations_libs.utils.run_command_and_log',
+                return_value=0)
+    @mock.patch('validations_libs.community.init_validation.CommunityValidation.role_basedir',
+                return_value=PosixPath("/foo/bar/roles"))
+    @mock.patch('validations_libs.community.init_validation.LOG',
+                autospec=True)
+    def test_validation_init_create_playbook(self,
+                                             mock_log,
+                                             mock_role_basedir,
+                                             mock_run,
+                                             mock_playbook_path,
+                                             mock_open):
+        validation_name = "my_val"
+        co_val = cv(validation_name)
+        co_val.execute()
+
+        self.assertIn(
+            mock.call(mock_playbook_path, 'w'),
+            mock_open.mock_calls
+        )
+        self.assertIn(
+            mock.call().__enter__().write(
+                fakes.FAKE_PLAYBOOK_TEMPLATE
+            ),
+            mock_open.mock_calls
+        )

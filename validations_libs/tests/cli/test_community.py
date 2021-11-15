@@ -40,7 +40,9 @@ class TestCommunityValidationInit(BaseCommand):
     @mock.patch(
         'validations_libs.community.init_validation.CommunityValidation.is_role_exists',
         return_value=False)
+    @mock.patch('validations_libs.utils.check_community_validations_dir')
     def test_validation_init(self,
+                             mock_comval_dir,
                              mock_role_exists,
                              mock_play_exists,
                              mock_execute):
@@ -67,7 +69,10 @@ class TestCommunityValidationInit(BaseCommand):
     @mock.patch(
         'validations_libs.community.init_validation.CommunityValidation.is_playbook_exists',
         return_value=False)
-    def test_validation_init_with_role_existing(self, mock_playbook_exists,
+    @mock.patch('validations_libs.utils.check_community_validations_dir')
+    def test_validation_init_with_role_existing(self,
+                                                mock_comval_dir,
+                                                mock_playbook_exists,
                                                 mock_role_exists):
         args = self._set_args(['my_new_community_val'])
         verifylist = [('validation_name', 'my_new_community_val')]
@@ -82,8 +87,11 @@ class TestCommunityValidationInit(BaseCommand):
     @mock.patch(
         'validations_libs.community.init_validation.CommunityValidation.is_playbook_exists',
         return_value=True)
-    def test_validation_with_playbook_existing(self, mock_playbook_exists,
-                                               mock_role_exists):
+    @mock.patch('validations_libs.utils.check_community_validations_dir')
+    def test_validation_init_with_playbook_existing(self,
+                                                    mock_comval_dir,
+                                                    mock_playbook_exists,
+                                                    mock_role_exists):
         args = self._set_args(['my_new_community_val'])
         verifylist = [('validation_name', 'my_new_community_val')]
 

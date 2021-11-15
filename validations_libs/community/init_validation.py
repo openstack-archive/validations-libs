@@ -79,9 +79,9 @@ class CommunityValidation:
 
         LOG.info(f"New playbook created successfully in {self.playbook_path}")
 
-    def create_playbook(self):
+    def create_playbook(self, content=constants.COMMUNITY_PLAYBOOK_TEMPLATE):
         """Create the playbook for the new community validation"""
-        playbook = constants.COMMUNITY_PLAYBOOK_TEMPLATE.format(self.role_name)
+        playbook = content.format(self.role_name)
         with open(self.playbook_path, 'w') as playbook_file:
             playbook_file.write(playbook)
 
@@ -98,11 +98,13 @@ class CommunityValidation:
 
         :rtype: ``Boolean``
         """
-        non_community_roles = [
-            Path(x).name
-            for x in Path(constants.ANSIBLE_ROLES_DIR).iterdir()
-            if x.is_dir()
-        ]
+        non_community_roles = []
+        if Path(constants.ANSIBLE_ROLES_DIR).exists():
+            non_community_roles = [
+                Path(x).name
+                for x in Path(constants.ANSIBLE_ROLES_DIR).iterdir()
+                if x.is_dir()
+            ]
 
         return Path(self.role_dir_path).exists() or \
             self.role_name in non_community_roles
@@ -120,11 +122,14 @@ class CommunityValidation:
 
         :rtype: ``Boolean``
         """
-        non_community_playbooks = [
-            Path(x).name
-            for x in Path(constants.ANSIBLE_VALIDATION_DIR).iterdir()
-            if x.is_file()
-        ]
+        non_community_playbooks = []
+        if Path(constants.ANSIBLE_VALIDATION_DIR).exists():
+            non_community_playbooks = [
+                Path(x).name
+                for x in Path(constants.ANSIBLE_VALIDATION_DIR).iterdir()
+                if x.is_file()
+            ]
+
         return Path(self.playbook_path).exists() or \
             self.playbook_name in non_community_playbooks
 
