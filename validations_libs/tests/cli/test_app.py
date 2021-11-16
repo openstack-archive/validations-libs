@@ -45,7 +45,6 @@ class TestArgApp(TestCase):
         parsed_args = parser.parse_args(args)
         self.assertEqual('foo', parsed_args.validation_dir)
 
-    @mock.patch('validations_libs.constants.ANSIBLE_VALIDATION_DIR', 'bar')
     @mock.patch('validations_libs.utils.find_config_file',
                 return_value='validation.cfg')
     def test_validation_dir_config_no_cli(self, mock_config):

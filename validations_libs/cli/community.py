@@ -48,13 +48,12 @@ class CommunityValidationInit(BaseCommand):
             )
         )
 
-        if self.app:
-            # Merge config and CLI args:
-            return self.base.set_argument_parser(parser)
         return parser
 
     def take_action(self, parsed_args):
         """Take Community Validation Action"""
+        # Merge config and CLI args:
+        self.base.set_argument_parser(self, parsed_args)
 
         co_validation = com_val(parsed_args.validation_name)
 

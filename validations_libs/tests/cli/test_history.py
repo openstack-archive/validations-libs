@@ -68,9 +68,8 @@ class TestListHistory(BaseCommand):
         self._set_args(arglist)
 
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
-        self.assertEqual(parsed_args.history_limit, 0)
-        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.assertRaises(ValueError, self.cmd.take_action, parsed_args)
+        self.assertEqual(parsed_args.history_limit, 0)
 
 
 class TestGetHistory(BaseCommand):

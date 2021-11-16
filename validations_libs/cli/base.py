@@ -15,6 +15,7 @@
 #   under the License.
 
 import os
+import sys
 
 from cliff import _argparse
 from cliff.command import Command
@@ -35,38 +36,29 @@ class Base:
     """Base class for CLI arguments management"""
     config = {}
 
-    def _format_arg(self, parser):
-        """Format arguments parser"""
-        namespace, argv = parser.parse_known_args()
-        return [arg.lstrip(parser.prefix_chars).replace('-', '_')
-                for arg in argv]
-
-    def set_argument_parser(self, parser, section='default'):
+    def set_argument_parser(self, vf_parser, args, section='default'):
         """ Set Arguments parser depending of the precedence ordering:
             * User CLI arguments
             * Configuration file
             * Default CLI values
         """
-        cli_args = self._format_arg(parser)
-        args, _ = parser.parse_known_args()
+        # load parser
+        parser = vf_parser.get_parser(vf_parser)
+        # load cli args and skip binary and action
+        cli_args = sys.argv[2:]
+        cli_key = [arg.lstrip(parser.prefix_chars).replace('-', '_')
+                   for arg in cli_args if arg.startswith('--')]
+
         self.config = utils.load_config(os.path.abspath(args.config))
         config_args = self.config.get(section, {})
         for key, value in args._get_kwargs():
-            # matbu: manage the race when user's cli arg is the same than
-            # the parser default value. The user's cli arg will *always*
-            # takes precedence on others.
-            if parser.get_default(key) == value and key in cli_args:
-                try:
-                    cli_value = cli_args[cli_args.index(key)+1]
-                    config_args.update({key: cli_value})
-                except KeyError:
-                    print('Key not found in cli: {}').format(key)
+            if key in cli_key:
+                config_args.update({key: value})
             elif parser.get_default(key) != value:
                 config_args.update({key: value})
             elif key not in config_args.keys():
                 config_args.update({key: value})
-        parser.set_defaults(**config_args)
-        return parser
+        return vars(args).update(**config_args)
 
 
 class BaseCommand(Command):

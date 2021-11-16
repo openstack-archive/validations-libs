@@ -45,10 +45,12 @@ class ListHistory(BaseLister):
                             default=constants.VALIDATIONS_LOG_BASEDIR,
                             help=("Path where the validation log files "
                                   "is located."))
-        # Merge config and CLI args:
-        return self.base.set_argument_parser(parser)
+        return parser
 
     def take_action(self, parsed_args):
+        # Merge config and CLI args:
+        self.base.set_argument_parser(self, parsed_args)
+
         validation_log_dir = parsed_args.validation_log_dir
         history_limit = parsed_args.history_limit
 
@@ -86,10 +88,12 @@ class GetHistory(BaseCommand):
                             default=constants.VALIDATIONS_LOG_BASEDIR,
                             help=("Path where the validation log files "
                                   "is located."))
-        # Merge config and CLI args:
-        return self.base.set_argument_parser(parser)
+        return parser
 
     def take_action(self, parsed_args):
+        # Merge config and CLI args:
+        self.base.set_argument_parser(self, parsed_args)
+
         self.app.LOG.debug(
             (
                 "Obtaining information about the validation run {}\n"

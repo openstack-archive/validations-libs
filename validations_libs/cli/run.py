@@ -162,14 +162,12 @@ class Run(BaseCommand):
             help=("Run specific validations by product, "
                   "if more than one product is required "
                   "separate the product names with commas."))
-
-        if self.app:
-            # Merge config and CLI args:
-            return self.base.set_argument_parser(parser)
         return parser
 
     def take_action(self, parsed_args):
         """Take validation action"""
+        # Merge config and CLI args:
+        self.base.set_argument_parser(self, parsed_args)
         # Get config:
         config = self.base.config
 

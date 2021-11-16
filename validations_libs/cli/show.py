@@ -34,11 +34,12 @@ class Show(BaseShow):
                             metavar="<validation>",
                             type=str,
                             help="Show a specific validation.")
-        # Merge config and CLI args:
-        return self.base.set_argument_parser(parser)
+        return parser
 
     def take_action(self, parsed_args):
         """Take validation action"""
+        # Merge config and CLI args:
+        self.base.set_argument_parser(self, parsed_args)
         # Get parameters:
         validation_dir = parsed_args.validation_dir
         validation_name = parsed_args.validation_name
@@ -61,12 +62,12 @@ class ShowGroup(BaseLister):
                             default=constants.ANSIBLE_VALIDATION_DIR,
                             help=("Path where the validation playbooks "
                                   "are located."))
-
-        # Merge config and CLI args:
-        return self.base.set_argument_parser(parser)
+        return parser
 
     def take_action(self, parsed_args):
         """Take validation action"""
+        # Merge config and CLI args:
+        self.base.set_argument_parser(self, parsed_args)
 
         v_actions = ValidationActions(parsed_args.validation_dir)
         return v_actions.group_information(constants.VALIDATION_GROUPS_INFO)
@@ -147,10 +148,11 @@ class ShowParameter(BaseShow):
             help=("Print representation of the validation. "
                   "The choices of the output format is json,yaml. ")
         )
-        # Merge config and CLI args:
-        return self.base.set_argument_parser(parser)
+        return parser
 
     def take_action(self, parsed_args):
+        # Merge config and CLI args:
+        self.base.set_argument_parser(self, parsed_args)
 
         validation_dir = parsed_args.validation_dir
         v_actions = ValidationActions(validation_dir)

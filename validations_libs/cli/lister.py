@@ -51,11 +51,12 @@ class ValidationList(BaseLister):
                             default=constants.ANSIBLE_VALIDATION_DIR,
                             help=("Path where the validation playbooks "
                                   "are located."))
-        # Merge config and CLI args:
-        return self.base.set_argument_parser(parser)
+        return parser
 
     def take_action(self, parsed_args):
         """Take validation action"""
+        # Merge config and CLI args:
+        self.base.set_argument_parser(self, parsed_args)
 
         group = parsed_args.group
         category = parsed_args.category

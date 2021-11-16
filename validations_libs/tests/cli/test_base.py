@@ -42,16 +42,6 @@ class TestBase(BaseCommand):
         self.cmd = lister.ValidationList(self.app, None)
         self.base = base.Base()
 
-    @mock.patch('argparse.ArgumentParser.parse_known_args',
-                return_value=(TestArgParse(), ['foo-bar']))
-    @mock.patch('os.path.abspath', return_value='/foo')
-    @mock.patch('validations_libs.utils.load_config',
-                return_value=fakes.DEFAULT_CONFIG)
-    def test_config_args(self, mock_config, mock_path, mock_argv):
-        cmd_parser = self.cmd.get_parser('check_parser')
-
-        self.assertEqual(['foo_bar'], self.base._format_arg(cmd_parser))
-
     @mock.patch('os.path.abspath', return_value='/foo')
     @mock.patch('validations_libs.utils.load_config',
                 return_value=fakes.DEFAULT_CONFIG)
@@ -59,36 +49,36 @@ class TestBase(BaseCommand):
         arglist = ['--validation-dir', 'foo', '--config', 'validation.cfg']
         verifylist = [('validation_dir', 'foo')]
         self._set_args(arglist)
-        cmd_parser = self.cmd.get_parser('check_parser')
-        parser = self.base.set_argument_parser(cmd_parser)
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.base.set_argument_parser(self.cmd, parsed_args)
 
         self.assertEqual(fakes.DEFAULT_CONFIG, self.base.config)
-        self.assertEqual(parser.get_default('validation_dir'), 'foo')
+        self.assertEqual(parsed_args.validation_dir, 'foo')
 
     @mock.patch('os.path.abspath', return_value='/foo')
     @mock.patch('validations_libs.utils.load_config',
                 return_value=fakes.DEFAULT_CONFIG)
     def test_argument_parser_config_choice(self, mock_load, mock_path):
-        arglist = []
+        arglist = ['--config', 'validation.cfg']
         verifylist = []
         self._set_args(arglist)
-        cmd_parser = self.cmd.get_parser('check_parser')
-        parser = self.base.set_argument_parser(cmd_parser)
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.base.set_argument_parser(self.cmd, parsed_args)
 
         self.assertEqual(fakes.DEFAULT_CONFIG, self.base.config)
-        self.assertEqual(parser.get_default('validation_dir'),
+        self.assertEqual(parsed_args.validation_dir,
                          '/usr/share/ansible/validation-playbooks')
 
     @mock.patch('os.path.abspath', return_value='/foo')
     @mock.patch('validations_libs.utils.load_config',
                 return_value={})
     def test_argument_parser_constant_choice(self, mock_load, mock_path):
-        arglist = []
+        arglist = ['--config', 'validation.cfg']
         verifylist = []
         self._set_args(arglist)
-        cmd_parser = self.cmd.get_parser('check_parser')
-        parser = self.base.set_argument_parser(cmd_parser)
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.base.set_argument_parser(self.cmd, parsed_args)
 
         self.assertEqual({}, self.base.config)
-        self.assertEqual(parser.get_default('validation_dir'),
+        self.assertEqual(parsed_args.validation_dir,
                          '/usr/share/ansible/validation-playbooks')
