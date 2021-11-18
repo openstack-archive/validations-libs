@@ -50,7 +50,8 @@ class ValidationActions(object):
     def list_validations(self,
                          groups=None,
                          categories=None,
-                         products=None):
+                         products=None,
+                         validation_config=None):
         """Get a list of the validations selected by group membership or by
         category. With their names, group membership information, categories and
         products.
@@ -65,6 +66,10 @@ class ValidationActions(object):
 
         :param products: List of validation products.
         :type products: `list`
+
+        :param validation_config: A dictionary of configuration for Validation
+                                  loaded from an validation.cfg file.
+        :type validation_config: ``dict``
 
         :return: Column names and a list of the selected validations
         :rtype: `tuple`
@@ -106,7 +111,8 @@ class ValidationActions(object):
             path=self.validation_path,
             groups=groups,
             categories=categories,
-            products=products
+            products=products,
+            validation_config=validation_config
         )
 
         self.log.debug(
@@ -124,13 +130,18 @@ class ValidationActions(object):
         return (column_names, return_values)
 
     def show_validations(self, validation,
-                         log_path=constants.VALIDATIONS_LOG_BASEDIR):
+                         log_path=constants.VALIDATIONS_LOG_BASEDIR,
+                         validation_config=None):
         """Display detailed information about a Validation
 
         :param validation: The name of the validation
         :type validation: `string`
         :param log_path: The absolute path of the validations logs
         :type log_path: `string`
+        :param validation_config: A dictionary of configuration for Validation
+                                  loaded from an validation.cfg file.
+        :type validation_config: ``dict``
+
 
         :return: The detailed information for a validation
         :rtype: `dict`
@@ -156,11 +167,18 @@ class ValidationActions(object):
         self.log = logging.getLogger(__name__ + ".show_validations")
         # Get validation data:
         vlog = ValidationLogs(log_path)
-        data = v_utils.get_validations_data(validation, self.validation_path)
-        if not data:
-            msg = "Validation {} not found in the path: {}".format(
+        data = v_utils.get_validations_data(
                 validation,
-                self.validation_path)
+                self.validation_path,
+                validation_config=validation_config)
+        if not data:
+            extra_msg = ""
+            if v_utils.community_validations_on(validation_config):
+                extra_msg = " or {}".format(constants.COMMUNITY_LIBRARY_DIR)
+            msg = "Validation {} not found in the path: {}{}".format(
+                validation,
+                self.validation_path,
+                extra_msg)
             raise RuntimeError(msg)
         logfiles = vlog.get_logfile_content_by_validation(validation)
         data_format = vlog.get_validations_stats(logfiles)
@@ -331,15 +349,15 @@ class ValidationActions(object):
                           (Defaults to 'None')
         :type skip_list: ``dict``
 
-        :return: A list of dictionary containing the informations of the
-                 validations executions (Validations, Duration, Host_Group,
-                 Status, Status_by_Host, UUID and Unreachable_Hosts)
-        :rtype: ``list``
         :param ssh_user: Ssh user for Ansible remote connection
         :type ssh_user: ``string``
         :param validation_config: A dictionary of configuration for Validation
                                   loaded from an validation.cfg file.
         :type validation_config: ``dict``
+        :return: A list of dictionary containing the informations of the
+                 validations executions (Validations, Duration, Host_Group,
+                 Status, Status_by_Host, UUID and Unreachable_Hosts)
+        :rtype: ``list``
 
         :Example:
 
@@ -378,13 +396,16 @@ class ValidationActions(object):
             )
             validations = v_utils.parse_all_validations_on_disk(
                 path=validations_dir, groups=group,
-                categories=category, products=product
+                categories=category, products=product,
+                validation_config=validation_config
             )
             for val in validations:
-                playbooks.append(val.get('id') + '.yaml')
+                playbooks.append("{path}/{id}.yaml".format(**val))
         elif validation_name:
-            playbooks = v_utils.get_validations_playbook(validations_dir,
-                                                         validation_name)
+            playbooks = v_utils.get_validations_playbook(
+                    validations_dir,
+                    validation_name,
+                    validation_config=validation_config)
 
             if not playbooks or len(validation_name) != len(playbooks):
                 p = []
@@ -419,7 +440,7 @@ class ValidationActions(object):
                             workdir=artifacts_dir,
                             playbook=playbook,
                             base_dir=base_dir,
-                            playbook_dir=validations_dir,
+                            playbook_dir=os.path.dirname(playbook),
                             parallel_run=True,
                             inventory=inventory,
                             output_callback=output_callback,
@@ -441,7 +462,7 @@ class ValidationActions(object):
                         workdir=artifacts_dir,
                         playbook=playbook,
                         base_dir=base_dir,
-                        playbook_dir=validations_dir,
+                        playbook_dir=os.path.dirname(playbook),
                         parallel_run=True,
                         inventory=inventory,
                         output_callback=output_callback,
@@ -483,7 +504,7 @@ class ValidationActions(object):
         vlog = ValidationLogs(log_path)
         return vlog.get_results(uuid)
 
-    def group_information(self, groups):
+    def group_information(self, groups, validation_config=None):
         """Get Information about Validation Groups
 
         This is used to print table from python ``Tuple`` with ``PrettyTable``.
@@ -500,6 +521,9 @@ class ValidationActions(object):
 
         :param groups: The absolute path of the groups.yaml file
         :type groups: ``string``
+        :param validation_config: A dictionary of configuration for Validation
+                                  loaded from an validation.cfg file.
+        :type validation_config: ``dict``
 
         :return: The list of the available groups with their description and
                  the numbers of validation belonging to them.
@@ -523,7 +547,8 @@ class ValidationActions(object):
 
         validations = v_utils.parse_all_validations_on_disk(
                 path=self.validation_path,
-                groups=[group[0] for group in group_definitions])
+                groups=[group[0] for group in group_definitions],
+                validation_config=validation_config)
 
         # Get validations number by group
         for group in group_definitions:
@@ -543,7 +568,8 @@ class ValidationActions(object):
                                     categories=None,
                                     products=None,
                                     output_format='json',
-                                    download_file=None):
+                                    download_file=None,
+                                    validation_config=None):
         """
         Return Validations Parameters for one or several validations by their
         names, their groups, by their categories or by their products.
@@ -566,6 +592,9 @@ class ValidationActions(object):
         :param download_file: Path of a file in which the parameters will be
                               stored
         :type download_file: `string`
+        :param validation_config: A dictionary of configuration for Validation
+                                  loaded from an validation.cfg file.
+        :type validation_config: ``dict``
 
         :return: A JSON or a YAML dump (By default, JSON).
                  if `download_file` is used, a file containing only the
@@ -622,7 +651,8 @@ class ValidationActions(object):
             validation_id=validations,
             groups=groups,
             categories=categories,
-            products=products
+            products=products,
+            validation_config=validation_config
         )
 
         params = v_utils.get_validations_parameters(

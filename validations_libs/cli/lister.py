@@ -67,4 +67,5 @@ class ValidationList(BaseLister):
         v_actions = ValidationActions(validation_path=validation_dir)
         return (v_actions.list_validations(groups=group,
                                            categories=category,
-                                           products=product))
+                                           products=product,
+                                           validation_config=self.base.config))

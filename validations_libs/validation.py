@@ -89,6 +89,7 @@ class Validation(object):
     def __init__(self, validation_path):
         self.dict = self._get_content(validation_path)
         self.id = os.path.splitext(os.path.basename(validation_path))[0]
+        self.path = os.path.dirname(validation_path)
 
     def _get_content(self, val_path):
         try:
@@ -176,10 +177,11 @@ class Validation(object):
          'categories': ['category1', 'category2'],
          'products': ['product1', 'product2'],
          'id': 'val1',
-         'name': 'The validation val1\'s name'}
+         'name': 'The validation val1\'s name',
+         'path': '/tmp/foo/'}
         """
         if self.has_metadata_dict:
-            self.metadata = {'id': self.id}
+            self.metadata = {'id': self.id, 'path': self.path}
             self.metadata.update(self.dict['vars'].get('metadata'))
             return self.metadata
         else:
@@ -353,7 +355,8 @@ class Validation(object):
          'Description': 'description of val',
          'Groups': ['group1', 'group2'],
          'ID': 'val',
-         'Name': 'validation one'}
+         'Name': 'validation one',
+         'path': '/tmp/foo/'}
         """
         data = {}
         metadata = self.get_metadata

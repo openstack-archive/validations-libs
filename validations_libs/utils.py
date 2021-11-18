@@ -37,6 +37,21 @@ def current_time():
     return '%sZ' % datetime.datetime.utcnow().isoformat()
 
 
+def community_validations_on(validation_config):
+    """Check for flag for community validations to be enabled
+    The default value is true
+
+    :param validation_config: A dictionary of configuration for Validation
+                              loaded from an validation.cfg file.
+    :type validation_config: ``dict``
+    :return: A boolean with the status of community validations flag
+    :rtype: `bool`
+    """
+    if not validation_config:
+        return True
+    return validation_config.get("default", {}).get("enable_community_validations", True)
+
+
 def create_log_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR):
     """Check for presence of the selected validations log dir.
     Create the directory if needed, and use fallback if that
@@ -136,7 +151,8 @@ def create_artifacts_dir(log_path=constants.VALIDATIONS_LOG_BASEDIR,
 def parse_all_validations_on_disk(path,
                                   groups=None,
                                   categories=None,
-                                  products=None):
+                                  products=None,
+                                  validation_config=None):
     """Return a list of validations metadata which can be sorted by Groups, by
     Categories or by Products.
 
@@ -151,6 +167,10 @@ def parse_all_validations_on_disk(path,
 
     :param products: Products of validations
     :type products: `list`
+
+    :param validation_config: A dictionary of configuration for Validation
+                              loaded from an validation.cfg file.
+    :type validation_config: ``dict``
 
     :return: A list of validations metadata.
     :rtype: `list`
@@ -192,6 +212,9 @@ def parse_all_validations_on_disk(path,
 
     results = []
     validations_abspath = glob.glob("{path}/*.yaml".format(path=path))
+    if community_validations_on(validation_config):
+        validations_abspath.extend(glob.glob("{}/*.yaml".format(
+            constants.COMMUNITY_PLAYBOOKS_DIR)))
 
     LOG.debug(
         "Attempting to parse validations by:\n"
@@ -200,7 +223,6 @@ def parse_all_validations_on_disk(path,
         "  - products: {}\n"
         "from {}".format(groups, categories, products, validations_abspath)
     )
-
     for playbook in validations_abspath:
         val = Validation(playbook)
 
@@ -220,7 +242,8 @@ def get_validations_playbook(path,
                              validation_id=None,
                              groups=None,
                              categories=None,
-                             products=None):
+                             products=None,
+                             validation_config=None):
     """Get a list of validations playbooks paths either by their names,
     their groups, by their categories or by their products.
 
@@ -238,6 +261,10 @@ def get_validations_playbook(path,
 
     :param products: List of validation product
     :type products: `list`
+
+    :param validation_config: A dictionary of configuration for Validation
+                              loaded from an validation.cfg file.
+    :type validation_config: ``dict``
 
     :return: A list of absolute validations playbooks path
     :rtype: `list`
@@ -281,12 +308,15 @@ def get_validations_playbook(path,
         raise TypeError("The 'products' argument must be a List")
 
     pl = []
-    for f in os.listdir(path):
-        pl_path = join(path, f)
+    validations_abspath = glob.glob("{path}/*.yaml".format(path=path))
+    if community_validations_on(validation_config):
+        validations_abspath.extend(glob.glob("{}/*.yaml".format(
+                    constants.COMMUNITY_PLAYBOOKS_DIR)))
+    for pl_path in validations_abspath:
         if os.path.isfile(pl_path):
             if validation_id:
-                if os.path.splitext(f)[0] in validation_id or \
-                        os.path.basename(f) in validation_id:
+                if os.path.splitext(os.path.basename(pl_path))[0] in validation_id or \
+                        os.path.basename(pl_path) in validation_id:
                     pl.append(pl_path)
 
             val = Validation(pl_path)
@@ -377,7 +407,10 @@ def get_validations_details(validation):
     return {}
 
 
-def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
+def get_validations_data(
+        validation,
+        path=constants.ANSIBLE_VALIDATION_DIR,
+        validation_config=None):
     """Return validation data with format:
 
     ID, Name, Description, Groups, Parameters
@@ -387,6 +420,9 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
     :type validation: `string`
     :param path: The path to the validations directory
     :type path: `string`
+    :param validation_config: A dictionary of configuration for Validation
+                              loaded from an validation.cfg file.
+    :type validation_config: ``dict``
     :return: The validation data with the format
              (ID, Name, Description, Groups, Parameters)
     :rtype: `dict`
@@ -408,6 +444,9 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
 
     data = {}
     val_path = "{}/{}.yaml".format(path, validation)
+    comm_path = ""
+    if community_validations_on(validation_config):
+        comm_path = "{}/{}.yaml".format(constants.COMMUNITY_PLAYBOOKS_DIR, validation)
 
     LOG.debug(
         "Obtaining information about validation {} from {}".format(
@@ -419,6 +458,11 @@ def get_validations_data(validation, path=constants.ANSIBLE_VALIDATION_DIR):
         val = Validation(val_path)
         data.update(val.get_formated_data)
         data.update({'Parameters': val.get_vars})
+    if not data and comm_path:
+        if os.path.exists(comm_path):
+            val = Validation(comm_path)
+            data.update(val.get_formated_data)
+            data.update({'Parameters': val.get_vars})
     return data
 
 
