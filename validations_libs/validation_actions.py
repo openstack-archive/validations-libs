@@ -434,7 +434,7 @@ class ValidationActions(object):
                 validation_uuid, artifacts_dir = v_utils.create_artifacts_dir(
                     log_path=log_path, prefix=os.path.basename(playbook))
                 run_ansible = v_ansible(validation_uuid)
-                if sys.__stdin__.isatty():
+                if sys.__stdin__.isatty() and quiet:
                     with Spinner():
                         _playbook, _rc, _status = run_ansible.run(
                             workdir=artifacts_dir,
