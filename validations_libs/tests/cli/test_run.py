@@ -40,10 +40,11 @@ class TestRun(BaseCommand):
         parsed_args = self.check_parser(self.cmd, args, verifylist)
         self.assertRaises(RuntimeError, self.cmd.take_action, parsed_args)
 
+    @mock.patch('validations_libs.cli.common.open')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
                 return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
-    def test_run_command_success(self, mock_run):
+    def test_run_command_success(self, mock_run, mock_open):
         args = self._set_args(['--validation', 'foo'])
         verifylist = [('validation_name', ['foo'])]
 
