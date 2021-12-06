@@ -331,7 +331,7 @@ class ValidationActions(object):
                         base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
                         log_path=None, python_interpreter=None, skip_list=None,
                         callback_whitelist=None,
-                        output_callback='validation_stdout', ssh_user=None,
+                        output_callback='vf_validation_stdout', ssh_user=None,
                         validation_config=None):
         """Run one or multiple validations by name(s), by group(s) or by
         product(s)

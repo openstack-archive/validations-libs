@@ -53,6 +53,7 @@ openstackdocs_bug_tag = 'documentation'
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
 # text edit cycles.
 # execute "export SPHINX_DEBUG=1" in your terminal to disable
+autodoc_mock_imports = ['oslotest', 'ansible']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

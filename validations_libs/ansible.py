@@ -116,10 +116,13 @@ class Ansible(object):
         if isinstance(envvars, dict):
             env.update(envvars)
         output_callback = env.get('ANSIBLE_STDOUT_CALLBACK', output_callback)
+        # TODO(jpodivin) Whitelist was extended with new callback names
+        # to prevent issues during transition period.
+        # The entries with 'vf_' prefix should be removed afterwards.
         callback_whitelist = ','.join(filter(None, [callback_whitelist,
                                                     output_callback,
-                                                    'validation_json',
-                                                    'profile_tasks']))
+                                                    'profile_tasks',
+                                                    'vf_validation_json']))
         return callback_whitelist, output_callback
 
     def _ansible_env_var(self, output_callback, ssh_user, workdir, connection,
