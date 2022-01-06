@@ -22,7 +22,11 @@ or as a fallback, when custom locations fail.
 
 import os
 
-from pathlib import Path
+# @matbu backward compatibility for stable/train
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
 
 DEFAULT_VALIDATIONS_BASEDIR = '/usr/share/ansible'
 

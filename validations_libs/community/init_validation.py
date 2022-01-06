@@ -17,7 +17,11 @@
 
 import logging
 import re
-from pathlib import Path
+# @matbu backward compatibility for stable/train
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
 
 from validations_libs import constants, utils
 

@@ -13,7 +13,12 @@
 #   under the License.
 #
 
-from pathlib import PosixPath
+# @matbu backward compatibility for stable/train
+try:
+    from pathlib import PosixPath
+except ImportError:
+    from pathlib2 import PosixPath
+
 from validations_libs import constants
 
 VALIDATIONS_LIST = [{

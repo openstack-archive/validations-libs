@@ -18,7 +18,14 @@ try:
 except ImportError:
     import mock
 
-from pathlib import PosixPath
+# @matbu backward compatibility for stable/train
+try:
+    from pathlib import PosixPath
+    PATHLIB = 'pathlib'
+except ImportError:
+    from pathlib2 import PosixPath
+    PATHLIB = 'pathlib2'
+
 from unittest import TestCase
 
 from validations_libs import constants
@@ -83,10 +90,10 @@ class TestCommunityValidation(TestCase):
         self.assertEqual(co_val.playbook_basedir,
                          constants.COMMUNITY_PLAYBOOKS_DIR)
 
-    @mock.patch('pathlib.Path.iterdir',
+    @mock.patch('{}.Path.iterdir'.format(PATHLIB),
                 return_value=fakes.FAKE_ROLES_ITERDIR2)
-    @mock.patch('pathlib.Path.is_dir')
-    @mock.patch('pathlib.Path.exists', side_effect=[False, True])
+    @mock.patch('{}.Path.is_dir'.format(PATHLIB))
+    @mock.patch('{}.Path.exists'.format(PATHLIB), side_effect=[False, True])
     def test_role_already_exists_in_comval(self,
                                            mock_play_path_exists,
                                            mock_path_is_dir,
@@ -95,10 +102,10 @@ class TestCommunityValidation(TestCase):
         co_val = cv(validation_name)
         self.assertTrue(co_val.is_role_exists())
 
-    @mock.patch('pathlib.Path.iterdir',
+    @mock.patch('{}.Path.iterdir'.format(PATHLIB),
                 return_value=fakes.FAKE_ROLES_ITERDIR1)
-    @mock.patch('pathlib.Path.is_dir')
-    @mock.patch('pathlib.Path.exists', side_effect=[True, False])
+    @mock.patch('{}.Path.is_dir'.format(PATHLIB))
+    @mock.patch('{}.Path.exists'.format(PATHLIB), side_effect=[True, False])
     def test_role_already_exists_in_non_comval(self,
                                                mock_play_path_exists,
                                                mock_path_is_dir,
@@ -107,10 +114,10 @@ class TestCommunityValidation(TestCase):
         co_val = cv(validation_name)
         self.assertTrue(co_val.is_role_exists())
 
-    @mock.patch('pathlib.Path.iterdir',
+    @mock.patch('{}.Path.iterdir'.format(PATHLIB),
                 return_value=fakes.FAKE_ROLES_ITERDIR2)
-    @mock.patch('pathlib.Path.is_dir')
-    @mock.patch('pathlib.Path.exists', side_effect=[True, False])
+    @mock.patch('{}.Path.is_dir'.format(PATHLIB))
+    @mock.patch('{}.Path.exists'.format(PATHLIB), side_effect=[True, False])
     def test_role_not_exists(self,
                              mock_path_exists,
                              mock_path_is_dir,
@@ -119,10 +126,10 @@ class TestCommunityValidation(TestCase):
         co_val = cv(validation_name)
         self.assertFalse(co_val.is_role_exists())
 
-    @mock.patch('pathlib.Path.iterdir',
+    @mock.patch('{}.Path.iterdir'.format(PATHLIB),
                 return_value=fakes.FAKE_PLAYBOOKS_ITERDIR1)
-    @mock.patch('pathlib.Path.is_file')
-    @mock.patch('pathlib.Path.exists', side_effect=[True, False])
+    @mock.patch('{}.Path.is_file'.format(PATHLIB))
+    @mock.patch('{}.Path.exists'.format(PATHLIB), side_effect=[True, False])
     def test_playbook_already_exists_in_non_comval(self,
                                                    mock_path_exists,
                                                    mock_path_is_file,
@@ -131,10 +138,10 @@ class TestCommunityValidation(TestCase):
         co_val = cv(validation_name)
         self.assertTrue(co_val.is_playbook_exists())
 
-    @mock.patch('pathlib.Path.iterdir',
+    @mock.patch('{}.Path.iterdir'.format(PATHLIB),
                 return_value=fakes.FAKE_PLAYBOOKS_ITERDIR2)
-    @mock.patch('pathlib.Path.is_file')
-    @mock.patch('pathlib.Path.exists', side_effect=[False, True])
+    @mock.patch('{}.Path.is_file'.format(PATHLIB))
+    @mock.patch('{}.Path.exists'.format(PATHLIB), side_effect=[False, True])
     def test_playbook_already_exists_in_comval(self,
                                                mock_path_exists,
                                                mock_path_is_file,
@@ -143,10 +150,10 @@ class TestCommunityValidation(TestCase):
         co_val = cv(validation_name)
         self.assertTrue(co_val.is_playbook_exists())
 
-    @mock.patch('pathlib.Path.iterdir',
+    @mock.patch('{}.Path.iterdir'.format(PATHLIB),
                 return_value=fakes.FAKE_PLAYBOOKS_ITERDIR2)
-    @mock.patch('pathlib.Path.is_file')
-    @mock.patch('pathlib.Path.exists', side_effect=[True, False])
+    @mock.patch('{}.Path.is_file'.format(PATHLIB))
+    @mock.patch('{}.Path.exists'.format(PATHLIB), side_effect=[True, False])
     def test_playbook_not_exists(self,
                                  mock_path_exists,
                                  mock_path_is_file,

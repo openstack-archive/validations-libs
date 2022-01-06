@@ -24,7 +24,12 @@ import subprocess
 import uuid
 
 from os.path import join
-from pathlib import Path
+# @matbu backward compatibility for stable/train
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
+
 from validations_libs import constants
 from validations_libs.group import Group
 from validations_libs.validation import Validation

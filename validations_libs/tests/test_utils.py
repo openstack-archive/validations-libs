@@ -22,7 +22,14 @@ try:
 except ImportError:
     import mock
 
-from pathlib import PosixPath
+# @matbu backward compatibility for stable/train
+try:
+    from pathlib import PosixPath
+    PATHLIB = 'pathlib'
+except ImportError:
+    from pathlib2 import PosixPath
+    PATHLIB = 'pathlib2'
+
 from unittest import TestCase
 
 from validations_libs import utils, constants
@@ -542,13 +549,13 @@ class TestUtils(TestCase):
             fakes.ANSIBLE_ENVIRONNMENT_CONFIG['ANSIBLE_STDOUT_CALLBACK'])
 
     @mock.patch('validations_libs.utils.LOG', autospec=True)
-    @mock.patch('pathlib.Path.exists',
+    @mock.patch('{}.Path.exists'.format(PATHLIB),
                 return_value=False)
-    @mock.patch('pathlib.Path.is_dir',
+    @mock.patch('{}.Path.is_dir'.format(PATHLIB),
                 return_value=False)
-    @mock.patch('pathlib.Path.iterdir',
+    @mock.patch('{}.Path.iterdir'.format(PATHLIB),
                 return_value=iter([]))
-    @mock.patch('pathlib.Path.mkdir')
+    @mock.patch('{}.Path.mkdir'.format(PATHLIB))
     def test_check_creation_community_validations_dir(self, mock_mkdir,
                                                       mock_iterdir,
                                                       mock_isdir,
@@ -566,11 +573,11 @@ class TestUtils(TestCase):
                          )
 
     @mock.patch('validations_libs.utils.LOG', autospec=True)
-    @mock.patch('pathlib.Path.is_dir', return_value=True)
-    @mock.patch('pathlib.Path.exists', return_value=True)
-    @mock.patch('pathlib.Path.iterdir',
+    @mock.patch('{}.Path.is_dir'.format(PATHLIB), return_value=True)
+    @mock.patch('{}.Path.exists'.format(PATHLIB), return_value=True)
+    @mock.patch('{}.Path.iterdir'.format(PATHLIB),
                 return_value=fakes.FAKE_COVAL_MISSING_SUBDIR_ITERDIR1)
-    @mock.patch('pathlib.Path.mkdir')
+    @mock.patch('{}.Path.mkdir'.format(PATHLIB))
     def test_check_community_validations_dir_with_missing_subdir(self,
                                                                  mock_mkdir,
                                                                  mock_iterdir,
