@@ -185,9 +185,9 @@ class TestAnsible(TestCase):
                 callback_whitelist="", base_dir="", python_interpreter="",
                 env={}, validation_cfg_file=None)
 
-        assert(f"{constants.COMMUNITY_LIBRARY_DIR}:" in env["ANSIBLE_LIBRARY"])
-        assert(f"{constants.COMMUNITY_ROLES_DIR}:" in env["ANSIBLE_ROLES_PATH"])
-        assert(f"{constants.COMMUNITY_LOOKUP_DIR}:" in env["ANSIBLE_LOOKUP_PLUGINS"])
+        assert("{}:".format(constants.COMMUNITY_LIBRARY_DIR) in env["ANSIBLE_LIBRARY"])
+        assert("{}:".format(constants.COMMUNITY_ROLES_DIR) in env["ANSIBLE_ROLES_PATH"])
+        assert("{}:".format(constants.COMMUNITY_LOOKUP_DIR) in env["ANSIBLE_LOOKUP_PLUGINS"])
 
         # AP config file with no settting (use the default True)
         env = self.run._ansible_env_var(
@@ -197,9 +197,9 @@ class TestAnsible(TestCase):
                 callback_whitelist="", base_dir="", python_interpreter="",
                 env={}, validation_cfg_file={"default": {}})
 
-        assert(f"{constants.COMMUNITY_LIBRARY_DIR}:" in env["ANSIBLE_LIBRARY"])
-        assert(f"{constants.COMMUNITY_ROLES_DIR}:" in env["ANSIBLE_ROLES_PATH"])
-        assert(f"{constants.COMMUNITY_LOOKUP_DIR}:" in env["ANSIBLE_LOOKUP_PLUGINS"])
+        assert("{}:".format(constants.COMMUNITY_LIBRARY_DIR) in env["ANSIBLE_LIBRARY"])
+        assert("{}:".format(constants.COMMUNITY_ROLES_DIR) in env["ANSIBLE_ROLES_PATH"])
+        assert("{}:".format(constants.COMMUNITY_LOOKUP_DIR) in env["ANSIBLE_LOOKUP_PLUGINS"])
 
         # AP config file with settting True
         env = self.run._ansible_env_var(
@@ -209,9 +209,9 @@ class TestAnsible(TestCase):
                 callback_whitelist="", base_dir="", python_interpreter="",
                 env={}, validation_cfg_file={"default": {"enable_community_validations": True}})
 
-        assert(f"{constants.COMMUNITY_LIBRARY_DIR}:" in env["ANSIBLE_LIBRARY"])
-        assert(f"{constants.COMMUNITY_ROLES_DIR}:" in env["ANSIBLE_ROLES_PATH"])
-        assert(f"{constants.COMMUNITY_LOOKUP_DIR}:" in env["ANSIBLE_LOOKUP_PLUGINS"])
+        assert("{}:".format(constants.COMMUNITY_LIBRARY_DIR) in env["ANSIBLE_LIBRARY"])
+        assert("{}:".format(constants.COMMUNITY_ROLES_DIR) in env["ANSIBLE_ROLES_PATH"])
+        assert("{}:".format(constants.COMMUNITY_LOOKUP_DIR) in env["ANSIBLE_LOOKUP_PLUGINS"])
 
     def test_ansible_env_var_without_community_validations(self):
         # AP config file with settting False
@@ -222,9 +222,9 @@ class TestAnsible(TestCase):
                 callback_whitelist="", base_dir="", python_interpreter="",
                 env={}, validation_cfg_file={"default": {"enable_community_validations": False}})
 
-        assert(f"{constants.COMMUNITY_LIBRARY_DIR}:" not in env["ANSIBLE_LIBRARY"])
-        assert(f"{constants.COMMUNITY_ROLES_DIR}:" not in env["ANSIBLE_ROLES_PATH"])
-        assert(f"{constants.COMMUNITY_LOOKUP_DIR}:" not in env["ANSIBLE_LOOKUP_PLUGINS"])
+        assert("{}:".format(constants.COMMUNITY_LIBRARY_DIR) not in env["ANSIBLE_LIBRARY"])
+        assert("{}:".format(constants.COMMUNITY_ROLES_DIR) not in env["ANSIBLE_ROLES_PATH"])
+        assert("{}:".format(constants.COMMUNITY_LOOKUP_DIR) not in env["ANSIBLE_LOOKUP_PLUGINS"])
 
     def test_get_extra_vars_dict(self):
         extra_vars = {

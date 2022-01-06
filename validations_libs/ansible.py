@@ -132,9 +132,9 @@ class Ansible(object):
         community_library = ""
         community_lookup = ""
         if utils.community_validations_on(validation_cfg_file):
-            community_roles = f"{constants.COMMUNITY_ROLES_DIR}:"
-            community_library = f"{constants.COMMUNITY_LIBRARY_DIR}:"
-            community_lookup = f"{constants.COMMUNITY_LOOKUP_DIR}:"
+            community_roles = "{}:".format(constants.COMMUNITY_ROLES_DIR)
+            community_library = "{}:".format(constants.COMMUNITY_LIBRARY_DIR)
+            community_lookup = "{}:".format(constants.COMMUNITY_LOOKUP_DIR)
 
         cwd = os.getcwd()
         env['ANSIBLE_SSH_ARGS'] = (

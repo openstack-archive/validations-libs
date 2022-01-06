@@ -60,24 +60,28 @@ class CommunityValidation:
         if result != 0:
             raise RuntimeError(
                 (
-                    f"Ansible Galaxy failed to create the role "
-                    f"{self.role_name}, returned {result}."
+                    "Ansible Galaxy failed to create the role "
+                    "{}, returned {}."
+                    .format(self.role_name, result)
                 )
             )
 
-        LOG.info(f"New role created successfully in {self.role_dir_path}")
+        LOG.info("New role created successfully in {}"
+                 .format(self.role_dir_path))
 
         try:
             self.create_playbook()
         except (PermissionError, OSError) as error:
             raise RuntimeError(
                 (
-                    f"Exception {error} encountered while trying to write "
-                    f"the community validation playbook file {self.playbook_path}."
+                    "Exception {} encountered while trying to write "
+                    "the community validation playbook file {}."
+                    .format(error, self.playbook_path)
                 )
             )
 
-        LOG.info(f"New playbook created successfully in {self.playbook_path}")
+        LOG.info("New playbook created successfully in {}"
+                 .format(self.playbook_path))
 
     def create_playbook(self, content=constants.COMMUNITY_PLAYBOOK_TEMPLATE):
         """Create the playbook for the new community validation"""

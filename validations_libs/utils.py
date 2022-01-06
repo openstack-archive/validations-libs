@@ -702,12 +702,14 @@ def check_community_validations_dir(
     def create_subdir(subdir):
         for _dir in subdir:
             LOG.debug(
-                f"Missing {Path(_dir).name} directory in {basedir}:"
+                "Missing {} directory in {}:"
+                .format(Path(_dir).name, basedir)
             )
             Path.mkdir(_dir)
             recreated_comval_dir.append(_dir)
             LOG.debug(
-                f"└── {_dir} directory created successfully..."
+                "└── {} directory created successfully..."
+                .format(_dir)
             )
 
     if Path(basedir).exists and Path(basedir).is_dir():
@@ -720,22 +722,26 @@ def check_community_validations_dir(
         create_subdir(missing_dirs)
     else:
         LOG.debug(
-            f"The community validations {basedir} directory is not present:"
+            "The community validations {} directory is not present:"
+            .format(basedir)
         )
         Path.mkdir(basedir)
         recreated_comval_dir.append(basedir)
-        LOG.debug(f"└── {basedir} directory created...")
+        LOG.debug("└── {} directory created...".format(basedir))
         create_subdir(subdirs)
 
     LOG.debug(
         (
-            f"The {basedir} directory and its required subtree are present "
-            f"and correct:\n"
-            f"{basedir}/\n"
+            "The {} directory and its required subtree are present "
+            "and correct:\n"
+            "{}/\n"
             "├── library            OK\n"
             "├── lookup_plugins     OK\n"
             "├── playbooks          OK\n"
             "└── roles              OK\n"
+            .format(
+                basedir,
+                basedir)
         )
     )
     return recreated_comval_dir

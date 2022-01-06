@@ -42,9 +42,10 @@ class CommunityValidationInit(BaseCommand):
                 "with an alpha character. \n"
                 "Ex: my-val, my_val2. \n"
                 "This will generate an Ansible role and a playbook in "
-                f"{constants.COMMUNITY_VALIDATIONS_BASEDIR}. "
+                "{}. "
                 "Note that the structure of this directory will be created at "
                 "the first use."
+                .format(constants.COMMUNITY_VALIDATIONS_BASEDIR)
             )
         )
 
@@ -61,7 +62,8 @@ class CommunityValidationInit(BaseCommand):
             LOG.debug(
                 (
                     "Checking the presence of the community validations "
-                    f"{constants.COMMUNITY_VALIDATIONS_BASEDIR} directory..."
+                    "{} directory..."
+                    .format(constants.COMMUNITY_VALIDATIONS_BASEDIR)
                 )
             )
 
@@ -70,20 +72,28 @@ class CommunityValidationInit(BaseCommand):
             if co_validation.is_role_exists():
                 raise RuntimeError(
                     (
-                    f"An Ansible role called {co_validation.role_name} "
+                    "An Ansible role called {} "
                     "already exist in: \n"
-                    f" - {constants.COMMUNITY_ROLES_DIR}\n"
-                    f" - {constants.ANSIBLE_ROLES_DIR}"
+                    " - {}\n"
+                    " - {}"
+                    .format(
+                        co_validation.role_name,
+                        constants.COMMUNITY_ROLES_DIR,
+                        constants.ANSIBLE_ROLES_DIR)
                     )
                 )
 
             if co_validation.is_playbook_exists():
                 raise RuntimeError(
                     (
-                    f"An Ansible playbook called {co_validation.playbook_name} "
+                    "An Ansible playbook called {} "
                     "already exist in: \n"
-                    f" - {constants.COMMUNITY_PLAYBOOKS_DIR}\n"
-                    f" - {constants.ANSIBLE_VALIDATION_DIR}"
+                    " - {}\n"
+                    " - {}"
+                    .format(
+                        co_validation.playbook_name,
+                        constants.COMMUNITY_PLAYBOOKS_DIR,
+                        constants.ANSIBLE_VALIDATION_DIR)
                     )
                 )
 
