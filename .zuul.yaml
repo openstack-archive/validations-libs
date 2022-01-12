@@ -17,7 +17,7 @@
 
 - job:
     name: validations-libs-reqcheck
-    nodeset: centos-8
+    nodeset: centos-8-stream
     parent: base
     run: playbooks/reqcheck.yaml
     timeout: 1600
@@ -29,7 +29,7 @@
 
 - job:
     name: validations-libs-coverchange
-    nodeset: centos-8
+    nodeset: centos-8-stream
     parent: base
     run: playbooks/coverchange.yaml
     timeout: 1600
