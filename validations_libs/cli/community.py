@@ -15,6 +15,7 @@
 #   under the License.
 
 import logging
+import os
 
 from validations_libs import constants, utils
 from validations_libs.cli.base import BaseCommand
@@ -49,6 +50,15 @@ class CommunityValidationInit(BaseCommand):
             )
         )
 
+        parser.add_argument('--validation-dir', dest='validation_dir',
+                            default=constants.ANSIBLE_VALIDATION_DIR,
+                            help=("Path where the validation playbooks "
+                                  "is located."))
+
+        parser.add_argument('--ansible-base-dir', dest='ansible_base_dir',
+                            default=constants.DEFAULT_VALIDATIONS_BASEDIR,
+                            help=("Path where the ansible roles, library "
+                                  "and plugins are located."))
         return parser
 
     def take_action(self, parsed_args):
@@ -56,7 +66,10 @@ class CommunityValidationInit(BaseCommand):
         # Merge config and CLI args:
         self.base.set_argument_parser(self, parsed_args)
 
-        co_validation = com_val(parsed_args.validation_name)
+        co_validation = com_val(
+                parsed_args.validation_name,
+                validation_dir=parsed_args.validation_dir,
+                ansible_base_dir=parsed_args.ansible_base_dir)
 
         if co_validation.is_community_validations_enabled(self.base.config):
             LOG.debug(
@@ -79,7 +92,7 @@ class CommunityValidationInit(BaseCommand):
                     .format(
                         co_validation.role_name,
                         constants.COMMUNITY_ROLES_DIR,
-                        constants.ANSIBLE_ROLES_DIR)
+                        os.path.join(parsed_args.ansible_base_dir, "roles/"))
                     )
                 )
 
@@ -93,7 +106,7 @@ class CommunityValidationInit(BaseCommand):
                     .format(
                         co_validation.playbook_name,
                         constants.COMMUNITY_PLAYBOOKS_DIR,
-                        constants.ANSIBLE_VALIDATION_DIR)
+                        parsed_args.validation_dir)
                     )
                 )
 
