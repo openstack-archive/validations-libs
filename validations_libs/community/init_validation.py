@@ -17,6 +17,7 @@
 
 import logging
 import re
+import os
 # @matbu backward compatibility for stable/train
 try:
     from pathlib import Path
@@ -35,9 +36,16 @@ class CommunityValidation:
     from a template.
     """
 
-    def __init__(self, validation_name):
+    def __init__(
+            self,
+            validation_name,
+            validation_dir=constants.ANSIBLE_VALIDATION_DIR,
+            ansible_base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR):
         """Construct Role and Playbook."""
+
         self._validation_name = validation_name
+        self.validation_dir = validation_dir
+        self.ansible_base_dir = ansible_base_dir
 
     def execute(self):
         """Execute the actions necessary to create a new community validation
@@ -106,11 +114,12 @@ class CommunityValidation:
 
         :rtype: ``Boolean``
         """
+        roles_dir = os.path.join(self.ansible_base_dir, "roles/")
         non_community_roles = []
-        if Path(constants.ANSIBLE_ROLES_DIR).exists():
+        if Path(roles_dir).exists():
             non_community_roles = [
                 Path(x).name
-                for x in Path(constants.ANSIBLE_ROLES_DIR).iterdir()
+                for x in Path(roles_dir).iterdir()
                 if x.is_dir()
             ]
 
@@ -131,10 +140,10 @@ class CommunityValidation:
         :rtype: ``Boolean``
         """
         non_community_playbooks = []
-        if Path(constants.ANSIBLE_VALIDATION_DIR).exists():
+        if Path(self.validation_dir).exists():
             non_community_playbooks = [
                 Path(x).name
-                for x in Path(constants.ANSIBLE_VALIDATION_DIR).iterdir()
+                for x in Path(self.validation_dir).iterdir()
                 if x.is_file()
             ]
 
