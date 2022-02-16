@@ -104,6 +104,13 @@ def write_junitxml(output_junitxml, results):
 
 def read_cli_data_file(data_file):
     """Read CLI data (YAML/JSON) file.
+    :param data_file: Path to the requested file.
+    :type data_file: ``path like``
+
+    :returns: Parsed YAML/JSON file
+    :rtype: ``dict``
+
+    :raises: RuntimeError if the file doesn't exist or is malformed.
     """
     try:
         with open(data_file, 'r') as _file:
