@@ -171,7 +171,8 @@ class Run(BaseCommand):
         # Get config:
         config = self.base.config
 
-        v_actions = ValidationActions(parsed_args.validation_dir)
+        v_actions = ValidationActions(
+            parsed_args.validation_dir, log_path=parsed_args.validation_log_dir)
         # Ansible execution should be quiet while using the validations_json
         # default callback and be verbose while passing ANSIBLE_SDTOUT_CALLBACK
         # environment variable to Ansible through the --extra-env-vars argument
@@ -213,7 +214,6 @@ class Run(BaseCommand):
                 python_interpreter=parsed_args.python_interpreter,
                 quiet=quiet_mode,
                 ssh_user=parsed_args.ssh_user,
-                log_path=parsed_args.validation_log_dir,
                 validation_config=config,
                 skip_list=skip_list)
         except RuntimeError as e:

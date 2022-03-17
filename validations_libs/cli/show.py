@@ -71,8 +71,8 @@ class ShowGroup(BaseLister):
         self.base.set_argument_parser(self, parsed_args)
 
         v_actions = ValidationActions(parsed_args.validation_dir)
+
         return v_actions.group_information(
-                constants.VALIDATION_GROUPS_INFO,
                 validation_config=self.base.config)
 
 

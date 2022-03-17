@@ -32,7 +32,8 @@ class TestRun(BaseCommand):
 
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=None)
+                return_value=None,
+                autospec=True)
     def test_run_command_return_none(self, mock_run):
         args = self._set_args(['--validation', 'foo'])
         verifylist = [('validation_name', ['foo'])]
@@ -43,7 +44,8 @@ class TestRun(BaseCommand):
     @mock.patch('validations_libs.cli.common.open')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN),
+                autospec=True)
     def test_run_command_success(self, mock_run, mock_open):
         args = self._set_args(['--validation', 'foo'])
         verifylist = [('validation_name', ['foo'])]
@@ -65,10 +67,12 @@ class TestRun(BaseCommand):
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN),
+                autospec=True)
     @mock.patch('validations_libs.utils.load_config', return_value={})
-    def test_run_command_extra_vars(self, mock_config, mock_run,
-                                    mock_user, mock_print, mock_log_dir):
+    def test_run_command_extra_vars(self, mock_config,
+                                    mock_run, mock_user,
+                                    mock_print, mock_log_dir):
         run_called_args = {
             'inventory': 'localhost',
             'limit_hosts': None,
@@ -83,7 +87,6 @@ class TestRun(BaseCommand):
             'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe',
-            'log_path': mock_log_dir,
             'validation_config': {},
             'skip_list': None
             }
@@ -95,7 +98,9 @@ class TestRun(BaseCommand):
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
-        mock_run.assert_called_with(**run_called_args)
+        call_args = mock_run.mock_calls[0][2]
+
+        self.assertDictEqual(call_args, run_called_args)
 
     @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
     @mock.patch('validations_libs.cli.common.print_dict')
@@ -103,10 +108,11 @@ class TestRun(BaseCommand):
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN),
+                autospec=True)
     @mock.patch('validations_libs.utils.load_config', return_value={})
-    def test_run_command_extra_vars_twice(self, mock_config,
-                                          mock_run, mock_user, mock_print,
+    def test_run_command_extra_vars_twice(self, mock_config, mock_run,
+                                          mock_user, mock_print,
                                           mock_log_dir):
         run_called_args = {
             'inventory': 'localhost',
@@ -122,7 +128,6 @@ class TestRun(BaseCommand):
             'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe',
-            'log_path': mock_log_dir,
             'validation_config': {},
             'skip_list': None
             }
@@ -135,7 +140,9 @@ class TestRun(BaseCommand):
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
-        mock_run.assert_called_with(**run_called_args)
+        call_args = mock_run.mock_calls[0][2]
+
+        self.assertDictEqual(call_args, run_called_args)
 
     def test_run_command_exclusive_vars(self):
         arglist = ['--validation', 'foo',
@@ -154,7 +161,8 @@ class TestRun(BaseCommand):
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN),
+                autospec=True)
     @mock.patch('validations_libs.utils.load_config', return_value={})
     def test_run_command_extra_vars_file(self, mock_config, mock_run,
                                          mock_user, mock_open,
@@ -174,7 +182,6 @@ class TestRun(BaseCommand):
             'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe',
-            'log_path': mock_log_dir,
             'validation_config': {},
             'skip_list': None
             }
@@ -186,14 +193,17 @@ class TestRun(BaseCommand):
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
-        mock_run.assert_called_with(**run_called_args)
+        call_args = mock_run.mock_calls[0][2]
+
+        self.assertDictEqual(call_args, run_called_args)
 
     @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
     @mock.patch('getpass.getuser',
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN),
+                autospec=True)
     @mock.patch('validations_libs.utils.load_config', return_value={})
     def test_run_command_extra_env_vars(self, mock_config, mock_run,
                                         mock_user, mock_log_dir):
@@ -211,7 +221,6 @@ class TestRun(BaseCommand):
             'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe',
-            'log_path': mock_log_dir,
             'validation_config': {},
             'skip_list': None
             }
@@ -223,14 +232,17 @@ class TestRun(BaseCommand):
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
-        mock_run.assert_called_with(**run_called_args)
+        call_args = mock_run.mock_calls[0][2]
+
+        self.assertDictEqual(call_args, run_called_args)
 
     @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
     @mock.patch('getpass.getuser',
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN),
+                autospec=True)
     @mock.patch('validations_libs.utils.load_config', return_value={})
     def test_run_command_extra_env_vars_with_custom_callback(self,
                                                              mock_config,
@@ -240,7 +252,6 @@ class TestRun(BaseCommand):
         run_called_args = {
             'inventory': 'localhost',
             'limit_hosts': None,
-            'log_path': mock_log_dir,
             'quiet': False,
             'group': [],
             'category': [],
@@ -264,14 +275,17 @@ class TestRun(BaseCommand):
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
-        mock_run.assert_called_with(**run_called_args)
+        call_args = mock_run.mock_calls[0][2]
+
+        self.assertDictEqual(call_args, run_called_args)
 
     @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
     @mock.patch('getpass.getuser',
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN),
+                autospec=True)
     @mock.patch('validations_libs.utils.load_config', return_value={})
     def test_run_command_extra_env_vars_twice(self, mock_config,
                                               mock_run, mock_user,
@@ -290,7 +304,6 @@ class TestRun(BaseCommand):
             'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe',
-            'log_path': mock_log_dir,
             'validation_config': {},
             'skip_list': None
             }
@@ -303,14 +316,17 @@ class TestRun(BaseCommand):
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
-        mock_run.assert_called_with(**run_called_args)
+        call_args = mock_run.mock_calls[0][2]
+
+        self.assertDictEqual(call_args, run_called_args)
 
     @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
     @mock.patch('getpass.getuser',
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN))
+                return_value=copy.deepcopy(fakes.FAKE_SUCCESS_RUN),
+                autospec=True)
     @mock.patch('validations_libs.utils.load_config', return_value={})
     def test_run_command_extra_env_vars_and_extra_vars(self,
                                                        mock_config,
@@ -331,7 +347,6 @@ class TestRun(BaseCommand):
             'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe',
-            'log_path': mock_log_dir,
             'validation_config': {},
             'skip_list': None
             }
@@ -345,7 +360,9 @@ class TestRun(BaseCommand):
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
         self.cmd.take_action(parsed_args)
-        mock_run.assert_called_with(**run_called_args)
+        call_args = mock_run.mock_calls[0][2]
+
+        self.assertDictEqual(call_args, run_called_args)
 
     def test_run_command_exclusive_wrong_extra_vars(self):
         arglist = ['--validation', 'foo',
@@ -356,50 +373,18 @@ class TestRun(BaseCommand):
         self.assertRaises(Exception, self.check_parser, self.cmd,
                           arglist, verifylist)
 
+    @mock.patch('validations_libs.utils.find_config_file',
+                return_value="/etc/validations_foo.cfg")
     @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
     @mock.patch('getpass.getuser',
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'run_validations',
-                return_value=copy.deepcopy(fakes.FAKE_FAILED_RUN))
+                return_value=copy.deepcopy(fakes.FAKE_FAILED_RUN),
+                autospec=True)
     @mock.patch('validations_libs.utils.load_config', return_value={})
-    def test_run_command_failed_validation(self, mock_config,
-                                           mock_run, mock_user, mock_log_dir):
-        run_called_args = {
-            'inventory': 'localhost',
-            'limit_hosts': None,
-            'group': [],
-            'category': [],
-            'product': [],
-            'extra_vars': None,
-            'validations_dir': '/usr/share/ansible/validation-playbooks',
-            'base_dir': '/usr/share/ansible',
-            'validation_name': ['foo'],
-            'extra_env_vars': None,
-            'python_interpreter': sys.executable,
-            'quiet': True,
-            'ssh_user': 'doe',
-            'log_path': mock_log_dir,
-            'validation_config': {},
-            'skip_list': None
-            }
-
-        arglist = ['--validation', 'foo']
-        verifylist = [('validation_name', ['foo'])]
-
-        self._set_args(arglist)
-        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
-        self.assertRaises(RuntimeError, self.cmd.take_action, parsed_args)
-        mock_run.assert_called_with(**run_called_args)
-
-    @mock.patch('getpass.getuser',
-                return_value='doe')
-    @mock.patch('validations_libs.validation_actions.ValidationActions.'
-                'run_validations',
-                return_value=[])
-    @mock.patch('validations_libs.utils.load_config', return_value={})
-    def test_run_command_no_validation(self, mock_config, mock_run,
-                                       mock_user):
+    def test_run_command_failed_validation(self, mock_config, mock_run, mock_user,
+                                           mock_log_dir, mock_config_file):
         run_called_args = {
             'inventory': 'localhost',
             'limit_hosts': None,
@@ -418,8 +403,56 @@ class TestRun(BaseCommand):
             'skip_list': None
             }
 
-        arglist = ['--validation', 'foo']
-        verifylist = [('validation_name', ['foo'])]
+        arglist = [
+            '--validation', 'foo',
+            '--extra-vars', 'key=value',
+            '--extra-env-vars', 'key2=value2']
+        verifylist = [
+            ('validation_name', ['foo']),
+            ('extra_vars', {'key': 'value'}),
+            ('extra_env_vars', {'key2': 'value2'})]
+
+        self._set_args(arglist)
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+        self.assertRaises(RuntimeError, self.cmd.take_action, parsed_args)
+        call_args = mock_run.mock_calls[0][2]
+
+        self.assertDictEqual(call_args, run_called_args)
+
+    @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
+    @mock.patch('getpass.getuser',
+                return_value='doe')
+    @mock.patch('validations_libs.validation_actions.ValidationActions.'
+                'run_validations',
+                return_value=[],
+                autospec=True)
+    def test_run_command_no_validation(self, mock_run, mock_user, mock_log_dir):
+        run_called_args = {
+            'inventory': 'localhost',
+            'limit_hosts': None,
+            'group': [],
+            'category': [],
+            'product': [],
+            'extra_vars': {'key': 'value'},
+            'validations_dir': '/usr/share/ansible/validation-playbooks',
+            'base_dir': '/usr/share/ansible',
+            'validation_name': ['foo'],
+            'extra_env_vars': {'key2': 'value2'},
+            'python_interpreter': sys.executable,
+            'quiet': True,
+            'ssh_user': 'doe',
+            'validation_config': {},
+            'skip_list': None,
+            'log_path': mock_log_dir}
+
+        arglist = [
+            '--validation', 'foo',
+            '--extra-vars', 'key=value',
+            '--extra-env-vars', 'key2=value2']
+        verifylist = [
+            ('validation_name', ['foo']),
+            ('extra_vars', {'key': 'value'}),
+            ('extra_env_vars', {'key2': 'value2'})]
 
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
@@ -451,7 +484,6 @@ class TestRun(BaseCommand):
             'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe',
-            'log_path': mock_log_dir,
             'validation_config': {},
             'skip_list': None
             }
@@ -489,7 +521,6 @@ class TestRun(BaseCommand):
             'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe',
-            'log_path': mock_log_dir,
             'validation_config': {},
             'skip_list': None
             }
@@ -526,7 +557,6 @@ class TestRun(BaseCommand):
             'python_interpreter': sys.executable,
             'quiet': True,
             'ssh_user': 'doe',
-            'log_path': mock_log_dir,
             'validation_config': {},
             'skip_list': {'key': 'value'}
             }

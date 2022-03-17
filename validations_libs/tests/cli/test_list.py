@@ -30,7 +30,8 @@ class TestList(BaseCommand):
 
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'list_validations',
-                return_value=fakes.VALIDATIONS_LIST)
+                return_value=fakes.VALIDATIONS_LIST,
+                autospec=True)
     def test_list_validations(self, mock_list):
         arglist = ['--validation-dir', 'foo']
         verifylist = [('validation_dir', 'foo')]
@@ -59,7 +60,8 @@ class TestList(BaseCommand):
 
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'list_validations',
-                return_value=[])
+                return_value=[],
+                autospec=True)
     def test_list_validations_empty(self, mock_list):
         arglist = ['--validation-dir', 'foo']
         verifylist = [('validation_dir', 'foo')]
@@ -69,7 +71,8 @@ class TestList(BaseCommand):
         self.assertEqual(result, [])
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
-                return_value=fakes.VALIDATIONS_LIST_GROUP)
+                return_value=fakes.VALIDATIONS_LIST_GROUP,
+                autospec=True)
     def test_list_validations_group(self, mock_list):
         arglist = ['--validation-dir', 'foo', '--group', 'prep']
         verifylist = [('validation_dir', 'foo'),
@@ -82,7 +85,8 @@ class TestList(BaseCommand):
         self.assertEqual(result, val_list)
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
-                return_value=fakes.VALIDATIONS_LIST_GROUP)
+                return_value=fakes.VALIDATIONS_LIST_GROUP,
+                autospec=True)
     def test_list_validations_by_category(self, mock_list):
         arglist = ['--validation-dir', 'foo', '--category', 'networking']
         verifylist = [('validation_dir', 'foo'),
@@ -95,7 +99,8 @@ class TestList(BaseCommand):
         self.assertEqual(result, val_list)
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
-                return_value=fakes.VALIDATIONS_LIST_GROUP)
+                return_value=fakes.VALIDATIONS_LIST_GROUP,
+                autospec=True)
     def test_list_validations_by_product(self, mock_list):
         arglist = ['--validation-dir', 'foo', '--product', 'product1']
         verifylist = [('validation_dir', 'foo'),
