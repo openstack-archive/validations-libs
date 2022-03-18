@@ -24,6 +24,7 @@ from unittest import TestCase
 
 from validations_libs.tests import fakes
 from validations_libs.validation_actions import ValidationActions
+from validations_libs.exceptions import ValidationRunException, ValidationShowException
 
 
 class TestValidationActions(TestCase):
@@ -250,7 +251,7 @@ class TestValidationActions(TestCase):
         mock_validation_play.return_value = []
 
         run = ValidationActions()
-        self.assertRaises(RuntimeError, run.run_validations,
+        self.assertRaises(ValidationRunException, run.run_validations,
                           validation_name=['fake'],
                           validations_dir='/tmp/foo')
 
@@ -263,10 +264,10 @@ class TestValidationActions(TestCase):
             run.run_validations(
                           validation_name=['fake', 'foo'],
                           validations_dir='/tmp/foo')
-        except RuntimeError as runtime_error:
+        except ValidationRunException as run_exception:
             self.assertEqual(
                     "Following validations were not found in '/tmp/foo': foo",
-                    str(runtime_error))
+                    str(run_exception))
         else:
             self.fail("Runtime error exception should have been raised")
 
@@ -275,7 +276,7 @@ class TestValidationActions(TestCase):
         mock_validation_play.return_value = []
 
         run = ValidationActions()
-        self.assertRaises(RuntimeError, run.run_validations,
+        self.assertRaises(ValidationRunException, run.run_validations,
                           validations_dir='/tmp/foo'
                           )
 
@@ -386,7 +387,7 @@ class TestValidationActions(TestCase):
         inventory = 'tmp/inventory.yaml'
 
         run = ValidationActions()
-        self.assertRaises(RuntimeError, run.run_validations, playbook,
+        self.assertRaises(ValidationRunException, run.run_validations, playbook,
                           inventory)
 
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
@@ -418,7 +419,7 @@ class TestValidationActions(TestCase):
     def test_validation_show_not_found(self, mock_exists):
         validations_show = ValidationActions()
         self.assertRaises(
-            RuntimeError,
+            ValidationShowException,
             validations_show.show_validations,
             '512e'
         )
@@ -480,7 +481,7 @@ class TestValidationActions(TestCase):
     @mock.patch('six.moves.builtins.open')
     def test_show_validations_parameters_non_supported_format(self, mock_open):
         v_actions = ValidationActions()
-        self.assertRaises(RuntimeError,
+        self.assertRaises(ValidationShowException,
                           v_actions.show_validations_parameters,
                           validations=['foo'], output_format='bar')
 

@@ -20,6 +20,7 @@ except ImportError:
     import mock
 
 from validations_libs.cli import run
+from validations_libs.exceptions import ValidationRunException
 from validations_libs.tests import fakes
 from validations_libs.tests.cli.fakes import BaseCommand
 
@@ -39,7 +40,7 @@ class TestRun(BaseCommand):
         verifylist = [('validation_name', ['foo'])]
 
         parsed_args = self.check_parser(self.cmd, args, verifylist)
-        self.assertRaises(RuntimeError, self.cmd.take_action, parsed_args)
+        self.assertRaises(ValidationRunException, self.cmd.take_action, parsed_args)
 
     @mock.patch('validations_libs.cli.common.open')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
@@ -414,7 +415,7 @@ class TestRun(BaseCommand):
 
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
-        self.assertRaises(RuntimeError, self.cmd.take_action, parsed_args)
+        self.assertRaises(ValidationRunException, self.cmd.take_action, parsed_args)
         call_args = mock_run.mock_calls[0][2]
 
         self.assertDictEqual(call_args, run_called_args)
@@ -456,7 +457,7 @@ class TestRun(BaseCommand):
 
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
-        self.assertRaises(RuntimeError, self.cmd.take_action, parsed_args)
+        self.assertRaises(ValidationRunException, self.cmd.take_action, parsed_args)
 
     @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
     @mock.patch('getpass.getuser',
@@ -589,4 +590,4 @@ class TestRun(BaseCommand):
                       ('skip_list', '/foo/skip.yaml')]
         self._set_args(arglist)
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
-        self.assertRaises(RuntimeError, self.cmd.take_action, parsed_args)
+        self.assertRaises(ValidationRunException, self.cmd.take_action, parsed_args)
