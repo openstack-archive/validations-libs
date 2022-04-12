@@ -176,8 +176,6 @@ class Run(BaseCommand):
             self.app.LOG.debug(
                 "You are using inline inventory. '{}'".format(
                     parsed_args.inventory))
-        else:
-            common.read_cli_data_file(parsed_args.inventory)
 
         v_actions = ValidationActions(
             parsed_args.validation_dir, log_path=parsed_args.validation_log_dir)
