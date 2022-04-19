@@ -24,6 +24,7 @@ from validations_libs.cli.common import Spinner
 from validations_libs.validation_logs import ValidationLogs, ValidationLog
 from validations_libs import constants
 from validations_libs import utils as v_utils
+from validations_libs.exceptions import ValidationRunException, ValidationShowException
 
 LOG = logging.getLogger(__name__ + ".validation_actions")
 
@@ -162,6 +163,8 @@ class ValidationActions(object):
         :return: The detailed information for a validation
         :rtype: `dict`
 
+        :raises: ValidationShowException
+
         :example:
 
         >>> path = "/foo/bar"
@@ -202,7 +205,8 @@ class ValidationActions(object):
                 validation,
                 self.validation_path,
                 extra_msg)
-            raise RuntimeError(msg)
+            raise ValidationShowException(msg)
+
         logfiles = vlog.get_logfile_content_by_validation(validation)
         data_format = vlog.get_validations_stats(logfiles)
         data.update(data_format)
@@ -406,6 +410,7 @@ class ValidationActions(object):
                  Status, Status_by_Host, UUID and Unreachable_Hosts)
         :rtype: ``list``
 
+        :raises: ValidationRunException
         :example:
 
         >>> path = "/u/s/a"
@@ -471,9 +476,9 @@ class ValidationActions(object):
                     "Following validations were not found in '{}': {}"
                     ).format(validations_dir, ', '.join(unknown_validations))
 
-                raise RuntimeError(msg)
+                raise ValidationRunException(msg)
         else:
-            raise RuntimeError("No validations found")
+            raise ValidationRunException("No validations found")
         if log_path:
             self.log.warning((
                 "The 'log_path' argument is deprecated and"
@@ -664,6 +669,9 @@ class ValidationActions(object):
         :return: A JSON or a YAML dump (By default, JSON).
                  if `download_file` is used, a file containing only the
                  parameters will be created in the file system.
+
+        :raises: ValidationShowException
+
         :example:
 
         >>> validations = ['check-cpu', 'check-ram']
@@ -691,7 +699,7 @@ class ValidationActions(object):
         supported_format = ['json', 'yaml']
 
         if output_format not in supported_format:
-            raise RuntimeError("{} output format not supported".format(output_format))
+            raise ValidationShowException("{} output format not supported".format(output_format))
 
         validation_playbooks = v_utils.get_validations_playbook(
             path=self.validation_path,

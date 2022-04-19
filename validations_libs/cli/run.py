@@ -22,6 +22,7 @@ from validations_libs.validation_actions import ValidationActions
 from validations_libs.cli import common
 from validations_libs.cli.base import BaseCommand
 from validations_libs.cli.parseractions import CommaListAction, KeyValueAction
+from validations_libs.exceptions import ValidationRunException
 
 
 class Run(BaseCommand):
@@ -205,7 +206,7 @@ class Run(BaseCommand):
         if parsed_args.skip_list:
             skip_list = common.read_cli_data_file(parsed_args.skip_list)
             if not isinstance(skip_list, dict):
-                raise RuntimeError("Wrong format for the skiplist.")
+                raise ValidationRunException("Wrong format for the skiplist.")
 
         try:
             results = v_actions.run_validations(
@@ -224,8 +225,8 @@ class Run(BaseCommand):
                 ssh_user=parsed_args.ssh_user,
                 validation_config=config,
                 skip_list=skip_list)
-        except RuntimeError as e:
-            raise RuntimeError(e)
+        except (RuntimeError, ValidationRunException) as e:
+            raise ValidationRunException(e)
 
         if results:
             failed_rc = any([r for r in results if r['Status'] == 'FAILED'])
@@ -235,8 +236,8 @@ class Run(BaseCommand):
                 common.write_junitxml(parsed_args.junitxml, results)
             common.print_dict(results)
             if failed_rc:
-                raise RuntimeError("One or more validations have failed.")
+                raise ValidationRunException("One or more validations have failed.")
         else:
             msg = ("No validation has been run, please check "
                    "log in the Ansible working directory.")
-            raise RuntimeError(msg)
+            raise ValidationRunException(msg)
