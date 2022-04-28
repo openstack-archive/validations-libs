@@ -24,7 +24,7 @@ from validations_libs import constants
 LOG = logging.getLogger(__name__ + ".validation_logs")
 
 
-class ValidationLog(object):
+class ValidationLog:
     """An object for encapsulating a Validation Log file"""
 
     def __init__(self, uuid=None, validation_id=None, logfile=None,

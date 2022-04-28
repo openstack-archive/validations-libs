@@ -21,7 +21,7 @@ from collections import OrderedDict
 LOG = logging.getLogger(__name__ + ".validation")
 
 
-class Validation(object):
+class Validation:
     """An object for encapsulating a validation
 
     Each validation is an `Ansible` playbook. Each playbook have some

@@ -19,7 +19,7 @@ import yaml
 LOG = logging.getLogger(__name__ + ".Group")
 
 
-class Group(object):
+class Group:
     """An object for encapsulating the groups of validation
 
     The validations can be grouped together by specifying a ``groups``
