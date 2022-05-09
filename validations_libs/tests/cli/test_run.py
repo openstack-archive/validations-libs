@@ -157,7 +157,7 @@ class TestRun(BaseCommand):
 
     @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
     @mock.patch('yaml.safe_load', return_value={'key': 'value'})
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('getpass.getuser',
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
@@ -533,7 +533,7 @@ class TestRun(BaseCommand):
 
     @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
     @mock.patch('yaml.safe_load', return_value={'key': 'value'})
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('getpass.getuser',
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
@@ -573,7 +573,7 @@ class TestRun(BaseCommand):
 
     @mock.patch('validations_libs.constants.VALIDATIONS_LOG_BASEDIR')
     @mock.patch('yaml.safe_load', return_value=[{'key': 'value'}])
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('getpass.getuser',
                 return_value='doe')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'

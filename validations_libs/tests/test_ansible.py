@@ -236,7 +236,7 @@ class TestAnsible(TestCase):
         self.assertEqual(extra_vars, self.run._get_extra_vars(extra_vars))
 
     @mock.patch('yaml.safe_load', return_value={'fizz': 'buzz'})
-    @mock.patch('six.moves.builtins.open', spec=open)
+    @mock.patch('builtins.open', spec=open)
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.path.isfile', return_value=True)
     def test_get_extra_vars_path(self, mock_isfile,
@@ -250,7 +250,7 @@ class TestAnsible(TestCase):
 
         mock_open.assert_called_once_with('/foo/bar')
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
     @mock.patch.object(
@@ -272,7 +272,7 @@ class TestAnsible(TestCase):
         self.assertEqual((_playbook, _rc, _status),
                          ('existing.yaml', 1, 'failed'))
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
     @mock.patch.object(Runner, 'run',
@@ -291,7 +291,7 @@ class TestAnsible(TestCase):
         self.assertEqual((_playbook, _rc, _status),
                          ('existing.yaml', 0, 'successful'))
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
     @mock.patch.object(Runner, 'run',
@@ -319,7 +319,7 @@ class TestAnsible(TestCase):
                        return_value=fakes.fake_ansible_runner_run_return(rc=0))
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('ansible_runner.runner_config.RunnerConfig')
     def test_run_success_local(self, mock_config, mock_open,
                                mock_dump_artifact, mock_run,
@@ -340,7 +340,7 @@ class TestAnsible(TestCase):
                        return_value=fakes.fake_ansible_runner_run_return(rc=0))
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('ansible_runner.runner_config.RunnerConfig')
     def test_run_success_run_async(self, mock_config, mock_open,
                                    mock_dump_artifact, mock_run,
@@ -356,7 +356,7 @@ class TestAnsible(TestCase):
         self.assertEqual((_playbook, _rc, _status),
                          ('existing.yaml', None, 'unstarted'))
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.makedirs')
     @mock.patch.object(Runner, 'run',
@@ -408,7 +408,7 @@ class TestAnsible(TestCase):
                        return_value=fakes.fake_ansible_runner_run_return(rc=0))
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('ansible_runner.runner_config.RunnerConfig')
     def test_run_success_with_config(self, mock_config, mock_open,
                                      mock_dump_artifact, mock_run,
@@ -437,7 +437,7 @@ class TestAnsible(TestCase):
                        return_value=fakes.fake_ansible_runner_run_return(rc=0))
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('ansible_runner.runner_config.RunnerConfig')
     def test_run_success_with_empty_config(self, mock_config, mock_open,
                                            mock_dump_artifact, mock_run,
@@ -463,7 +463,7 @@ class TestAnsible(TestCase):
                        return_value=fakes.fake_ansible_runner_run_return(rc=0))
     @mock.patch('ansible_runner.utils.dump_artifact', autospec=True,
                 return_value="/foo/inventory.yaml")
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('ansible_runner.runner_config.RunnerConfig')
     def test_run_success_with_ansible_config(self, mock_config, mock_open,
                                              mock_dump_artifact, mock_run,
@@ -482,7 +482,7 @@ class TestAnsible(TestCase):
                          ('existing.yaml', 0, 'successful'))
         mock_open.assert_called_with('/tmp/ansible.cfg', 'w')
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch.object(
         Runner,
@@ -540,7 +540,7 @@ class TestAnsible(TestCase):
 
         mock_config.assert_called_once_with(**opt)
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch.object(
         Runner,
@@ -601,7 +601,7 @@ class TestAnsible(TestCase):
 
         mock_config.assert_called_once_with(**opt)
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch.object(
         Runner,
@@ -664,7 +664,7 @@ class TestAnsible(TestCase):
 
         mock_config.assert_called_once_with(**opt)
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch.object(
         Runner,
@@ -715,7 +715,7 @@ class TestAnsible(TestCase):
         #Specific form of Ansible.env_var neccessiates convoluted arg unpacking.
         mock_env_var.assert_called_once_with(*args.values(), validation_cfg_file=None)
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch.object(
         Runner,
@@ -765,7 +765,7 @@ class TestAnsible(TestCase):
         #Specific form of Ansible.env_var neccessiates convoluted arg unpacking.
         mock_env_var.assert_called_once_with(*args.values(), validation_cfg_file=None)
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch.object(
         Runner,
@@ -816,7 +816,7 @@ class TestAnsible(TestCase):
         #Specific form of Ansible.env_var neccessiates convoluted arg unpacking.
         mock_env_var.assert_called_once_with(*args.values(), validation_cfg_file=None)
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch.object(
         Runner,
@@ -866,7 +866,7 @@ class TestAnsible(TestCase):
 
         self.assertTrue('/tmp/artifact/path' in mock_config.call_args[1]['fact_cache'])
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch.object(
         Runner,
@@ -919,7 +919,7 @@ class TestAnsible(TestCase):
         constants,
         'VALIDATION_ANSIBLE_ARTIFACT_PATH',
         new='foo/bar')
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch.object(
         Runner,
@@ -967,7 +967,7 @@ class TestAnsible(TestCase):
 
         self.assertTrue(constants.VALIDATION_ANSIBLE_ARTIFACT_PATH in mock_config.call_args[1]['fact_cache'])
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch.object(
         Runner,
@@ -1030,7 +1030,7 @@ class TestAnsible(TestCase):
             mock_encode_envvars.call_args[1]['env'].items(),
             env.items())
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch.object(
         Runner,

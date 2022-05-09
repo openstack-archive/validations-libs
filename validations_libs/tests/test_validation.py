@@ -29,21 +29,21 @@ class TestValidation(TestCase):
         super(TestValidation, self).setUp()
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_get_data(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_data
         self.assertEqual(data, fakes.FAKE_PLAYBOOK[0])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_get_metadata(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_metadata
         self.assertEqual(data, fakes.FAKE_METADATA)
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_get_metadata_wrong_playbook(self, mock_open, mock_yaml):
         with self.assertRaises(NameError) as exc_mgr:
             Validation('/tmp/foo').get_metadata
@@ -51,21 +51,21 @@ class TestValidation(TestCase):
                          str(exc_mgr.exception))
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK2)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_get_vars(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_vars
         self.assertEqual(data, fakes.FAKE_VARS)
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_get_vars_no_vars(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_vars
         self.assertEqual(data, {})
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_get_vars_no_metadata(self, mock_open, mock_yaml):
         with self.assertRaises(NameError) as exc_mgr:
             Validation('/tmp/foo').get_vars
@@ -73,7 +73,7 @@ class TestValidation(TestCase):
                          str(exc_mgr.exception))
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_get_id(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         id = val.id
@@ -82,14 +82,14 @@ class TestValidation(TestCase):
         self.assertEqual(get_id, 'foo')
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_groups(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         groups = val.groups
         self.assertEqual(groups, ['prep', 'pre-deployment'])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_groups_with_no_metadata(self, mock_open, mock_yaml):
         with self.assertRaises(NameError) as exc_mgr:
             Validation('/tmp/foo').groups
@@ -97,21 +97,21 @@ class TestValidation(TestCase):
                          str(exc_mgr.exception))
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK3)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_groups_with_no_existing_groups(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         groups = val.groups
         self.assertEqual(groups, [])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_categories(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         categories = val.categories
         self.assertEqual(categories, ['os', 'storage'])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_categories_with_no_metadata(self, mock_open, mock_yaml):
         with self.assertRaises(NameError) as exc_mgr:
             Validation('/tmp/foo').categories
@@ -119,21 +119,21 @@ class TestValidation(TestCase):
                          str(exc_mgr.exception))
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK3)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_categories_with_no_existing_categories(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         categories = val.categories
         self.assertEqual(categories, [])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_products(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         products = val.products
         self.assertEqual(products, ['product1'])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_products_with_no_metadata(self, mock_open, mock_yaml):
         with self.assertRaises(NameError) as exc_mgr:
             Validation('/tmp/foo').products
@@ -141,35 +141,35 @@ class TestValidation(TestCase):
                          str(exc_mgr.exception))
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK3)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_products_with_no_existing_products(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         products = val.products
         self.assertEqual(products, [])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_get_ordered_dict(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_ordered_dict
         self.assertEqual(data, fakes.FAKE_PLAYBOOK[0])
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_get_formated_data(self, mock_open, mock_yaml):
         val = Validation('/tmp/foo')
         data = val.get_formated_data
         self.assertEqual(data, fakes.FORMATED_DATA)
 
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_WRONG_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_get_formated_data_no_metadata(self, mock_open, mock_yaml):
         with self.assertRaises(NameError) as exc_mgr:
             Validation('/tmp/foo').get_formated_data
         self.assertEqual('No metadata found in validation foo',
                          str(exc_mgr.exception))
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_validation_not_found(self, mock_open):
         mock_open.side_effect = IOError()
         self.assertRaises(

@@ -39,7 +39,7 @@ class TestCommon(TestCase):
         data = common.read_cli_data_file('skiplist-example.yaml')
         self.assertEqual(data, example_data)
 
-    @mock.patch('six.moves.builtins.open', side_effect=IOError)
+    @mock.patch('builtins.open', side_effect=IOError)
     def test_read_cli_data_file_ioerror(self, mock_open):
         self.assertRaises(RuntimeError, common.read_cli_data_file, 'foo')
 

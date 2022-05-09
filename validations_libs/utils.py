@@ -19,7 +19,6 @@ import glob
 import logging
 import os
 import site
-import six
 import subprocess
 import uuid
 
@@ -197,7 +196,7 @@ def parse_all_validations_on_disk(path,
       'id': 'check-cpu',
       'name': 'Verify if the server fits the CPU core requirements'}]
     """
-    if not isinstance(path, six.string_types):
+    if not isinstance(path, str):
         raise TypeError("The 'path' argument must be a String")
 
     if not groups:
@@ -289,7 +288,7 @@ def get_validations_playbook(path,
     ['/usr/share/ansible/validation-playbooks/512e.yaml',
      '/usr/share/ansible/validation-playbooks/check-cpu.yaml',]
     """
-    if not isinstance(path, six.string_types):
+    if not isinstance(path, str):
         raise TypeError("The 'path' argument must be a String")
 
     if not validation_id:
@@ -414,7 +413,7 @@ def get_validations_data(
      'Name': 'Verify the server fits the something requirements',
      'Parameters': {'param1': 24}}
     """
-    if not isinstance(validation, six.string_types):
+    if not isinstance(validation, str):
         raise TypeError("The 'validation' argument must be a String")
 
     data = {}

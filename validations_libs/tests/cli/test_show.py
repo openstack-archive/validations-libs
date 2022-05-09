@@ -48,7 +48,7 @@ class TestShowGroup(BaseCommand):
 
     @mock.patch('validations_libs.cli.show.ValidationActions', autospec=True)
     @mock.patch('yaml.safe_load', return_value=fakes.GROUP)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_show_validations_group_info(self, mock_open, mock_yaml, mock_actions):
 
         method_calls = [
@@ -69,7 +69,7 @@ class TestShowParameter(BaseCommand):
         super(TestShowParameter, self).setUp()
         self.cmd = show.ShowParameter(self.app, None)
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'show_validations_parameters', autospec=True)
     def test_show_validations_parameters_by_group(self, mock_show, mock_open):
@@ -87,7 +87,7 @@ class TestShowParameter(BaseCommand):
         self.assertRaises(Exception, self.check_parser, self.cmd,
                           arglist, verifylist)
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('validations_libs.validation_actions.ValidationActions.'
                 'show_validations_parameters', autospec=True)
     def test_show_validations_parameters_by_validations(self, mock_show, mock_open):

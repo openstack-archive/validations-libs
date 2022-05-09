@@ -397,7 +397,7 @@ class TestValidationActions(TestCase):
     @mock.patch('validations_libs.validation_logs.ValidationLogs.'
                 'get_logfile_content_by_validation',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.path.exists', return_value=True)
     def test_validation_show(self, mock_exists, mock_open,
                              mock_parse_validation, mock_data, mock_log):
@@ -427,7 +427,7 @@ class TestValidationActions(TestCase):
     @mock.patch('validations_libs.utils.parse_all_validations_on_disk',
                 return_value=fakes.VALIDATIONS_LIST)
     @mock.patch('yaml.safe_load', return_value=fakes.GROUP)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_group_information(self, mock_open, mock_yaml, mock_data):
         v_actions = ValidationActions()
         col, values = v_actions.group_information()
@@ -437,28 +437,28 @@ class TestValidationActions(TestCase):
                                   ('post', 'post-foo', 2),
                                   ('pre', 'pre-foo', 1)])
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_show_validations_parameters_wrong_validations_type(self, mock_open):
         v_actions = ValidationActions()
         self.assertRaises(TypeError,
                           v_actions.show_validations_parameters,
                           validations='foo')
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_show_validations_parameters_wrong_groups_type(self, mock_open):
         v_actions = ValidationActions()
         self.assertRaises(TypeError,
                           v_actions.show_validations_parameters,
                           groups=('foo'))
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_show_validations_parameters_wrong_categories_type(self, mock_open):
         v_actions = ValidationActions()
         self.assertRaises(TypeError,
                           v_actions.show_validations_parameters,
                           categories={'foo': 'bar'})
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_show_validations_parameters_wrong_products_type(self, mock_open):
         v_actions = ValidationActions()
         self.assertRaises(TypeError,
@@ -469,7 +469,7 @@ class TestValidationActions(TestCase):
                 return_value=['/foo/playbook/foo.yaml'])
     @mock.patch('validations_libs.utils.get_validations_parameters')
     @mock.patch('yaml.safe_load', return_value=fakes.FAKE_PLAYBOOK)
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_show_validations_parameters(self, mock_open, mock_load,
                                          mock_get_param, mock_get_play):
         mock_get_param.return_value = {'foo':
@@ -478,7 +478,7 @@ class TestValidationActions(TestCase):
         result = v_actions.show_validations_parameters(validations=['foo'])
         self.assertEqual(result, mock_get_param.return_value)
 
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_show_validations_parameters_non_supported_format(self, mock_open):
         v_actions = ValidationActions()
         self.assertRaises(ValidationShowException,
@@ -490,7 +490,7 @@ class TestValidationActions(TestCase):
                 return_value=['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_show_history_str(self, mock_open, mock_load, mock_get_log):
         v_actions = ValidationActions()
         col, values = v_actions.show_history('512e')
@@ -507,7 +507,7 @@ class TestValidationActions(TestCase):
                 return_value=['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_show_history_list(self, mock_open, mock_load, mock_get_log):
         v_actions = ValidationActions()
         col, values = v_actions.show_history(['512e'])
@@ -524,7 +524,7 @@ class TestValidationActions(TestCase):
                 return_value=['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_show_history_all(self, mock_open, mock_load, mock_get_log):
         v_actions = ValidationActions()
         col, values = v_actions.show_history()
@@ -544,7 +544,7 @@ class TestValidationActions(TestCase):
                     '/tmp/123_bar_2020-03-05T13:17:22.447857Z.json'])
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_show_history_most_recent(self, mock_open, mock_load,
                                       mock_get_log, mock_stat):
 
@@ -582,7 +582,7 @@ class TestValidationActions(TestCase):
                 return_value=['/tmp/123_foo_2020-03-30T13:17:22.447857Z.json'])
     @mock.patch('json.load',
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     def test_get_status(self, mock_open, mock_load, mock_get_log):
         v_actions = ValidationActions()
         col, values = v_actions.get_status('foo')

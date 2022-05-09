@@ -18,13 +18,12 @@ import logging
 import pkg_resources
 import pwd
 import os
-import six
 import sys
 import tempfile
 import threading
 import yaml
 
-from six.moves import configparser
+import configparser
 from validations_libs import constants
 from validations_libs import utils
 
@@ -64,7 +63,7 @@ class Ansible:
     def _inventory(self, inventory, ansible_artifact_path):
         """Handle inventory for Ansible"""
         if inventory:
-            if isinstance(inventory, six.string_types):
+            if isinstance(inventory, str):
                 # check is file path
                 if os.path.exists(inventory):
                     return os.path.abspath(inventory)
@@ -289,7 +288,7 @@ class Ansible:
         :type env: `dict`.
         """
         for key, value in env.items():
-            env[key] = six.text_type(value)
+            env[key] = str(value)
         else:
             return env
 
