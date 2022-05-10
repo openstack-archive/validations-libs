@@ -18,6 +18,7 @@ from validations_libs.validation_actions import ValidationActions
 from validations_libs import constants
 from validations_libs.cli.parseractions import CommaListAction
 from validations_libs.cli.base import BaseShow, BaseLister
+from validations_libs.cli import constants as cli_constants
 
 
 class Show(BaseShow):
@@ -28,8 +29,7 @@ class Show(BaseShow):
         parser = super(Show, self).get_parser(parser)
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
-                            help=("Path where the validation playbooks "
-                                  "are located."))
+                            help=cli_constants.PLAY_PATH_DESC)
         parser.add_argument('validation_name',
                             metavar="<validation>",
                             type=str,
@@ -61,8 +61,7 @@ class ShowGroup(BaseLister):
 
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
-                            help=("Path where the validation playbooks "
-                                  "are located."))
+                            help=cli_constants.PLAY_PATH_DESC)
         return parser
 
     def take_action(self, parsed_args):
@@ -89,8 +88,7 @@ class ShowParameter(BaseShow):
 
         parser.add_argument('--validation-dir', dest='validation_dir',
                             default=constants.ANSIBLE_VALIDATION_DIR,
-                            help=("Path where the validation playbooks "
-                                  "are located."))
+                            help=cli_constants.PLAY_PATH_DESC)
 
         ex_group = parser.add_mutually_exclusive_group(required=False)
         ex_group.add_argument(
@@ -101,36 +99,28 @@ class ShowParameter(BaseShow):
             default=[],
             help=("List specific validations, "
                   "if more than one validation is required "
-                  "separate the names with commas.")
-        )
+                  "separate the names with commas."))
 
         ex_group.add_argument(
             '--group', '-g',
             metavar='<group_id>[,<group_id>,...]',
             action=CommaListAction,
             default=[],
-            help=("List specific group validations, "
-                  "if more than one group is required "
-                  "separate the group names with commas.")
-        )
+            help=cli_constants.VAL_GROUP_DESC)
 
         ex_group.add_argument(
             '--category',
             metavar='<category_id>[,<category_id>,...]',
             action=CommaListAction,
             default=[],
-            help=("List specific validations by category, "
-                  "if more than one category is required "
-                  "separate the category names with commas."))
+            help=cli_constants.VAL_CAT_DESC)
 
         ex_group.add_argument(
             '--product',
             metavar='<product_id>[,<product_id>,...]',
             action=CommaListAction,
             default=[],
-            help=("List specific validations by product, "
-                  "if more than one product is required "
-                  "separate the product names with commas."))
+            help=cli_constants.VAL_PROD_DESC)
 
         parser.add_argument(
             '--download',
@@ -139,8 +129,7 @@ class ShowParameter(BaseShow):
             help=("Create a json or a yaml file "
                   "containing all the variables "
                   "available for the validations: "
-                  "/tmp/myvars")
-        )
+                  "/tmp/myvars"))
 
         parser.add_argument(
             '--format-output',

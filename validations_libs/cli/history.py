@@ -17,6 +17,7 @@
 import json
 
 from validations_libs import constants
+from validations_libs.cli import constants as cli_constants
 from validations_libs.validation_actions import ValidationActions
 from validations_libs.validation_logs import ValidationLogs
 from validations_libs.cli.base import BaseCommand, BaseLister
@@ -43,8 +44,7 @@ class ListHistory(BaseLister):
                                 'The default display limit is set to 15.\n'))
         parser.add_argument('--validation-log-dir', dest='validation_log_dir',
                             default=constants.VALIDATIONS_LOG_BASEDIR,
-                            help=("Path where the validation log files "
-                                  "is located."))
+                            help=cli_constants.LOG_PATH_DESC)
         return parser
 
     def take_action(self, parsed_args):
@@ -81,12 +81,11 @@ class GetHistory(BaseCommand):
 
         parser.add_argument('--full',
                             action='store_true',
-                            help='Show Full Details for the run')
+                            help='Show full details of the validation run')
 
         parser.add_argument('--validation-log-dir', dest='validation_log_dir',
                             default=constants.VALIDATIONS_LOG_BASEDIR,
-                            help=("Path where the validation log files "
-                                  "is located."))
+                            help=cli_constants.LOG_PATH_DESC)
         return parser
 
     def take_action(self, parsed_args):
