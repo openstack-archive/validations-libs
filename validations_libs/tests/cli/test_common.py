@@ -13,9 +13,9 @@
 #   under the License.
 #
 from unittest import TestCase
+from unittest import skipIf
 import yaml
-import sys
-import importlib
+import cliff
 from validations_libs.cli import common
 
 try:
@@ -47,21 +47,19 @@ class TestCommon(TestCase):
     def test_read_cli_data_file_yaml_error(self, mock_yaml):
         self.assertRaises(RuntimeError, common.read_cli_data_file, 'foo')
 
+    @skipIf('_SmartHelpFormatter' not in dir(cliff.command),
+            "cliff package doesn't include _SmartHelpFormatter"
+            "in the 'command' submodule. Presumably cliff==2.16.0.")
     @mock.patch('cliff._argparse', spec={})
     def test_argparse_conditional_false(self, mock_argparse):
-        """Test if the imporst are properly resolved based
+        """Test if the imports are properly resolved based
         on presence of the `SmartHelpFormatter` in the namespace
         of the cliff._argparse.
         If the attribute isn't in the namespace, and it shouldn't be
-        because the object is mocked to behave as a dictionary,
-        the next statement after conditional will trigger `ImportError`.
-        Because relevant class in the cliff module is mocked with side effect.
+        because the object is mocked to behave as a dictionary.
+        The final ValidationHelpFormatter class should have thus have
+        'cliff.command._SmartHelpFormatter' in it's inheritance chain.
+        Otherwise it should raise ImportError.
         """
-        sys.modules[
-            'cliff.command.SmartHelpFormatter'] = mock.MagicMock(
-                side_effect=ImportError)
 
-        self.assertRaises(
-            ImportError,
-            importlib.reload,
-            common)
+        self.assertTrue(cliff.command._SmartHelpFormatter in common.ValidationHelpFormatter.__mro__)
