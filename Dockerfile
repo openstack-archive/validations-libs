@@ -1,7 +1,7 @@
 FROM centos:latest
 
-LABEL name="VF develoment dockerfile"
-LABEL version="0.3"
+LABEL name="VF development dockerfile"
+LABEL version="0.4"
 LABEL description="Provides environment for development of new validations."
 
 RUN dnf install -y git python3-pip gcc python3-devel jq
@@ -18,8 +18,7 @@ RUN cd /root/validations-libs && \
     python3 -m pip install -r test-requirements.txt
 
 RUN cd /root/validations-common && \
-    python3 -m pip install . && \
-    python3 -m pip install -r test-requirements.txt
+    python3 -m pip install .
 
 #Setting up the default directory structure for both ansible,
 #and the VF
