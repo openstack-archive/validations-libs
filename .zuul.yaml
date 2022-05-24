@@ -62,6 +62,7 @@
               - ^doc/.*
               - ^README.rst
               - ^validations_libs/.*
+              - ^CONTRIBUTING.rst
         - validations-libs-functional
         - tripleo-ci-centos-9-undercloud-containers: &undercloud_containers_job_params
             dependencies:
