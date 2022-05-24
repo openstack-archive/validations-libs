@@ -112,6 +112,7 @@
               - ^doc/.*
               - ^README.rst
               - ^validations_libs/.*
+              - ^CONTRIBUTING.rst
         - validations-libs-functional
         - tripleo-ci-centos-8-undercloud-containers-validations-libs-stable: *check_deps
     gate:
