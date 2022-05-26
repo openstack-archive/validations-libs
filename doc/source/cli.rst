@@ -4,12 +4,6 @@
 Validations Framework Command Line Interface (CLI)
 ==================================================
 
-The following documentation is generated using the `the cliff Sphinx extension
-<sphinxext>`.
-
-Output
-------
-
 Global Options
 ~~~~~~~~~~~~~~
 

@@ -35,6 +35,20 @@ extensions = [
     'openstackdocstheme',
 ]
 
+# Settings MAN pages targets
+man_pages = [(
+    'cli',
+    'vf',
+    'validate environments',
+    'Openstack',
+    '1'),
+    (
+    'reference/index',
+    'validations-libs',
+    'API description',
+    'Openstack',
+    '3')]
+
 # sphinxcontrib.apidoc options
 apidoc_module_dir = '../../validations_libs'
 apidoc_output_dir = 'reference/api'
