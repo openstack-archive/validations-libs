@@ -48,7 +48,7 @@
         - validations-libs-reqcheck
         - openstack-tox-linters
         - openstack-tox-cover
-        - openstack-tox-py36
+        - openstack-tox-py38
         - openstack-tox-py39
         - tripleo-ci-centos-9-standalone-validation-libs: &standalone_consumer_job_params
             vars: &standalone_consumer_job_vars
@@ -72,7 +72,7 @@
     gate:
       jobs:
         - openstack-tox-linters
-        - openstack-tox-py36
+        - openstack-tox-py38
         - openstack-tox-py39
         - openstack-tox-docs: *tripleo-docs
         - validations-libs-functional
