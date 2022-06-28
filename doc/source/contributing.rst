@@ -36,4 +36,3 @@ Code Hosting
 
 Code Review
     https://review.opendev.org/#/q/status:open+project:openstack/validations-libs,n,z
-
