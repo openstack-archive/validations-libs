@@ -1,3 +1,4 @@
+---
 check-ram:
   hosts: all
   # reason and lp key is not mandatory for the VF. Those values are in the list
