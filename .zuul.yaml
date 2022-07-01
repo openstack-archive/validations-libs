@@ -108,6 +108,7 @@
               - openstack-tox-cover
               - validations-libs-functional
         - openstack-tox-docs: &tripleo-docs
+            <<: *tox_override_checkout
             files:
               - ^doc/.*
               - ^README.rst
