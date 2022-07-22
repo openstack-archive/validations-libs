@@ -88,17 +88,3 @@ class TestParserActions(TestCase):
         self.assertIn('fizz', dir(self.mock_namespace))
         self.assertDictEqual({}, self.mock_namespace.fizz)
         self.tearDown()
-
-    def test_keyvalueaction_invalid_invalid_multikey(self):
-
-        self.assertRaises(
-            argparse.ArgumentTypeError,
-            self.action,
-            self.mock_parser,
-            self.mock_namespace,
-            self.test_values['invalid_multikey']
-        )
-
-        self.assertIn('fizz', dir(self.mock_namespace))
-        self.assertDictEqual({}, self.mock_namespace.fizz)
-        self.tearDown()

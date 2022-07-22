@@ -16,6 +16,8 @@
 
 import argparse
 
+from validations_libs.utils import LOG
+
 
 class CommaListAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -33,16 +35,29 @@ class KeyValueAction(argparse.Action):
             setattr(namespace, self.dest, {})
 
         # Add value if an assignment else remove it
-        if values.count('=') == 1:
-            values_list = values.split('=', 1)
-            if '' == values_list[0]:
-                msg = (
-                    "Property key must be specified: {}"
-                ).format(str(values))
+        if values.count('=') >= 1:
+            for key_value in values.split(','):
+                key, value = key_value.split('=', 1)
+                if '' == key:
+                    msg = (
+                        "Property key must be specified: {}"
+                    ).format(str(values))
 
-                raise argparse.ArgumentTypeError(msg)
-            else:
-                getattr(namespace, self.dest, {}).update([values_list])
+                    raise argparse.ArgumentTypeError(msg)
+                elif value.count('=') > 0:
+                    msg = (
+                        "Only a single '=' sign is allowed: {}"
+                    ).format(str(values))
+
+                    raise argparse.ArgumentTypeError(msg)
+                else:
+                    if key in getattr(namespace, self.dest, {}):
+                        LOG.warning((
+                                "Duplicate key '%s' provided."
+                                "Value '%s' Overriding previous value. '%s'"
+                            ) % (
+                            key, getattr(namespace, self.dest)[key], value))
+                    getattr(namespace, self.dest, {}).update({key: value})
         else:
             msg = (
                 "Expected 'key=value' type, but got: {}"
