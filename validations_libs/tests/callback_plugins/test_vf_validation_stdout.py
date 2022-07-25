@@ -99,11 +99,9 @@ class TestValidationStdout(base.BaseTestCase):
 
     @mock.patch(
         'ansible.playbook.play.Play._uuid',
-        autospec=True,
         return_value='bar')
     @mock.patch(
         'ansible.playbook.play.Play.get_name',
-        autospec=True,
         return_value='foo')
     @mock.patch('ansible.playbook.play.Play')
     def test_new_play(self, mock_play, mock_play_name, mock_play_uuid):
@@ -119,7 +117,7 @@ class TestValidationStdout(base.BaseTestCase):
         play_dict = callback._new_play(mock_play)
 
         mock_play_name.assert_called_once()
-        mock_play_uuid.assert_called_once()
+        mock_play_uuid.__str__.called_once()
 
         """
         Callback time sanity check only verifies general format
@@ -134,11 +132,9 @@ class TestValidationStdout(base.BaseTestCase):
 
     @mock.patch(
         'ansible.playbook.task.Task._uuid',
-        autospec=True,
         return_value='bar')
     @mock.patch(
         'ansible.playbook.task.Task.get_name',
-        autospec=True,
         return_value='foo')
     @mock.patch('ansible.playbook.task.Task')
     def test_new_task(self, mock_task, mock_task_name, mock_task_uuid):
@@ -151,7 +147,7 @@ class TestValidationStdout(base.BaseTestCase):
         task_dict = callback._new_task(mock_task)
 
         mock_task_name.assert_called_once()
-        mock_task_uuid.assert_called_once()
+        mock_task_uuid.__str__.assert_called_once()
 
         """
         Callback time sanity check only verifies general format
