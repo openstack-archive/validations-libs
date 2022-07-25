@@ -604,8 +604,7 @@ def find_config_file(config_file_name='validation.cfg'):
     return current_path
 
 
-def run_command_and_log(log, cmd, cwd=None,
-                        env=None, retcode_only=True):
+def run_command_and_log(log, cmd, cwd=None, env=None):
     """Run command and log output
 
     :param log: Logger instance for logging
@@ -619,28 +618,23 @@ def run_command_and_log(log, cmd, cwd=None,
 
     :param env: Modified environment for command run
     :type env: ``List``
-
-    :param retcode_only: Returns only retcode instead or proc object
-    :type retcdode_only: ``Boolean``
     """
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, shell=False,
                             cwd=cwd, env=env)
-    if retcode_only:
-        while True:
-            try:
-                line = proc.stdout.readline()
-            except StopIteration:
-                break
-            if line != b'':
-                if isinstance(line, bytes):
-                    line = line.decode('utf-8')
-                log.debug(line.rstrip())
-            else:
-                break
-        proc.stdout.close()
-        return proc.wait()
-    return proc
+    while True:
+        try:
+            line = proc.stdout.readline()
+        except StopIteration:
+            break
+        if line != b'':
+            if isinstance(line, bytes):
+                line = line.decode('utf-8')
+            log.debug(line.rstrip())
+        else:
+            break
+    proc.stdout.close()
+    return proc.wait()
 
 
 def check_community_validations_dir(
