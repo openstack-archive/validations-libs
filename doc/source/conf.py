@@ -81,7 +81,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'{}, OpenStack Foundation'.format(datetime.date.year)
+copyright = '{}, OpenStack Foundation'.format(datetime.date.year)
 
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['validations_libs.']
@@ -122,8 +122,8 @@ latex_documents = [
     (
         'index',
         'doc-validations-libs.tex',
-        u'Validations Framework Client Documentation',
-        u'OpenStack LLC',
+        'Validations Framework Client Documentation',
+        'OpenStack LLC',
         'manual'
     ),
 ]
