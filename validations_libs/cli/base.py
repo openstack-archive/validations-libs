@@ -30,8 +30,9 @@ from validations_libs.cli.common import ValidationHelpFormatter
 class Base:
     """Base class for CLI arguments management"""
     config = {}
+    config_section = ['default', 'ansible_runner', 'ansible_environment']
 
-    def set_argument_parser(self, vf_parser, args, section='default'):
+    def set_argument_parser(self, vf_parser, args):
         """ Set Arguments parser depending of the precedence ordering:
             * User CLI arguments
             * Configuration file
@@ -45,15 +46,16 @@ class Base:
                    for arg in cli_args if arg.startswith('--')]
 
         self.config = utils.load_config(os.path.abspath(args.config))
-        config_args = self.config.get(section, {})
-        for key, value in args._get_kwargs():
-            if key in cli_key:
-                config_args.update({key: value})
-            elif parser.get_default(key) != value:
-                config_args.update({key: value})
-            elif key not in config_args.keys():
-                config_args.update({key: value})
-        return vars(args).update(**config_args)
+        for section in self.config_section:
+            config_args = self.config.get(section, {})
+            for key, value in args._get_kwargs():
+                if key in cli_key:
+                    config_args.update({key: value})
+                elif parser.get_default(key) != value:
+                    config_args.update({key: value})
+                elif key not in config_args.keys():
+                    config_args.update({key: value})
+            vars(args).update(**config_args)
 
 
 class BaseCommand(Command):
