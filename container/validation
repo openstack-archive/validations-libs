@@ -26,9 +26,11 @@ import sys
 DESCRIPTION = "Build and execute Validations from a container."
 EPILOG = "Example: ./validation --run --cmd run --validation check-ftype,512e"
 
-VALIDATIONS_LOG_BASEDIR = os.path.expanduser('~/validations')
+LOCAL_USER = os.environ.get('SUDO_USER', os.environ.get('USER'))
+VALIDATIONS_LOG_BASEDIR = os.path.expanduser(f'~{LOCAL_USER}/validations')
 CONTAINER_INVENTORY_PATH = '/tmp/inventory.yaml'
-COMMUNITY_VALIDATION_PATH = os.path.expanduser('~/community-validations')
+COMMUNITY_VALIDATION_PATH = \
+    os.path.expanduser(f'~{LOCAL_USER}/community-validations')
 
 CONTAINERFILE_TEMPLATE = """
 FROM %(image)s
@@ -38,7 +40,7 @@ LABEL name="VF dockerfile"
 RUN groupadd -g %(gid)s -o %(user)s
 RUN useradd -m -u %(uid)s -g %(gid)s -o -s /bin/bash %(user)s
 
-RUN dnf install -y python3-pip gcc python3-devel jq %(extra_pkgs)s
+RUN dnf install -y python3-pip gcc python3-devel libffi-devel jq openssh openssh-clients %(extra_pkgs)s
 
 # Clone the Framework and common Validations
 RUN python3 -m pip install validations-libs validations-common
@@ -90,13 +92,16 @@ class Validation(argparse.ArgumentParser):
                                  'use --help to get more information. '
                                  'Only available in non-interactive mode. ')
         parser.add_argument('--user', '-u', type=str, default='validation',
-                            help=('Set user in container. '))
+                            help=('Set user in the container. '))
+        parser.add_argument('--user-home', type=str, default='/home/validation',
+                            help=('User home path in the container. '
+                                  'Example: --user-home /home/validation '))
         parser.add_argument('--uid', '-U', type=int, default=user_entry.pw_uid,
                             help=('User UID in container. '))
         parser.add_argument('--gid', '-G', type=int, default=user_entry.pw_gid,
                             help=('Group UID in container. '))
-        parser.add_argument('--image', type=str, default='fedora:30',
-                            help='Container base image. Defaults to fedora:30')
+        parser.add_argument('--image', type=str, default='fedora:35',
+                            help='Container base image. Defaults to fedora:35')
         parser.add_argument('--extra-pkgs', type=str, default='',
                             help=('Extra packages to install in the container.'
                                   'Comma or space separated list. '
@@ -147,6 +152,7 @@ class Validation(argparse.ArgumentParser):
         self.interactive = parsed_args.interactive
         self.cmd = parsed_args.cmd
         self.user = parsed_args.user
+        self.user_home = parsed_args.user_home
         self.uid = parsed_args.uid
         self.gid = parsed_args.gid
         self.repository = parsed_args.repository
@@ -173,22 +179,20 @@ class Validation(argparse.ArgumentParser):
         clone_user_repo, install_user_repo, entrypoint = "", "", ""
         if self.repository:
             clone_user_repo = ("RUN git clone {} -b {} "
-                               "/root/user_repo").format(self.repository,
-                                                         self.branch)
-            install_user_repo = ("RUN cd /root/user_repo && \\"
-                                 "python3 -m pip install .")
+                               "{}/user_repo").format(self.repository,
+                                                      self.branch,
+                                                      self.user_home)
+            install_user_repo = ("RUN cd {}/user_repo && \\"
+                                 "python3 -m pip install .").format(
+                                 self.user_home)
         if self.interactive:
             entrypoint = "ENTRYPOINT /usr/local/bin/validation"
-        if self.user == 'root':
-            user_dir = '/root'
-        else:
-            user_dir = '/home/{}'.format(self.user)
         param = {'image': self.image, 'extra_pkgs': self.extra_pkgs,
                  'clone_user_repo': clone_user_repo,
                  'install_user_repo': install_user_repo,
                  'entrypoint': entrypoint,
                  'user': self.user, 'uid': self.uid, 'gid': self.gid,
-                 'user_dir': user_dir}
+                 'user_dir': self.user_home}
         with open('./Containerfile', 'w+') as containerfile:
             containerfile.write(CONTAINERFILE_TEMPLATE % param)
 
@@ -234,18 +238,18 @@ class Validation(argparse.ArgumentParser):
             container_args = '--rm'
         cmd = [self.engine, 'run', container_args]
         # Keyfile
-        cmd.append('-v%s:/root/containerhost_private_key:z' %
-                   self.keyfile)
+        cmd.append('-v%s:%s/containerhost_private_key:z' %
+                   (self.keyfile, self.user_home))
         # log path
         self._create_volume(self.validation_log_dir)
         if os.path.isdir(os.path.abspath(self.validation_log_dir)):
-            cmd.append('-v%s:/root/validations:z' %
-                       self.validation_log_dir)
+            cmd.append('-v%s:%s/validations:z' %
+                       (self.validation_log_dir, self.user_home))
         # community validation path
         self._create_volume(COMMUNITY_VALIDATION_PATH)
         if os.path.isdir(os.path.abspath(COMMUNITY_VALIDATION_PATH)):
-            cmd.append('-v%s:/root/community-validations:z' %
-                       COMMUNITY_VALIDATION_PATH)
+            cmd.append('-v%s:%s/community-validations:z' %
+                       (COMMUNITY_VALIDATION_PATH, self.user_home))
         # Volumes
         if self.volumes:
             self._print('Adding volumes:')
