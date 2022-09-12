@@ -40,6 +40,7 @@ class TestUtils(TestCase):
 
     def setUp(self):
         super(TestUtils, self).setUp()
+        self.logger = mock.patch('validations_libs.logger.getLogger')
 
     @mock.patch('validations_libs.validation.Validation._get_content',
                 return_value=fakes.FAKE_PLAYBOOK[0])
@@ -399,19 +400,16 @@ class TestUtils(TestCase):
                                                   [], [])
         self.assertEqual(result, {})
 
-    @mock.patch('validations_libs.utils.LOG', autospec=True)
     @mock.patch('validations_libs.utils.os.makedirs')
     @mock.patch(
         'validations_libs.utils.os.access',
         side_effect=[False, True])
     @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
     def test_create_log_dir_access_issue(self, mock_exists,
-                                         mock_access, mock_mkdirs,
-                                         mock_log):
+                                         mock_access, mock_mkdirs):
         log_path = utils.create_log_dir("/foo/bar")
         self.assertEqual(log_path, constants.VALIDATIONS_LOG_BASEDIR)
 
-    @mock.patch('validations_libs.utils.LOG', autospec=True)
     @mock.patch(
         'validations_libs.utils.os.makedirs',
         side_effect=PermissionError)
@@ -424,8 +422,7 @@ class TestUtils(TestCase):
         autospec=True,
         side_effect=fakes._accept_default_log_path)
     def test_create_log_dir_existence_issue(self, mock_exists,
-                                            mock_access, mock_mkdirs,
-                                            mock_log):
+                                            mock_access, mock_mkdirs):
         """Tests behavior after encountering non-existence
         of the the selected log folder, failed attempt to create it
         (raising PermissionError), and finally resorting to a fallback.
@@ -433,32 +430,27 @@ class TestUtils(TestCase):
         log_path = utils.create_log_dir("/foo/bar")
         self.assertEqual(log_path, constants.VALIDATIONS_LOG_BASEDIR)
 
-    @mock.patch('validations_libs.utils.LOG', autospec=True)
     @mock.patch('validations_libs.utils.os.makedirs')
     @mock.patch('validations_libs.utils.os.access', return_value=True)
     @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
     def test_create_log_dir_success(self, mock_exists,
-                                    mock_access, mock_mkdirs,
-                                    mock_log):
+                                    mock_access, mock_mkdirs):
         """Test successful log dir retrieval on the first try.
         """
         log_path = utils.create_log_dir("/foo/bar")
         self.assertEqual(log_path, "/foo/bar")
 
-    @mock.patch('validations_libs.utils.LOG', autospec=True)
     @mock.patch(
         'validations_libs.utils.os.makedirs',
         side_effect=PermissionError)
     @mock.patch('validations_libs.utils.os.access', return_value=False)
     @mock.patch('validations_libs.utils.os.path.exists', return_value=False)
     def test_create_log_dir_runtime_err(self, mock_exists,
-                                        mock_access, mock_mkdirs,
-                                        mock_log):
+                                        mock_access, mock_mkdirs):
         """Test if failure of the fallback raises 'RuntimeError'
         """
         self.assertRaises(RuntimeError, utils.create_log_dir, "/foo/bar")
 
-    @mock.patch('validations_libs.utils.LOG', autospec=True)
     @mock.patch(
         'validations_libs.utils.os.makedirs',
         side_effect=PermissionError)
@@ -468,19 +460,16 @@ class TestUtils(TestCase):
         side_effect=fakes._accept_default_log_path)
     def test_create_log_dir_default_perms_runtime_err(
                                         self, mock_exists,
-                                        mock_access, mock_mkdirs,
-                                        mock_log):
+                                        mock_access, mock_mkdirs):
         """Test if the inaccessible fallback raises 'RuntimeError'
         """
         self.assertRaises(RuntimeError, utils.create_log_dir, "/foo/bar")
 
-    @mock.patch('validations_libs.utils.LOG', autospec=True)
     @mock.patch('validations_libs.utils.os.makedirs')
     @mock.patch('validations_libs.utils.os.access', return_value=False)
     @mock.patch('validations_libs.utils.os.path.exists', return_value=False)
     def test_create_log_dir_mkdirs(self, mock_exists,
-                                   mock_access, mock_mkdirs,
-                                   mock_log):
+                                   mock_access, mock_mkdirs):
         """Test successful creation of the directory if the first access fails.
         """
 
@@ -532,7 +521,6 @@ class TestUtils(TestCase):
             results['ansible_environment']['ANSIBLE_STDOUT_CALLBACK'],
             fakes.ANSIBLE_ENVIRONNMENT_CONFIG['ANSIBLE_STDOUT_CALLBACK'])
 
-    @mock.patch('validations_libs.utils.LOG', autospec=True)
     @mock.patch('{}.Path.exists'.format(PATHLIB),
                 return_value=False)
     @mock.patch('{}.Path.is_dir'.format(PATHLIB),
@@ -543,8 +531,7 @@ class TestUtils(TestCase):
     def test_check_creation_community_validations_dir(self, mock_mkdir,
                                                       mock_iterdir,
                                                       mock_isdir,
-                                                      mock_exists,
-                                                      mock_log):
+                                                      mock_exists):
         basedir = PosixPath('/foo/bar/community-validations')
         subdir = fakes.COVAL_SUBDIR
         result = utils.check_community_validations_dir(basedir, subdir)
@@ -556,7 +543,6 @@ class TestUtils(TestCase):
                           PosixPath("/foo/bar/community-validations/lookup_plugins")]
                          )
 
-    @mock.patch('validations_libs.utils.LOG', autospec=True)
     @mock.patch('{}.Path.is_dir'.format(PATHLIB), return_value=True)
     @mock.patch('{}.Path.exists'.format(PATHLIB), return_value=True)
     @mock.patch('{}.Path.iterdir'.format(PATHLIB),
@@ -566,8 +552,7 @@ class TestUtils(TestCase):
                                                                  mock_mkdir,
                                                                  mock_iterdir,
                                                                  mock_exists,
-                                                                 mock_isdir,
-                                                                 mock_log):
+                                                                 mock_isdir):
         basedir = PosixPath('/foo/bar/community-validations')
         subdir = fakes.COVAL_SUBDIR
         result = utils.check_community_validations_dir(basedir, subdir)

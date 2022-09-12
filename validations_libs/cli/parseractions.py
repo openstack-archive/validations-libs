@@ -16,7 +16,9 @@
 
 import argparse
 
-from validations_libs.utils import LOG
+from validations_libs import utils
+
+LOG = utils.getLogger(__name__ + '.parseractions')
 
 
 class CommaListAction(argparse.Action):
