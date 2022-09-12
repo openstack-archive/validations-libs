@@ -17,14 +17,6 @@ import sys
 from unittest import TestCase
 
 from validations_libs.cli import app
-from validations_libs.cli import base
-from validations_libs import utils
-
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 
 
 class BaseCommand(TestCase):

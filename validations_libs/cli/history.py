@@ -51,7 +51,6 @@ class ListHistory(BaseLister):
         # Merge config and CLI args:
         self.base.set_argument_parser(self, parsed_args)
 
-        validation_log_dir = parsed_args.validation_log_dir
         history_limit = parsed_args.history_limit
 
         if history_limit < 1:

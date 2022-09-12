@@ -22,7 +22,6 @@ import site
 import subprocess
 import uuid
 
-from os.path import join
 # @matbu backward compatibility for stable/train
 try:
     from pathlib import Path
