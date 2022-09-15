@@ -17,8 +17,6 @@ try:
 except ImportError:
     import mock
 
-from validations_libs import group
-from validations_libs.validation_actions import ValidationActions
 from validations_libs.cli import show
 from validations_libs.tests import fakes
 from validations_libs.tests.cli.fakes import BaseCommand

@@ -12,10 +12,7 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+
 from unittest import TestCase
 
 from validations_libs.cli import colors

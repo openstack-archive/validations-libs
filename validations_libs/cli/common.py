@@ -32,7 +32,6 @@ except ImportError:
     JUNIT_XML_FOUND = False
 
 from validations_libs.cli import colors
-from validations_libs import utils
 
 # Handle backward compatibility for Cliff 2.16.0 in stable/train:
 if hasattr(_argparse, 'SmartHelpFormatter'):

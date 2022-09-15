@@ -19,9 +19,6 @@ except ImportError:
 
 from validations_libs.cli import community
 from validations_libs.cli import base
-from validations_libs.community.init_validation import \
-    CommunityValidation as cv
-from validations_libs.tests import fakes
 from validations_libs.tests.cli.fakes import BaseCommand
 
 
