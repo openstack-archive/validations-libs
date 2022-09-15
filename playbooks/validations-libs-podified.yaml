@@ -1,0 +1,63 @@
+---
+- hosts: tempest
+  name: validations-libs-podified
+  vars:
+    - container_executable: "{{ container_engine|default('podman') }}"
+  roles:
+    - ensure-tox
+    - ensure-pip
+    - ensure-virtualenv
+    - role: ensure-docker
+      when:
+        - "'{{ container_executable }}' == 'docker'"
+    - role: ensure-podman
+      when:
+        - "'{{ container_executable }}' == 'podman'"
+    - role: ensure-if-python
+      vars:
+        zuul_work_dir: "src/opendev.org/openstack/validations-libs"
+  tasks:
+    - name: gen key
+      shell: |
+        yes | ssh-keygen -f /home/zuul/.ssh/vf-key -N ""
+
+    - name: get key
+      register: key
+      shell:  cat /home/zuul/.ssh/vf-key.pub
+
+    - name: add key
+      ansible.builtin.lineinfile:
+        path: /home/zuul/.ssh/authorized_keys
+        line: "{{ key.stdout }}"
+        create: yes
+
+    - name: Create VF inventory
+      ansible.builtin.lineinfile:
+        path: /home/zuul/inventory.yaml
+        line: "[controller]\n{{ ansible_default_ipv4.address }}"
+        create: yes
+
+    - name: Create home log directory for Validations
+      ansible.builtin.file:
+        path: /home/zuul/validations
+        state: directory
+        mode: '0755'
+
+    - name: Build Validation container
+      shell:
+        cmd: >-
+          src/opendev.org/openstack/validations-libs/container/validation
+          -e {{ container_executable }} --user validation --build
+        executable: /bin/bash
+
+    - name: Run Validation container
+      become: true
+      shell:
+        cmd: >-
+          src/opendev.org/openstack/validations-libs/container/validation -D
+          --user validation --keyfile /home/zuul/.ssh/vf-key
+          -e {{ container_executable }} -R
+          --cmd run --validation check-ram
+          --output-log /home/validation/output.log
+          --inventory /home/zuul/inventory.yaml --extra-vars minimal_ram_gb=1
+        executable: /bin/bash
