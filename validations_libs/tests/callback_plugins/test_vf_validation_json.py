@@ -99,11 +99,9 @@ class TestValidationJson(base.BaseTestCase):
 
     @mock.patch(
         'ansible.playbook.play.Play._uuid',
-        autospec=True,
         return_value='bar')
     @mock.patch(
         'ansible.playbook.play.Play.get_name',
-        autospec=True,
         return_value='foo')
     @mock.patch('ansible.playbook.play.Play')
     def test_new_play(self, mock_play, mock_play_name, mock_play_uuid):
@@ -117,7 +115,7 @@ class TestValidationJson(base.BaseTestCase):
         callback.env['playbook_path'] = 'buzz/fizz'
         play_dict = callback._new_play(mock_play)
         mock_play_name.assert_called_once()
-        mock_play_uuid.assert_called_once()
+        mock_play_uuid.__str__.assert_called_once()
         """
         Callback time sanity check only verifies general format
         of the stored time to be  iso format `YYYY-MM-DD HH:MM:SS.mmmmmm`
@@ -130,11 +128,9 @@ class TestValidationJson(base.BaseTestCase):
 
     @mock.patch(
         'ansible.playbook.task.Task._uuid',
-        autospec=True,
         return_value='bar')
     @mock.patch(
         'ansible.playbook.task.Task.get_name',
-        autospec=True,
         return_value='foo')
     @mock.patch('ansible.playbook.task.Task')
     def test_new_task(self, mock_task, mock_task_name, mock_task_uuid):
@@ -146,7 +142,7 @@ class TestValidationJson(base.BaseTestCase):
         callback = vf_validation_json.CallbackModule()
         task_dict = callback._new_task(mock_task)
         mock_task_name.assert_called_once()
-        mock_task_uuid.assert_called_once()
+        mock_task_uuid.__str__.assert_called_once()
         """
         Callback time sanity check only verifies general format
         of the stored time to be  iso format `YYYY-MM-DD HH:MM:SS.mmmmmm`
