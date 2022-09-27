@@ -16,7 +16,6 @@ import ast
 import configparser
 import datetime
 import glob
-import logging
 import os
 import site
 import subprocess
@@ -31,8 +30,9 @@ except ImportError:
 from validations_libs import constants
 from validations_libs.group import Group
 from validations_libs.validation import Validation
+from validations_libs.logger import getLogger
 
-LOG = logging.getLogger(__name__ + ".utils")
+LOG = getLogger(__name__ + ".utils")
 
 
 def current_time():
