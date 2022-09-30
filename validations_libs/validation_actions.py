@@ -144,17 +144,11 @@ class ValidationActions:
         return (column_names, return_values)
 
     def show_validations(self, validation,
-                         log_path=None,
                          validation_config=None):
         """Display detailed information about a Validation
 
         :param validation: The name of the validation
         :type validation: `string`
-        :param log_path: The absolute path of the validations logs.
-                         The 'log_path' argument is deprecated and
-                         will be removed in the next release.
-                         Use the 'log_path' argument of the init method.
-        :type log_path: `string`
         :param validation_config: A dictionary of configuration for Validation
                                   loaded from an validation.cfg file.
         :type validation_config: ``dict``
@@ -185,14 +179,7 @@ class ValidationActions:
         """
         self.log = logging.getLogger(__name__ + ".show_validations")
         # Get validation data:
-        if log_path:
-            self.log.warning((
-                "The 'log_path' argument is deprecated and"
-                " will be removed in the next release. "
-                "Use the 'log_path' argument of the init method."))
-            vlog = ValidationLogs(log_path)
-        else:
-            vlog = ValidationLogs(self.log_path)
+        vlog = ValidationLogs(self.log_path)
         data = v_utils.get_validations_data(
                 validation,
                 self.validation_path,
@@ -333,7 +320,7 @@ class ValidationActions:
                         extra_env_vars=None, ansible_cfg=None, quiet=True,
                         limit_hosts=None, run_async=False,
                         base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
-                        log_path=None, python_interpreter=None, skip_list=None,
+                        python_interpreter=None, skip_list=None,
                         callback_whitelist=None,
                         output_callback='vf_validation_stdout', ssh_user=None,
                         validation_config=None):
@@ -374,13 +361,6 @@ class ValidationActions:
                          (Defaults to
                          ``constants.DEFAULT_VALIDATIONS_BASEDIR``)
         :type base_dir: ``string``
-        :param log_path: The absolute path of the validations logs directory
-                         (Defaults to
-                         ``constants.VALIDATIONS_LOG_BASEDIR``)
-                         The absolute path of the validations logs directory.
-                         The 'log_path' argument is deprecated and will be removed in the next release.
-                         Use the 'log_path' argument of the init method.
-        :type log_path: ``string``
         :param python_interpreter: Path to the Python interpreter to be
                                    used for module execution on remote targets,
                                    or an automatic discovery mode (``auto``,
@@ -479,14 +459,8 @@ class ValidationActions:
                 raise ValidationRunException(msg)
         else:
             raise ValidationRunException("No validations found")
-        if log_path:
-            self.log.warning((
-                "The 'log_path' argument is deprecated and"
-                " will be removed in the next release. "
-                "Use the 'log_path' argument of the init method."))
-            log_path = v_utils.create_log_dir(log_path)
-        else:
-            log_path = v_utils.create_log_dir(self.log_path)
+
+        log_path = v_utils.create_log_dir(self.log_path)
 
         self.log.debug((
             'Running the validations with Ansible.\n'
@@ -753,7 +727,6 @@ class ValidationActions:
         return params
 
     def show_history(self, validation_ids=None, extension='json',
-                     log_path=None,
                      history_limit=None):
         """Return validation executions history
 
@@ -761,11 +734,6 @@ class ValidationActions:
         :type validation_ids: a list of strings
         :param extension: The log file extension (Defaults to ``json``)
         :type extension: ``string``
-        :param log_path: The absolute path of the validations logs directory.
-                         The 'log_path' argument is deprecated and will
-                         be removed in the next release.
-                         Use the 'log_path' argument of the init method.
-        :type log_path: ``string``
         :param history_limit: The number of most recent history logs
                               to be displayed.
         :type history_limit: ``int``
@@ -814,14 +782,7 @@ class ValidationActions:
          '0:00:02.237')])
 
         """
-        if log_path:
-            self.log.warning((
-                "The 'log_path' argument is deprecated and"
-                " will be removed in the next release. "
-                "Use the 'log_path' argument of the init method."))
-            vlogs = ValidationLogs(log_path)
-        else:
-            vlogs = ValidationLogs(self.log_path)
+        vlogs = ValidationLogs(self.log_path)
 
         if validation_ids:
             if not isinstance(validation_ids, list):
@@ -851,8 +812,7 @@ class ValidationActions:
                                    play['duration'].get('time_elapsed')))
         return (column_name, values)
 
-    def get_status(self, validation_id=None, uuid=None, status='FAILED',
-                   log_path=constants.VALIDATIONS_LOG_BASEDIR):
+    def get_status(self, validation_id=None, uuid=None, status='FAILED'):
         """Return validations execution details by status
 
         :param validation_id: The validation id
@@ -861,11 +821,6 @@ class ValidationActions:
         :type uuid: ``string``
         :param status: The status of the execution (Defaults to FAILED)
         :type status: ``string``
-        :param log_path: The absolute path of the validations logs directory.
-                         The 'log_path' argument is deprecated and will
-                         be removed in the next release.
-                         Use the 'log_path' argument of the init method.
-        :type log_path: ``string``
 
         :return: A list of validations execution with details and by status
         :rtype: ``tuple``
@@ -901,14 +856,7 @@ class ValidationActions:
              'failed': True,
              'msg': 'Debug mode is not disabled.'})])
         """
-        if log_path:
-            self.log.warning((
-                "The 'log_path' argument is deprecated and"
-                " will be removed in the next release. "
-                "Use the 'log_path' argument of the init method."))
-            vlogs = ValidationLogs(log_path)
-        else:
-            vlogs = ValidationLogs(self.log_path)
+        vlogs = ValidationLogs(self.log_path)
 
         if validation_id:
             logs = vlogs.get_logfile_by_validation(validation_id)
