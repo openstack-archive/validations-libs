@@ -368,7 +368,9 @@ class TestAnsible(TestCase):
                 return_value={'ANSIBLE_STDOUT_CALLBACK': 'fake'})
     @mock.patch('os.environ.copy', return_value={})
     @mock.patch('os.path.abspath', return_value='/tmp/foo/localhost')
-    def test_run_specific_log_path(self, mock_path, mock_env, mock_env_var,
+    @mock.patch('validations_libs.ansible.Ansible._check_ansible_files')
+    def test_run_specific_log_path(self, mock_check_ansible, mock_path,
+                                   mock_env, mock_env_var,
                                    mock_config, mock_dump_artifact, mock_run,
                                    mock_mkdirs, mock_exists, mock_open):
         _playbook, _rc, _status = self.run.run(
@@ -498,7 +500,8 @@ class TestAnsible(TestCase):
         return_value={'ANSIBLE_STDOUT_CALLBACK': 'fake'})
     @mock.patch('os.path.abspath', return_value='/tmp/foo/localhost')
     @mock.patch('os.environ.copy', return_value={})
-    def test_run_no_log_path(self, mock_env, mock_path,
+    @mock.patch('validations_libs.ansible.Ansible._check_ansible_files')
+    def test_run_no_log_path(self, mock_check_ansible, mock_env, mock_path,
                              mock_env_var, mock_config,
                              mock_dump_artifact, mock_run,
                              mock_exists, mock_open):
@@ -556,7 +559,8 @@ class TestAnsible(TestCase):
         return_value={'ANSIBLE_STDOUT_CALLBACK': 'fake'})
     @mock.patch('os.path.abspath', return_value='/tmp/foo/localhost')
     @mock.patch('os.environ.copy', return_value={})
-    def test_run_tags(self, mock_env, mock_path,
+    @mock.patch('validations_libs.ansible.Ansible._check_ansible_files')
+    def test_run_tags(self, mock_check_ansible, mock_env, mock_path,
                       mock_env_var, mock_config,
                       mock_dump_artifact, mock_run,
                       mock_exists, mock_open):
@@ -678,7 +682,8 @@ class TestAnsible(TestCase):
             'ANSIBLE_CALLBACK_WHITELIST': 'log_plays,mail,fake,validation_json,profile_tasks'
             })
     @mock.patch('os.environ.copy', return_value={})
-    def test_run_callback_whitelist_extend(self, mock_env,
+    @mock.patch('validations_libs.ansible.Ansible._check_ansible_files')
+    def test_run_callback_whitelist_extend(self, mock_check_ansible, mock_env,
                                            mock_env_var, mock_config,
                                            mock_run, mock_exists,
                                            mock_open):
@@ -729,7 +734,8 @@ class TestAnsible(TestCase):
             'ANSIBLE_CALLBACK_WHITELIST': 'fake,validation_json,profile_tasks'
             })
     @mock.patch('os.environ.copy', return_value={})
-    def test_run_callback_whitelist_none(self, mock_env,
+    @mock.patch('validations_libs.ansible.Ansible._check_ansible_files')
+    def test_run_callback_whitelist_none(self, mock_check_ansible, mock_env,
                                          mock_env_var, mock_config,
                                          mock_run, mock_exists,
                                          mock_open):
@@ -781,7 +787,8 @@ class TestAnsible(TestCase):
     @mock.patch(
         'os.environ.copy',
         return_value={'ANSIBLE_STDOUT_CALLBACK': 'different_fake'})
-    def test_run_callback_precedence(self, mock_env,
+    @mock.patch('validations_libs.ansible.Ansible._check_ansible_files')
+    def test_run_callback_precedence(self, mock_check_files, mock_env,
                                      mock_env_var, mock_config,
                                      mock_run, mock_exists, mock_open):
         """Tests if Ansible._callbacks method reaches for output_callback
@@ -832,7 +839,8 @@ class TestAnsible(TestCase):
     @mock.patch(
         'os.environ.copy',
         return_value={'ANSIBLE_STDOUT_CALLBACK': 'fake'})
-    def test_run_ansible_artifact_path_set(self, mock_env,
+    @mock.patch('validations_libs.ansible.Ansible._check_ansible_files')
+    def test_run_ansible_artifact_path_set(self, mock_check_ansible, mock_env,
                                            mock_env_var, mock_config,
                                            mock_run, mock_exists, mock_open):
         """Tests if specified 'ansible_artifact_path' is passed in a valid
@@ -882,9 +890,12 @@ class TestAnsible(TestCase):
     @mock.patch(
         'os.environ.copy',
         return_value={'ANSIBLE_STDOUT_CALLBACK': 'fake'})
-    def test_run_ansible_artifact_path_from_log_path(self, mock_env,
+    @mock.patch('validations_libs.ansible.Ansible._check_ansible_files')
+    def test_run_ansible_artifact_path_from_log_path(self, mock_check_ansible,
+                                                     mock_env,
                                                      mock_env_var, mock_config,
-                                                     mock_run, mock_exists, mock_open):
+                                                     mock_run, mock_exists,
+                                                     mock_open):
         """Tests if specified 'log_path' is passed in a valid
         and unchanged form to RunnerConfig as value of 'fact_cache' param,
         in absence of specified 'ansible_artifact_path'.
@@ -935,7 +946,9 @@ class TestAnsible(TestCase):
     @mock.patch(
         'os.environ.copy',
         return_value={'ANSIBLE_STDOUT_CALLBACK': 'fake'})
-    def test_run_ansible_artifact_path_from_constants(self, mock_env,
+    @mock.patch('validations_libs.ansible.Ansible._check_ansible_files')
+    def test_run_ansible_artifact_path_from_constants(self, mock_check_ansible,
+                                                      mock_env,
                                                       mock_env_var, mock_config,
                                                       mock_run, mock_exists,
                                                       mock_open):
@@ -985,7 +998,8 @@ class TestAnsible(TestCase):
     @mock.patch(
         'os.environ.copy',
         return_value={'ANSIBLE_STDOUT_CALLBACK': 'fake'})
-    def test_run_ansible_envvars(self, mock_env,
+    @mock.patch('validations_libs.ansible.Ansible._check_ansible_files')
+    def test_run_ansible_envvars(self, mock_check_ansible, mock_env,
                                  mock_encode_envvars,
                                  mock_config, mock_run,
                                  mock_exists, mock_open):
@@ -1046,7 +1060,8 @@ class TestAnsible(TestCase):
     @mock.patch(
         'os.environ.copy',
         return_value={'ANSIBLE_STDOUT_CALLBACK': 'fake'})
-    def test_run_ansible_envvars_logdir(self, mock_env,
+    @mock.patch('validations_libs.ansible.Ansible._check_ansible_files')
+    def test_run_ansible_envvars_logdir(self, mock_check_ansible, mock_env,
                                         mock_encode_envvars,
                                         mock_config, mock_run,
                                         mock_exists, mock_open):
@@ -1091,3 +1106,36 @@ class TestAnsible(TestCase):
         self.assertGreaterEqual(
             mock_encode_envvars.call_args[1]['env'].items(),
             env.items())
+
+    @mock.patch('os.path.exists', return_value=False)
+    def test_check_ansible_files_path_not_exists(self, mock_exists):
+
+        v_ansible = Ansible(uuid='123z')
+        fake_env = {'ANSIBLE_CALLBACK_PLUGINS': '/foo:/bar',
+                    'ANSIBLE_ROLES_PATH': '/fake/roles:/foo/roles'}
+        self.assertRaises(RuntimeError, v_ansible._check_ansible_files,
+                          fake_env)
+
+    @mock.patch('os.path.exists', return_value=True)
+    def test_check_ansible_files_missing_callback(self, mock_exists):
+
+        v_ansible = Ansible(uuid='123z')
+        fake_env = {'ANSIBLE_ROLES_PATH': '/fake/roles:/foo/roles'}
+        self.assertRaises(RuntimeError, v_ansible._check_ansible_files,
+                          fake_env)
+
+    @mock.patch('os.path.exists', return_value=True)
+    def test_check_ansible_files_missing_roles(self, mock_exists):
+
+        v_ansible = Ansible(uuid='123z')
+        fake_env = {'ANSIBLE_CALLBACK_PLUGINS': '/foo:/bar'}
+        self.assertRaises(RuntimeError, v_ansible._check_ansible_files,
+                          fake_env)
+
+    @mock.patch('os.path.exists', return_value=True)
+    def test_check_ansible_files_path(self, mock_exists):
+
+        v_ansible = Ansible(uuid='123z')
+        fake_env = {'ANSIBLE_CALLBACK_PLUGINS': '/foo:/bar',
+                    'ANSIBLE_ROLES_PATH': '/fake/roles:/foo/roles'}
+        v_ansible._check_ansible_files(fake_env)
