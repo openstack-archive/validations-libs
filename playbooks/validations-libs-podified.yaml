@@ -11,6 +11,7 @@
       when:
         - "'{{ container_executable }}' == 'docker'"
     - role: ensure-podman
+      become: yes
       when:
         - "'{{ container_executable }}' == 'podman'"
     - role: ensure-if-python

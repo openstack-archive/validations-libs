@@ -5,7 +5,7 @@
     run: playbooks/validations-libs-podified.yaml
     post-run: playbooks/post.yaml
     timeout: 7200
-    voting: false
+    voting: true
     required-projects:
       - openstack/validations-libs
       - openstack/validations-common
@@ -24,7 +24,6 @@
 
 - job:
     name: validations-libs-podified-docker
-    voting: true
     parent: validations-libs-podified-podman
     vars:
       container_engine: docker
