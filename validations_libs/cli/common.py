@@ -17,7 +17,7 @@
 from argparse import ArgumentDefaultsHelpFormatter
 from cliff import _argparse
 import json
-import logging
+from validations_libs.logger import getLogger
 from prettytable import PrettyTable
 import re
 import sys
@@ -92,7 +92,7 @@ def write_output(output_log, results):
 def write_junitxml(output_junitxml, results):
     """Write output file as JUnitXML format"""
     if not JUNIT_XML_FOUND:
-        log = logging.getLogger(__name__ + ".write_junitxml")
+        log = getLogger(__name__ + ".write_junitxml")
         log.warning('junitxml output disabled: the `junit_xml` python module '
                     'is missing.')
         return

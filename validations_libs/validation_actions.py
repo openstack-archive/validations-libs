@@ -12,7 +12,7 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
-import logging
+from validations_libs.logger import getLogger
 import os
 import sys
 import json
@@ -26,7 +26,7 @@ from validations_libs import constants
 from validations_libs import utils as v_utils
 from validations_libs.exceptions import ValidationRunException, ValidationShowException
 
-LOG = logging.getLogger(__name__ + ".validation_actions")
+LOG = getLogger(__name__ + ".validation_actions")
 
 
 class ValidationActions:
@@ -55,7 +55,7 @@ class ValidationActions:
                            (Defaults to ``constants.VALIDATIONS_LOG_BASEDIR``)
         :type log_path: ``string``
         """
-        self.log = logging.getLogger(__name__ + ".ValidationActions")
+        self.log = getLogger(__name__ + ".ValidationActions")
         self.validation_path = validation_path
         self.log_path = log_path
 
@@ -119,7 +119,7 @@ class ValidationActions:
            ['category2'],
            ['product2'])])
         """
-        self.log = logging.getLogger(__name__ + ".list_validations")
+        self.log = getLogger(__name__ + ".list_validations")
 
         validations = v_utils.parse_all_validations_on_disk(
             path=self.validation_path,
@@ -177,7 +177,7 @@ class ValidationActions:
          'Parameters': {'foo1': bar1}
         }
         """
-        self.log = logging.getLogger(__name__ + ".show_validations")
+        self.log = getLogger(__name__ + ".show_validations")
         # Get validation data:
         vlog = ValidationLogs(self.log_path)
         data = v_utils.get_validations_data(
@@ -415,7 +415,7 @@ class ValidationActions:
           'Unreachable_Hosts': '',
           'Validations': 'bar'}]
         """
-        self.log = logging.getLogger(__name__ + ".run_validations")
+        self.log = getLogger(__name__ + ".run_validations")
         playbooks = []
         validations_dir = (validations_dir if validations_dir
                            else self.validation_path)

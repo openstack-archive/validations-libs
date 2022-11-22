@@ -14,7 +14,7 @@
 #
 
 import ansible_runner
-import logging
+from validations_libs.logger import getLogger
 import pkg_resources
 import pwd
 import os
@@ -27,7 +27,7 @@ import configparser
 from validations_libs import constants
 from validations_libs import utils
 
-LOG = logging.getLogger(__name__ + ".ansible")
+LOG = getLogger(__name__ + ".ansible")
 
 # NOTE(cloudnull): This is setting the FileExistsError for py2 environments.
 #                  When we no longer support py2 (centos7) this should be
@@ -48,7 +48,7 @@ class Ansible:
     """An Object for encapsulating an Ansible execution"""
 
     def __init__(self, uuid=None):
-        self.log = logging.getLogger(__name__ + ".Ansible")
+        self.log = getLogger(__name__ + ".Ansible")
         self.uuid = uuid
 
     def _playbook_check(self, play, playbook_dir=None):

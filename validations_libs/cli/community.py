@@ -14,7 +14,7 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
-import logging
+from validations_libs.logger import getLogger
 import os
 
 from validations_libs import constants, utils
@@ -22,7 +22,7 @@ from validations_libs.cli.base import BaseCommand
 from validations_libs.community.init_validation import \
     CommunityValidation as com_val
 
-LOG = logging.getLogger(__name__)
+LOG = getLogger(__name__)
 
 
 class CommunityValidationInit(BaseCommand):

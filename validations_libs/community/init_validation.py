@@ -15,7 +15,7 @@
 #   under the License.
 #
 
-import logging
+from validations_libs.logger import getLogger
 import re
 import os
 # @matbu backward compatibility for stable/train
@@ -26,7 +26,7 @@ except ImportError:
 
 from validations_libs import constants, utils
 
-LOG = logging.getLogger(__name__)
+LOG = getLogger(__name__)
 
 
 class CommunityValidation:

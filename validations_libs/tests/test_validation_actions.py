@@ -536,7 +536,8 @@ class TestValidationActions(TestCase):
                                    '2019-11-25T13:40:14.404623Z',
                                    '0:00:03.753')])
 
-    @mock.patch('os.stat')
+    @mock.patch('validations_libs.validation_actions.getLogger')
+    @mock.patch('validations_libs.validation_actions.os.stat')
     @mock.patch('validations_libs.validation_logs.ValidationLogs.'
                 'get_all_logfiles',
                 return_value=[
@@ -546,7 +547,7 @@ class TestValidationActions(TestCase):
                 return_value=fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0])
     @mock.patch('builtins.open')
     def test_show_history_most_recent(self, mock_open, mock_load,
-                                      mock_get_log, mock_stat):
+                                      mock_get_log, mock_stat, mock_logger):
 
         first_validation = mock.MagicMock()
         second_validation = mock.MagicMock()

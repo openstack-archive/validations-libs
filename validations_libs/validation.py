@@ -13,12 +13,12 @@
 #   under the License.
 #
 
-import logging
+from validations_libs.logger import getLogger
 import os
 import yaml
 from collections import OrderedDict
 
-LOG = logging.getLogger(__name__ + ".validation")
+LOG = getLogger(__name__ + ".validation")
 
 
 class Validation:
