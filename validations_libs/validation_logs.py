@@ -299,8 +299,14 @@ class ValidationLog:
                 for h in v_output['task']['hosts']:
                     msg = v_output['task']['hosts'][h].get('msg',
                                                            'Unknown')
-                    msg = msg[:50] + '\n' + msg[50:]
-                    reason.append('{}: {}'.format(h, msg))
+                    if isinstance(msg, list):
+                        msg = ''.join(msg)
+                    try:
+                        msg = msg[:50] + '\n' + msg[50:]
+                        reason.append('{}: {}'.format(h, msg))
+                    except TypeError:
+                        LOG.warning('Wrong failure message type. skipping...')
+                        reason.append('Unknown')
             if not self.content['validation_output']:
                 if self.get_unreachable_hosts:
                     reason.append('Unreachable')

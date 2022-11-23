@@ -309,3 +309,35 @@ class TestValidationLog(TestCase):
             [
                 fakes.VALIDATIONS_LOGS_CONTENTS_LIST[0]
                 ['validation_output'][0]['task']])
+
+    @mock.patch('json.load',
+                return_value=fakes.FAILED_VALIDATIONS_LOGS_CONTENTS_LIST[0])
+    @mock.patch('builtins.open')
+    def test_get_reason(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        get_reason = val.get_reason
+        fake_reason = 'localhost: {}\n'.format(
+            fakes.FAILED_VALIDATIONS_LOGS_CONTENTS_LIST[0]
+            ['validation_output'][0]['task']['hosts']['localhost']['msg'])
+        self.assertEqual(get_reason, fake_reason)
+
+    @mock.patch('json.load',
+                return_value=fakes.FAILED_VALIDATIONS_LOGS_WRONG_MSG_LIST[0])
+    @mock.patch('builtins.open')
+    def test_get_reason_list_wrong_msg(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        get_reason = val.get_reason
+        fake_reason = 'localhost: FakeFailed\n'
+        self.assertEqual(get_reason, fake_reason)
+
+    @mock.patch('json.load',
+                return_value=fakes.FAILED_VALIDATIONS_LOGS_WRONG_MSG_TYPE[0])
+    @mock.patch('builtins.open')
+    def test_get_reason_list_wrong_type(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        get_reason = val.get_reason
+        fake_reason = 'Unknown'
+        self.assertEqual(get_reason, fake_reason)

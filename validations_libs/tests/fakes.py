@@ -131,6 +131,70 @@ FAILED_VALIDATIONS_LOGS_CONTENTS_LIST = [{
     ]
 }]
 
+FAILED_VALIDATIONS_LOGS_WRONG_MSG_LIST = [{
+    'stats': {
+        'undercloud': {
+            'changed': 0,
+            'failures': 1,
+            'ignored': 0,
+            'ok': 0,
+            'rescued': 0,
+            'skipped': 0,
+            'unreachable': 0
+        }
+    },
+    'validation_output': [
+        {
+            "task": {
+                "hosts": {
+                    "localhost": {
+                        "_ansible_no_log": False,
+                        "action": "fail",
+                        "changed": False,
+                        "failed": True,
+                        "failed_when_result": True,
+                        "msg": ["Fake", "Failed"]
+                    }
+                },
+                "name": "Verify Fake requirements",
+                "status": "FAILED"
+            }
+        }
+    ]
+}]
+
+FAILED_VALIDATIONS_LOGS_WRONG_MSG_TYPE = [{
+    'stats': {
+        'undercloud': {
+            'changed': 0,
+            'failures': 1,
+            'ignored': 0,
+            'ok': 0,
+            'rescued': 0,
+            'skipped': 0,
+            'unreachable': 0
+        }
+    },
+    'validation_output': [
+        {
+            "task": {
+                "hosts": {
+                    "localhost": {
+                        "_ansible_no_log": False,
+                        "action": "fail",
+                        "changed": False,
+                        "failed": True,
+                        "failed_when_result": True,
+                        "msg": True
+                    }
+                },
+                "name": "Verify Fake requirements",
+                "status": "FAILED"
+            }
+        }
+    ]
+}]
+
 VALIDATIONS_LOGS_CONTENTS_LIST = [{
     'plays': [{
         'play': {
