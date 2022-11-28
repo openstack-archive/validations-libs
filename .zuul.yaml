@@ -92,12 +92,12 @@
       branch_override: stable/train
 
 - job:
-    name: openstack-tox-linters-ubuntu-focal
+    name: validations-libs-openstack-tox-linters-ubuntu-focal
     nodeset: ubuntu-focal
     parent: openstack-tox-linters
 
 - job:
-    name: openstack-tox-cover-ubuntu-focal
+    name: validations-libs-openstack-tox-cover-ubuntu-focal
     nodeset: ubuntu-focal
     parent: openstack-tox-cover
 
@@ -107,15 +107,15 @@
     check:
       jobs:
         - validations-libs-reqcheck
-        - openstack-tox-linters-ubuntu-focal: &tox_override_checkout
+        - validations-libs-openstack-tox-linters-ubuntu-focal: &tox_override_checkout
             override-checkout: stable/train
-        - openstack-tox-cover-ubuntu-focal: *tox_override_checkout
+        - validations-libs-openstack-tox-cover-ubuntu-focal: *tox_override_checkout
         - openstack-tox-py36: *tox_override_checkout
         - openstack-tox-py37: *tox_override_checkout
         - tripleo-ci-centos-8-standalone-validation-libs-stable: &check_deps
             dependencies:
-              - openstack-tox-linters-ubuntu-focal
-              - openstack-tox-cover-ubuntu-focal
+              - validations-libs-openstack-tox-linters-ubuntu-focal
+              - validations-libs-openstack-tox-cover-ubuntu-focal
               - validations-libs-functional
         - openstack-tox-docs: &tripleo-docs
             <<: *tox_override_checkout
@@ -128,14 +128,14 @@
         - tripleo-ci-centos-8-undercloud-containers-validations-libs-stable: *check_deps
     gate:
       jobs:
-        - openstack-tox-linters-ubuntu-focal: *tox_override_checkout
+        - validations-libs-openstack-tox-linters-ubuntu-focal: *tox_override_checkout
         - openstack-tox-py36: *tox_override_checkout
         - openstack-tox-py37: *tox_override_checkout
         - openstack-tox-docs: *tripleo-docs
         - validations-libs-functional
         - tripleo-ci-centos-8-standalone-validation-libs-stable: &gate_deps
             dependencies:
-              - openstack-tox-linters-ubuntu-focal
+              - validations-libs-openstack-tox-linters-ubuntu-focal
               - validations-libs-functional
         - tripleo-ci-centos-8-undercloud-containers-validations-libs-stable: *gate_deps
     promote:
