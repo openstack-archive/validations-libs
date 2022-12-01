@@ -303,6 +303,21 @@ class Ansible:
         with open('{}/{}'.format(path, filename), 'w') as conf:
             parser.write(conf)
 
+    def _check_ansible_files(self, env):
+        # Check directories
+        callbacks_path = env.get('ANSIBLE_CALLBACK_PLUGINS', '')
+        roles_path = env.get('ANSIBLE_ROLES_PATH', '')
+        if not any([path for path
+                    in callbacks_path.split(':')
+                    if os.path.exists('%s/vf_validation_json.py' % (path))]):
+            raise RuntimeError('Callback vf_validation_json.py not found '
+                               'in {}'.format(callbacks_path))
+        if not any([path for path
+                    in roles_path.split(':')
+                    if os.path.exists(path)]):
+            raise RuntimeError('roles directory not found '
+                               'in {}'.format(roles_path))
+
     def run(self, playbook, inventory, workdir, playbook_dir=None,
             connection='smart', output_callback=None,
             base_dir=constants.DEFAULT_VALIDATIONS_BASEDIR,
@@ -439,6 +454,8 @@ class Ansible:
                                          ansible_timeout, callback_whitelist,
                                          base_dir, python_interpreter,
                                          validation_cfg_file=validation_cfg_file))
+        # Check if the callback is present and the roles path
+        self._check_ansible_files(env)
 
         if 'ANSIBLE_CONFIG' not in env and not ansible_cfg_file:
             ansible_cfg_file = os.path.join(ansible_artifact_path,
