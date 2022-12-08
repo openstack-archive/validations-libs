@@ -102,6 +102,11 @@
     nodeset: ubuntu-focal
     parent: openstack-tox-cover
 
+- job:
+    name: validations-libs-openstack-tox-docs-ubuntu-focal
+    nodeset: ubuntu-focal
+    parent: openstack-tox-docs
+
 - project:
     templates:
       - check-requirements
@@ -118,7 +123,7 @@
               - validations-libs-openstack-tox-linters-ubuntu-focal
               - validations-libs-openstack-tox-cover-ubuntu-focal
               - validations-libs-functional
-        - openstack-tox-docs: &tripleo-docs
+        - validations-libs-openstack-tox-docs-ubuntu-focal: &tripleo-docs
             <<: *tox_override_checkout
             files:
               - ^doc/.*
@@ -132,7 +137,7 @@
         - validations-libs-openstack-tox-linters-ubuntu-focal: *tox_override_checkout
         - openstack-tox-py36: *tox_override_checkout
         - openstack-tox-py37: *tox_override_checkout
-        - openstack-tox-docs: *tripleo-docs
+        - validations-libs-openstack-tox-docs-ubuntu-focal: *tripleo-docs
         - validations-libs-functional
         - tripleo-ci-centos-8-standalone-validation-libs-stable: &gate_deps
             dependencies:
