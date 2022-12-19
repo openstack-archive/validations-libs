@@ -13,10 +13,10 @@
 #   under the License.
 #
 
-import logging
+from validations_libs.logger import getLogger
 import yaml
 
-LOG = logging.getLogger(__name__ + ".Group")
+LOG = getLogger(__name__ + ".Group")
 
 
 class Group:

@@ -56,7 +56,7 @@ class TestAnsible(TestCase):
         self.run = Ansible()
         self.run.log = mock.MagicMock()
 
-    @mock.patch('logging.getLogger')
+    @mock.patch('validations_libs.ansible.getLogger')
     def test_ansible_init(self, mock_logger):
         """
         Test of Ansible init.

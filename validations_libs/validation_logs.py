@@ -14,14 +14,14 @@
 #
 import json
 import glob
-import logging
+from validations_libs.logger import getLogger
 import os
 import time
 from os.path import join
 
 from validations_libs import constants
 
-LOG = logging.getLogger(__name__ + ".validation_logs")
+LOG = getLogger(__name__ + ".validation_logs")
 
 
 class ValidationLog:
@@ -78,8 +78,8 @@ class ValidationLog:
                 self.uuid, _name = self.name.split('_', 1)
                 self.validation_id, self.datetime = _name.rsplit('_', 1)
             except ValueError:
-                logging.warning('Wrong log file format, it should be formed '
-                                'such as {uuid}_{validation-id}_{timestamp}')
+                LOG.warning('Wrong log file format, it should be formed '
+                            'such as {uuid}_{validation-id}_{timestamp}')
 
     def _get_content(self):
         try:
