@@ -2,6 +2,9 @@
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
 
+# setuptools were capped in order to prevent https://github.com/pypa/setuptools/issues/3525
+# during the documentation build. (@jpodivin)
+setuptools<65.0.0 # MIT
 pbr>=3.1.1 # Apache-2.0
 six>=1.11.0 # MIT
 PyYAML>=3.13 # MIT

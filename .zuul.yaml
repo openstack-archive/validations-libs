@@ -94,16 +94,22 @@
 
 - job:
     name: validations-libs-openstack-tox-linters-ubuntu-focal
+    vars:
+      ensure_tox_version: '<4'
     nodeset: ubuntu-focal
     parent: openstack-tox-linters
 
 - job:
     name: validations-libs-openstack-tox-cover-ubuntu-focal
+    vars:
+      ensure_tox_version: '<4'
     nodeset: ubuntu-focal
     parent: openstack-tox-cover
 
 - job:
     name: validations-libs-openstack-tox-docs-ubuntu-focal
+    vars:
+      ensure_tox_version: '<4'
     nodeset: ubuntu-focal
     parent: openstack-tox-docs
 
