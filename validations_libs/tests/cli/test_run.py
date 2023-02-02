@@ -89,7 +89,7 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'validation_config': {},
-            'skip_list': None
+            'skip_list': {}
             }
 
         arglist = ['--validation', 'foo',
@@ -130,7 +130,7 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'validation_config': {},
-            'skip_list': None
+            'skip_list': {}
             }
 
         arglist = ['--validation', 'foo',
@@ -184,7 +184,7 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'validation_config': {},
-            'skip_list': None
+            'skip_list': {}
             }
 
         arglist = ['--validation', 'foo',
@@ -223,7 +223,7 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'validation_config': {},
-            'skip_list': None
+            'skip_list': {}
             }
 
         arglist = ['--validation', 'foo',
@@ -266,7 +266,7 @@ class TestRun(BaseCommand):
             'quiet': False,
             'ssh_user': 'doe',
             'validation_config': {},
-            'skip_list': None
+            'skip_list': {}
             }
 
         arglist = ['--validation', 'foo',
@@ -306,7 +306,7 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'validation_config': {},
-            'skip_list': None
+            'skip_list': {}
             }
 
         arglist = ['--validation', 'foo',
@@ -349,7 +349,7 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'validation_config': {},
-            'skip_list': None
+            'skip_list': {}
             }
 
         arglist = ['--validation', 'foo',
@@ -392,7 +392,7 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'validation_config': {},
-            'skip_list': None
+            'skip_list': {}
             }
 
         arglist = [
@@ -477,7 +477,7 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'validation_config': {},
-            'skip_list': None
+            'skip_list': {}
             }
 
         self._set_args(arglist)
@@ -514,7 +514,7 @@ class TestRun(BaseCommand):
             'quiet': True,
             'ssh_user': 'doe',
             'validation_config': {},
-            'skip_list': None
+            'skip_list': {}
             }
 
         self._set_args(arglist)

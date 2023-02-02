@@ -197,8 +197,8 @@ class Run(BaseCommand):
 
             extra_vars = common.read_cli_data_file(
                 parsed_args.extra_vars_file)
-
-        skip_list = None
+        # skip_list is {} so it could be properly processed in the ValidationAction class
+        skip_list = {}
         if parsed_args.skip_list:
             skip_list = common.read_cli_data_file(parsed_args.skip_list)
             if not isinstance(skip_list, dict):

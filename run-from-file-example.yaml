@@ -1,0 +1,72 @@
+---
+#
+# As shown in this template, you can specify validation(s) of your choice by the
+# following options:
+#
+#   Validation(s), group(s), product(s) and category(ies) you wish to include in
+#   the CLI run,
+#   Validation, group(s), product(s), category(ies) you wish to exclude in the
+#   one CLI run,
+#
+#   Optional arguments for the one CLI run,
+#       e.g.:
+#         --config
+#         --limit
+#         --ssh-user
+#         --validation-dir
+#         --ansible-base-dir
+#         --validation-log-dir
+#         --inventory
+#         --output-log
+#         --python-interpreter
+#         --extra-vars
+#         --extra-env-vars
+#         --extra-vars-file
+#
+# Note: Skip list isn't included in the run_arguments list because its functionality
+# is replaced by the 'exclude' parameters.
+#
+# WARNING: when designing validation runs with inclusion and exclusion, please note
+# that the exclusion has higher priority than the inclusion, hence it always takes over.
+#
+# Delete the comment sign for the use of the required action. Add the '-' sign for
+# including, respectively excluding, more items on the list following the correct
+# YAML formatting.
+#
+# Example of a valid YAML file:
+#
+# include_validation:
+#   - check-rhsm-version
+# include_group:
+#   - prep
+#   - pre-deployment
+# include_category:
+#   - compute
+#   - networking
+# include_product:
+#  - tripleo
+# exclude_validation:
+#    - fips-enabled
+# exclude_group:
+# exclude_category:
+#   - kerberos
+# exclude_product:
+#  - rabbitmq
+# config: /etc/validation.cfg
+# limit:
+#  - undercloud-0
+#  - undercloud-1
+# ssh-user: stack
+# validation-dir: /usr/share/ansible/validation-playbooks
+# ansible-base-dir: /usr/share/ansible
+# validation-log-dir: /home/stack/validations
+# inventory: localhost
+# output-log: /home/stack/logs
+# python-interpreter: /usr/bin/python3
+# extra-vars:
+#   key1: val1
+#   key2: val2
+# extra-env-vars:
+#  key1: val1
+#  key2: val2
+# extra-vars-file: /tmp/extra.json

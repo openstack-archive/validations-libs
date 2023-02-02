@@ -534,6 +534,71 @@ FAKE_PLAYBOOK_TEMPLATE = \
     - my_val
 """
 
+PARSED_YAML_FILE = {
+    'include_validation': ['check-rhsm-version'],
+    'include_group': ['prep', 'pre-deployment'],
+    'exclude_validation': ['fips-enabled'],
+    'limit': ['undercloud-0', 'undercloud-1'],
+    'ssh-user': 'stack',
+    'validation-dir': 'VALIDATION_DIR',
+    'ansible-base-dir': '/usr/share/ansible',
+    'validation-log-dir': 'VALIDATION_LOG_DIR',
+    'inventory': 'tmp/inventory.yaml',
+    'output-log': 'foo',
+    'python-interpreter': '/usr/bin/python',
+    'extra-env-vars': {'key1': 'val1', 'key2': 'val2'},
+    'extra-vars': {'key1': 'val1'}}
+
+PARSED_YAML_FILE_EXTRA_VARS = {
+    'include_validation': ['check-rhsm-version'],
+    'include_group': ['prep', 'pre-deployment'],
+    'exclude_validation': ['fips-enabled'],
+    'limit': ['undercloud-0', 'undercloud-1'],
+    'ssh-user': 'stack',
+    'validation-dir': 'VALIDATION_DIR',
+    'ansible-base-dir': '/usr/share/ansible',
+    'validation-log-dir': 'VALIDATION_LOG_DIR',
+    'inventory': 'tmp/inventory.yaml',
+    'output-log': 'foo',
+    'python-interpreter': '/usr/bin/python',
+    'extra-env-vars': {'key1': 'val1', 'key2': 'val2'},
+    'extra-vars': {'key1': 'val1'}}
+
+PARSED_YAML_FILE_NO_VALIDATION = {
+    'exclude_validation': ['fips-enabled'],
+    'limit': ['undercloud-0', 'undercloud-1'],
+    'ssh-user': 'stack',
+    'validation-dir': 'VALIDATION_DIR',
+    'ansible-base-dir': '/usr/share/ansible',
+    'validation-log-dir': 'VALIDATION_LOG_DIR',
+    'inventory': 'tmp/inventory.yaml',
+    'output-log': 'foo',
+    'python-interpreter': '/usr/bin/python',
+    'extra-env-vars': {'key1': 'val1', 'key2': 'val2'},
+    'extra-vars': {'key1': 'val1'}}
+
+PARSED_YAML_FILE_WRONG_FORMAT = []
+
+PARSED_YAML_FILE_WRONG_CONFIG = {
+    'include_validation': ['check-rhsm-version'],
+    'include_group': ['prep', 'pre-deployment'],
+    'exclude_validation': ['fips-enabled'],
+    'limit': ['undercloud-0', 'undercloud-1'],
+    'ssh-user': 'stack',
+    'validation-dir': 'VALIDATION_DIR',
+    'ansible-base-dir': '/usr/share/ansible',
+    'validation-log-dir': 'VALIDATION_LOG_DIR',
+    'inventory': 'tmp/inventory.yaml',
+    'output-log': 'foo',
+    'python-interpreter': '/usr/bin/python',
+    'extra-env-vars': {'key1': 'val1', 'key2': 'val2'},
+    'extra-vars': {'key1': 'val1'},
+    'config': '/foo/bar'}
+
+WRONG_INVENTORY_FORMAT = {
+    'inventory': ['is', 'not', 'dictionary']
+}
+
 
 def fake_ansible_runner_run_return(status='successful', rc=0):
     return status, rc

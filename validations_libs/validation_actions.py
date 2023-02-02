@@ -21,6 +21,7 @@ import yaml
 from validations_libs.ansible import Ansible as v_ansible
 from validations_libs.group import Group
 from validations_libs.cli.common import Spinner
+from validations_libs.validation import Validation
 from validations_libs.validation_logs import ValidationLogs, ValidationLog
 from validations_libs import constants
 from validations_libs import utils as v_utils
@@ -314,6 +315,100 @@ class ValidationActions:
 
         return [path[1] for path in logs[-history_limit:]]
 
+    def _retrieve_validation_to_exclude(self, validations,
+                                        validations_dir, validation_config,
+                                        exclude_validation=None,
+                                        exclude_group=None,
+                                        exclude_category=None,
+                                        exclude_product=None,
+                                        skip_list=None, limit_hosts=None):
+        """Retrive all validations which are excluded from the run.
+        Each validation that needs to be excluded is added to the skip_list.
+        :param skip_list: Dictionary of validations to skip.
+        :type skip_list: `dictionary`
+        :param validations: List of validations playbooks
+        :type validations: `list`
+        :param validations_dir: The absolute path of the validations playbooks
+        :type validations_dir: `string`
+        :param validation_config: A dictionary of configuration for Validation
+                                  loaded from an validation.cfg file.
+        :type validation_config: `dict`
+        :param exclude_validation: List of validation name(s) to exclude
+        :type exclude_validation: `list`
+        :param exclude_group: List of validation group(s) to exclude
+        :type exclude_group: `list`
+        :param exclude_category: List of validation category(s) to exclude
+        :type exclude_category: `list`
+        :param exclude_product: List of validation product(s) to exclude
+        :type exclude_product: `list`
+        :param limit_hosts: Limit the execution to the hosts.
+        :type limit_hosts: `list`
+
+        :return: skip_list
+        :rtype: `list`
+        """
+
+        if skip_list is None:
+            skip_list = {}
+        elif not isinstance(skip_list, dict):
+            raise TypeError('skip_list must be a dictionary')
+        if exclude_validation is None:
+            exclude_validation = []
+        if limit_hosts is None:
+            limit_hosts = []
+
+        validations = [
+            os.path.basename(os.path.splitext(play)[0]) for play in validations]
+
+        if exclude_validation:
+            for validation in exclude_validation:
+                skip_list[validation] = {'hosts': 'ALL', 'reason': 'CLI override',
+                                         'lp': None}
+
+        if exclude_group or exclude_category or exclude_product:
+            exclude_validation.extend(v_utils.parse_all_validations_on_disk(
+                path=validations_dir, groups=exclude_group,
+                categories=exclude_category, products=exclude_product,
+                validation_config=validation_config))
+            self.log.debug("Validations to be excluded {} ".format(exclude_validation))
+            exclude_validation_id = []
+            # 1st bug: mixing types in list
+            exclude_validation_id = [i['id'] for i in exclude_validation if 'id' in i]
+            for validation in exclude_validation_id:
+                skip_list[validation] = {'hosts': 'ALL', 'reason': 'CLI override',
+                                         'lp': None}
+        if not skip_list:
+            return skip_list
+
+        # Returns False if validation is skipped on all hosts ('hosts' = ALL)
+        # Returns False if validation should be run on hosts that are
+        # also defined in the skip_list (illogical operation)
+        # Returns True if the validation is run on at least one host
+        def _retrieve_validation_hosts(validation):
+            """Retrive hosts on which validations are run
+            :param validation: Validation where the param limit_hosts is applied
+            :type validation: `str`
+            """
+            # 2nd bug: set out of string
+            if validation['hosts'] == 'ALL':
+                return False
+            if not set(limit_hosts).difference(set(validation['hosts'])):
+                return False
+            return True
+        # There can be validations we want to run only on some hosts (limit_hosts)
+        # validation_difference is all validations that will be run
+        validation_difference = set(validations).difference(set(skip_list.keys()))
+        self.log.debug("Validation parameter skip_list saved as {}, "
+                       "hosts where the validations are run are {} "
+                       "all hosts where the validation is run are {} ".format(
+                skip_list, limit_hosts, validation_difference))
+
+        if (any([_retrieve_validation_hosts(skip_list[val]) for val in skip_list])
+                or validation_difference):
+            return skip_list
+        else:
+            raise ValidationRunException("Invalid operation, there is no validation to run.")
+
     def run_validations(self, validation_name=None, inventory='localhost',
                         group=None, category=None, product=None,
                         extra_vars=None, validations_dir=None,
@@ -323,7 +418,9 @@ class ValidationActions:
                         python_interpreter=None, skip_list=None,
                         callback_whitelist=None,
                         output_callback='vf_validation_stdout', ssh_user=None,
-                        validation_config=None):
+                        validation_config=None, exclude_validation=None,
+                        exclude_group=None, exclude_category=None,
+                        exclude_product=None):
         """Run one or multiple validations by name(s), by group(s) or by
         product(s)
 
@@ -385,6 +482,14 @@ class ValidationActions:
         :param validation_config: A dictionary of configuration for Validation
                                   loaded from an validation.cfg file.
         :type validation_config: ``dict``
+        :param exclude_validation: List of validation name(s) to exclude
+        :type exclude_validation: `list`
+        :param exclude_group: List of validation group(s) to exclude
+        :type exclude_group: `list`
+        :param exclude_category: List of validation category(s) to exclude
+        :type exclude_category: `list`
+        :param exclude_product: List of validation product(s) to exclude
+        :type exclude_product: `list`
         :return: A list of dictionary containing the informations of the
                  validations executions (Validations, Duration, Host_Group,
                  Status, Status_by_Host, UUID and Unreachable_Hosts)
@@ -419,6 +524,7 @@ class ValidationActions:
         playbooks = []
         validations_dir = (validations_dir if validations_dir
                            else self.validation_path)
+        group_playbooks = []
         if group or category or product:
             self.log.debug(
                 "Getting the validations list by:\n"
@@ -432,20 +538,24 @@ class ValidationActions:
                 validation_config=validation_config
             )
             for val in validations:
-                playbooks.append("{path}/{id}.yaml".format(**val))
-        elif validation_name:
+                group_playbooks.append("{path}/{id}.yaml".format(**val))
+            playbooks.extend(group_playbooks)
+            playbooks = list(set(playbooks))
+
+        if validation_name:
             self.log.debug(
                 "Getting the {} validation.".format(
                     validation_name))
 
-            playbooks = v_utils.get_validations_playbook(
-                    validations_dir,
-                    validation_name,
-                    validation_config=validation_config)
+            validation_playbooks = v_utils.get_validations_playbook(
+                validations_dir,
+                validation_id=validation_name,
+                validation_config=validation_config
+            )
 
-            if not playbooks or len(validation_name) != len(playbooks):
+            if not validation_playbooks or len(validation_name) != len(validation_playbooks):
                 found_playbooks = []
-                for play in playbooks:
+                for play in validation_playbooks:
                     found_playbooks.append(
                         os.path.basename(os.path.splitext(play)[0]))
 
@@ -454,9 +564,13 @@ class ValidationActions:
 
                 msg = (
                     "Following validations were not found in '{}': {}"
-                    ).format(validations_dir, ', '.join(unknown_validations))
+                ).format(validations_dir, ', '.join(unknown_validations))
 
                 raise ValidationRunException(msg)
+
+            playbooks.extend(validation_playbooks)
+            playbooks = list(set(playbooks))
+
         else:
             raise ValidationRunException("No validations found")
 
@@ -466,6 +580,18 @@ class ValidationActions:
             'Running the validations with Ansible.\n'
             'Gathered playbooks:\n -{}').format(
                 '\n -'.join(playbooks)))
+
+        if skip_list is None:
+            skip_list = {}
+
+        skip_list = self._retrieve_validation_to_exclude(validations_dir=validations_dir,
+                                                         exclude_validation=exclude_validation,
+                                                         exclude_group=exclude_group,
+                                                         exclude_category=exclude_category,
+                                                         exclude_product=exclude_product,
+                                                         validation_config=validation_config,
+                                                         skip_list=skip_list, validations=playbooks,
+                                                         limit_hosts=limit_hosts)
 
         results = []
         for playbook in playbooks:

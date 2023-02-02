@@ -25,6 +25,7 @@ from unittest import TestCase
 from validations_libs.tests import fakes
 from validations_libs.validation_actions import ValidationActions
 from validations_libs.exceptions import ValidationRunException, ValidationShowException
+import copy
 
 
 class TestValidationActions(TestCase):
@@ -54,7 +55,7 @@ class TestValidationActions(TestCase):
     @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
     @mock.patch('validations_libs.utils.get_validations_playbook',
                 return_value=['/tmp/foo/fake.yaml'])
-    def test_validation_skip_validation(self, mock_validation_play, mock_exists, mock_access):
+    def test_validation_skip_validation_invalid_operation(self, mock_validation_play, mock_exists, mock_access):
 
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
@@ -64,11 +65,31 @@ class TestValidationActions(TestCase):
                              }}
 
         run = ValidationActions()
-        run_return = run.run_validations(playbook, inventory,
-                                         validations_dir='/tmp/foo',
-                                         skip_list=skip_list,
+        self.assertRaises(ValidationRunException, run.run_validations, playbook, inventory,
+                          validations_dir='/tmp/foo', skip_list=skip_list, limit_hosts=None)
+
+    @mock.patch('validations_libs.utils.os.access', return_value=True)
+    @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
+    @mock.patch('validations_libs.utils.get_validations_playbook',
+                return_value=['/tmp/foo/fake.yaml', '/tmp/foo/fake1.yaml'])
+    @mock.patch('validations_libs.utils.os.makedirs')
+    @mock.patch('validations_libs.ansible.Ansible.run', return_value=('fake1.yaml', 0, 'successful'))
+    def test_validation_skip_validation_success(self, mock_ansible_run,
+                                                mock_makedirs, mock_validation_play,
+                                                mock_exists, mock_access):
+
+        playbook = ['fake.yaml', 'fake1.yaml']
+        inventory = 'tmp/inventory.yaml'
+        skip_list = {'fake': {'hosts': 'ALL',
+                              'reason': None,
+                              'lp': None
+                             }}
+
+        run = ValidationActions()
+        return_run = run.run_validations(playbook, inventory,
+                                         validations_dir='/tmp/foo', skip_list=skip_list,
                                          limit_hosts=None)
-        self.assertEqual(run_return, [])
+        self.assertEqual(return_run, [])
 
     @mock.patch('validations_libs.utils.current_time',
                 return_value='time')
@@ -190,6 +211,7 @@ class TestValidationActions(TestCase):
 
         mock_ansible_run.assert_called_with(**run_called_args)
 
+    @mock.patch('validations_libs.utils.get_validations_playbook')
     @mock.patch('validations_libs.utils.os.makedirs')
     @mock.patch('validations_libs.utils.os.access', return_value=True)
     @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
@@ -200,7 +222,7 @@ class TestValidationActions(TestCase):
     def test_validation_run_success(self, mock_ansible_run,
                                     mock_validation_dir,
                                     mock_results, mock_exists, mock_access,
-                                    mock_makedirs):
+                                    mock_makedirs, mock_validation_playbooks):
 
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
@@ -208,26 +230,27 @@ class TestValidationActions(TestCase):
             'id': 'foo',
             'name': 'My Validition One Name',
             'parameters': {},
-            'path': '/tmp/foobar/validation-playbooks'}]
+            'path': '/tmp/foo/validation-playbooks'}]
+
+        mock_validation_playbooks.return_value = ['/tmp/foo/validation-playbooks/foo.yaml']
 
         mock_ansible_run.return_value = ('foo.yaml', 0, 'successful')
 
         expected_run_return = fakes.FAKE_SUCCESS_RUN[0]
 
-        playbook = ['fake.yaml']
+        playbook = ['foo.yaml']
         inventory = 'tmp/inventory.yaml'
 
         run = ValidationActions()
         run_return = run.run_validations(playbook, inventory,
-                                         group=fakes.GROUPS_LIST,
-                                         validations_dir='/tmp/foo')
+                                         group=fakes.GROUPS_LIST)
         self.assertEqual(run_return, expected_run_return)
 
         mock_ansible_run.assert_called_with(
             workdir=ANY,
-            playbook='/tmp/foobar/validation-playbooks/foo.yaml',
+            playbook='/tmp/foo/validation-playbooks/foo.yaml',
             base_dir='/usr/share/ansible',
-            playbook_dir='/tmp/foobar/validation-playbooks',
+            playbook_dir='/tmp/foo/validation-playbooks',
             parallel_run=True,
             inventory='tmp/inventory.yaml',
             output_callback='vf_validation_stdout',
@@ -245,6 +268,78 @@ class TestValidationActions(TestCase):
             ssh_user=None,
             validation_cfg_file=None
         )
+
+    @mock.patch('validations_libs.utils.get_validations_playbook')
+    @mock.patch('validations_libs.utils.os.makedirs')
+    @mock.patch('validations_libs.utils.os.access', return_value=True)
+    @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
+    @mock.patch('validations_libs.validation_actions.ValidationLogs.get_results',
+                side_effect=fakes.FAKE_SUCCESS_RUN)
+    @mock.patch('validations_libs.utils.parse_all_validations_on_disk')
+    @mock.patch('validations_libs.ansible.Ansible.run')
+    def test_validation_run_from_file_success(self, mock_ansible_run,
+                                              mock_validation_dir,
+                                              mock_results, mock_exists, mock_access,
+                                              mock_makedirs, mock_validation_playbooks):
+
+        mock_validation_dir.return_value = [{
+            'description': 'My Validation One Description',
+            'groups': ['prep', 'pre-deployment'],
+            'id': 'foo',
+            'name': 'My Validition One Name',
+            'parameters': {},
+            'path': '/tmp/foo/validation-playbooks'}]
+
+        mock_validation_playbooks.return_value = ['/tmp/foo/validation-playbooks/foo.yaml']
+
+        mock_ansible_run.return_value = ('foo.yaml', 0, 'successful')
+
+        expected_run_return = fakes.FAKE_SUCCESS_RUN[0]
+
+        yaml_file = fakes.PARSED_YAML_FILE
+
+        run = ValidationActions()
+        run_return = run.run_validations(
+                validation_name=yaml_file.get('include_validation'),
+                group=yaml_file.get('include_group'),
+                category=yaml_file.get('include_category'),
+                product=yaml_file.get('include_product'),
+                exclude_validation=yaml_file.get('exclude_validation'),
+                exclude_group=yaml_file.get('exclude_group'),
+                exclude_category=yaml_file.get('exclude_category'),
+                exclude_product=yaml_file.get('exclude_product'),
+                validation_config=fakes.DEFAULT_CONFIG,
+                limit_hosts=yaml_file.get('limit'),
+                ssh_user=yaml_file.get('ssh-user'),
+                validations_dir=yaml_file.get('validation-dir'),
+                inventory=yaml_file.get('inventory'),
+                base_dir=yaml_file.get('ansible-base-dir'),
+                python_interpreter=yaml_file.get('python-interpreter'),
+                extra_vars=yaml_file.get('extra-vars'),
+                extra_env_vars=yaml_file.get('extra-env-vars'))
+        self.assertEqual(run_return, expected_run_return)
+
+        mock_ansible_run.assert_called_with(
+            workdir=ANY,
+            playbook='/tmp/foo/validation-playbooks/foo.yaml',
+            base_dir='/usr/share/ansible',
+            playbook_dir='/tmp/foo/validation-playbooks',
+            parallel_run=True,
+            inventory='tmp/inventory.yaml',
+            output_callback='vf_validation_stdout',
+            callback_whitelist=None,
+            quiet=True,
+            extra_vars={'key1': 'val1'},
+            limit_hosts=['undercloud-0', 'undercloud-1'],
+            extra_env_variables={'key1': 'val1', 'key2': 'val2'},
+            ansible_cfg_file=None,
+            gathering_policy='explicit',
+            ansible_artifact_path=ANY,
+            log_path=ANY,
+            run_async=False,
+            python_interpreter='/usr/bin/python',
+            ssh_user='stack',
+            validation_cfg_file=fakes.DEFAULT_CONFIG)
 
     @mock.patch('validations_libs.utils.get_validations_playbook')
     def test_validation_run_wrong_validation_name(self, mock_validation_play):
@@ -280,6 +375,7 @@ class TestValidationActions(TestCase):
                           validations_dir='/tmp/foo'
                           )
 
+    @mock.patch('validations_libs.utils.get_validations_playbook')
     @mock.patch('validations_libs.utils.os.makedirs')
     @mock.patch('validations_libs.utils.os.access', return_value=True)
     @mock.patch('validations_libs.utils.os.path.exists', return_value=True)
@@ -289,7 +385,7 @@ class TestValidationActions(TestCase):
     def test_validation_run_failed(self, mock_ansible_run,
                                    mock_validation_dir, mock_results,
                                    mock_exists, mock_access,
-                                   mock_makedirs):
+                                   mock_makedirs, mock_validation_playbooks):
 
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
@@ -300,6 +396,8 @@ class TestValidationActions(TestCase):
             'path': '/usr/share/ansible/validation-playbooks'}]
 
         mock_ansible_run.return_value = ('foo.yaml', 0, 'failed')
+
+        mock_validation_playbooks.return_value = ['foo.yaml']
 
         mock_results.return_value = [{'Duration': '0:00:01.761',
                                       'Host_Group': 'overcloud',
@@ -326,6 +424,7 @@ class TestValidationActions(TestCase):
                                          validations_dir='/tmp/foo')
         self.assertEqual(run_return, expected_run_return)
 
+    @mock.patch('validations_libs.utils.get_validations_playbook')
     @mock.patch('validations_libs.ansible.Ansible._playbook_check',
                 side_effect=RuntimeError)
     @mock.patch('validations_libs.utils.os.makedirs')
@@ -335,7 +434,8 @@ class TestValidationActions(TestCase):
     def test_spinner_exception_failure_condition(self, mock_validation_dir,
                                                  mock_exists, mock_access,
                                                  mock_makedirs,
-                                                 mock_playbook_check):
+                                                 mock_playbook_check,
+                                                 mock_validation_playbooks):
 
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
@@ -344,7 +444,8 @@ class TestValidationActions(TestCase):
             'name': 'My Validition One Name',
             'parameters': {},
             'path': '/usr/share/ansible/validation-playbooks'}]
-        playbook = ['fake.yaml']
+        mock_validation_playbooks.return_value = ['foo.yaml']
+        playbook = ['foo.yaml']
         inventory = 'tmp/inventory.yaml'
 
         run = ValidationActions()
@@ -353,6 +454,7 @@ class TestValidationActions(TestCase):
                           inventory, group=fakes.GROUPS_LIST,
                           validations_dir='/tmp/foo')
 
+    @mock.patch('validations_libs.utils.get_validations_playbook')
     @mock.patch('validations_libs.ansible.Ansible._playbook_check',
                 side_effect=RuntimeError)
     @mock.patch('validations_libs.utils.os.makedirs')
@@ -362,7 +464,7 @@ class TestValidationActions(TestCase):
     @mock.patch('sys.__stdin__.isatty', return_value=True)
     def test_spinner_forced_run(self, mock_stdin_isatty, mock_validation_dir,
                                 mock_exists, mock_access, mock_makedirs,
-                                mock_playbook_check):
+                                mock_playbook_check, mock_validation_playbooks):
 
         mock_validation_dir.return_value = [{
             'description': 'My Validation One Description',
@@ -371,6 +473,7 @@ class TestValidationActions(TestCase):
             'name': 'My Validition One Name',
             'parameters': {},
             'path': '/usr/share/ansible/validation-playbooks'}]
+        mock_validation_playbooks.return_value = ['foo.yaml']
         playbook = ['fake.yaml']
         inventory = 'tmp/inventory.yaml'
 
