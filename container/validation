@@ -100,8 +100,8 @@ class Validation(argparse.ArgumentParser):
                             help=('User UID in container. '))
         parser.add_argument('--gid', '-G', type=int, default=user_entry.pw_gid,
                             help=('Group UID in container. '))
-        parser.add_argument('--image', type=str, default='fedora:35',
-                            help='Container base image. Defaults to fedora:35')
+        parser.add_argument('--image', type=str, default='fedora:36',
+                            help='Container base image. Defaults to fedora:36')
         parser.add_argument('--extra-pkgs', type=str, default='',
                             help=('Extra packages to install in the container.'
                                   'Comma or space separated list. '
