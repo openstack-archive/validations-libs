@@ -525,6 +525,10 @@ class ValidationActions:
         validations_dir = (validations_dir if validations_dir
                            else self.validation_path)
         group_playbooks = []
+
+        if not any((validation_name, group, category, product)):
+            raise ValidationRunException("No validations found")
+
         if group or category or product:
             self.log.debug(
                 "Getting the validations list by:\n"
@@ -570,9 +574,6 @@ class ValidationActions:
 
             playbooks.extend(validation_playbooks)
             playbooks = list(set(playbooks))
-
-        else:
-            raise ValidationRunException("No validations found")
 
         log_path = v_utils.create_log_dir(self.log_path)
 
