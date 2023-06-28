@@ -78,6 +78,8 @@ def print_dict(data):
         if row.get('Status'):
             status = row.get('Status')
             row['Status'] = colors.color_output(status, status=status)
+        if row.get('Reasons') and len(row['Reasons']) > 80:
+            row['Reasons'] = row['Reasons'][:80] + '...(output truncated, see logs for full output)'
         table.add_row(row.values())
     print(table)
 
