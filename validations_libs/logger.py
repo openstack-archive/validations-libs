@@ -42,6 +42,6 @@ def getLogger(loggerName, stream_lvl=logging.WARN):
 
         new_logger.addHandler(sys_handler)
     else:
-        new_logger.warning("Journal socket does not exist. Logs will not be processed by syslog.")
+        new_logger.debug("Journal socket does not exist. Logs will not be processed by syslog.")
 
     return new_logger

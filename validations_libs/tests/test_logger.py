@@ -35,10 +35,10 @@ class TestLogger(TestCase):
         mock_exists.assert_called_once_with('/dev/log')
         self.assertEqual(logging.Logger, type(new_logger))
 
-    @mock.patch('logging.Logger.warning')
+    @mock.patch('logging.Logger.debug')
     @mock.patch('os.path.exists', return_value=False)
-    def test_logger_init_no_journal(self, mock_exists, mock_warning):
+    def test_logger_init_no_journal(self, mock_exists, mock_debug):
         new_logger = logger.getLogger("fooo")
         mock_exists.assert_called_once_with('/dev/log')
-        mock_warning.assert_called_once()
+        mock_debug.assert_called_once()
         self.assertEqual(logging.Logger, type(new_logger))
