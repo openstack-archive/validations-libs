@@ -1,34 +1,5 @@
 ---
 - job:
-    name: validations-libs-podified-podman
-    parent: devstack-platform-fedora-latest
-    run: playbooks/validations-libs-podified.yaml
-    post-run: playbooks/post.yaml
-    timeout: 7200
-    voting: true
-    required-projects:
-      - openstack/validations-libs
-      - openstack/validations-common
-      - name: openstack/openstacksdk
-        override-checkout: master
-      - name: opendev.org/openstack/devstack
-        override-checkout: master
-    vars:
-      container_engine: podman
-      devstack_localrc:
-        USE_PYTHON3: true
-    irrelevant-files:
-      - ^.*\.rst$
-      - ^doc/.*$
-      - ^releasenotes/.*$
-
-- job:
-    name: validations-libs-podified-docker
-    parent: validations-libs-podified-podman
-    vars:
-      container_engine: docker
-
-- job:
     name: validations-libs-functional
     parent: devstack
     run: playbooks/validations-libs-functional.yaml
@@ -61,15 +32,6 @@
     files:
       - ^requirements.txt$
 
-- job:
-    name: tripleo-ci-centos-9-standalone-validation-libs
-    parent: tripleo-ci-centos-9-standalone
-    vars:
-      featureset: '052'
-      validate_services: true
-      enable_validation: true
-      validation_component: validation
-
 - project:
     templates:
       - check-requirements
@@ -80,15 +42,6 @@
         - openstack-tox-cover
         - openstack-tox-py38
         - openstack-tox-py39
-        - tripleo-ci-centos-9-standalone-validation-libs: &standalone_consumer_job_params
-            vars: &standalone_consumer_job_vars
-              build_container_images: true
-            dependencies:
-              - openstack-tox-linters
-              - openstack-tox-cover
-              - validations-libs-functional
-              - validations-libs-podified-podman
-              - validations-libs-podified-docker
         - openstack-tox-docs: &tripleo-docs
             files:
               - ^doc/.*
@@ -96,15 +49,6 @@
               - ^validations_libs/.*
               - ^CONTRIBUTING.rst
         - validations-libs-functional
-        - validations-libs-podified-podman
-        - validations-libs-podified-docker
-        - tripleo-ci-centos-9-undercloud-containers: &undercloud_containers_job_params
-            dependencies:
-              - openstack-tox-linters
-              - openstack-tox-cover
-              - validations-libs-functional
-              - validations-libs-podified-podman
-              - validations-libs-podified-docker
     gate:
       jobs:
         - openstack-tox-linters
@@ -112,19 +56,6 @@
         - openstack-tox-py39
         - openstack-tox-docs: *tripleo-docs
         - validations-libs-functional
-        - validations-libs-podified-podman
-        - validations-libs-podified-docker
-        - tripleo-ci-centos-9-standalone-validation-libs:
-            vars: *standalone_consumer_job_vars
-            dependencies:
-              - openstack-tox-linters
-              - validations-libs-functional
-              - validations-libs-podified-podman
-              - validations-libs-podified-docker
-        - tripleo-ci-centos-9-undercloud-containers:
-            dependencies:
-              - openstack-tox-linters
-              - validations-libs-functional
     promote:
       jobs:
         - promote-openstack-tox-docs: *tripleo-docs
