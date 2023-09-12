@@ -189,7 +189,7 @@ class CallbackModule(CallbackBase):
 
     def v2_playbook_on_no_hosts_matched(self):
         no_match_result = self._val_task('No tasks run')
-        no_match_result['task']['status'] = "FAILED"
+        no_match_result['task']['status'] = "SKIPPED"
         no_match_result['task']['info'] = (
             "None of the hosts specified"
             " were matched in the inventory file")
@@ -199,11 +199,11 @@ class CallbackModule(CallbackBase):
             'stats': {
                 'No host matched': {
                     'changed': 0,
-                    'failures': 1,
+                    'failures': 0,
                     'ignored': 0,
                     'ok': 0,
                     'rescued': 0,
-                    'skipped': 0,
+                    'skipped': 1,
                     'unreachable': 0}},
             'validation_output': self.simple_results + [no_match_result]
         }

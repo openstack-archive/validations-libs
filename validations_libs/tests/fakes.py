@@ -131,6 +131,44 @@ FAILED_VALIDATIONS_LOGS_CONTENTS_LIST = [{
     ]
 }]
 
+NO_HOST_MATCHED_VALIDATIONS_LOGS_CONTENTS_LIST = {
+    "plays": [
+        {
+            "play": {
+                "duration": {
+                    "start": "2023-09-12T15:02:40.134341Z"
+                },
+                "host": "Controller",
+                "id": "96ebffe3-5312-4dbc-b04c-9039db80a160",
+                "validation_id": "controller-ulimits",
+                "validation_path": "/usr/share/ansible/validation-playbooks"
+            },
+            "tasks": []
+        }
+    ],
+    "stats": {
+        "No host matched": {
+            "changed": 0,
+            "failures": 0,
+            "ignored": 0,
+            "ok": 0,
+            "rescued": 0,
+            "skipped": 1,
+            "unreachable": 0
+        }
+    },
+    "validation_output": [
+        {
+            "task": {
+                "hosts": {},
+                "info": "None of the hosts specified were matched in the inventory file",
+                "name": "No tasks run",
+                "status": "SKIPPED"
+            }
+        }
+    ]
+}
+
 FAILED_VALIDATIONS_LOGS_WRONG_MSG_LIST = [{
     'stats': {
         'undercloud': {

@@ -382,7 +382,7 @@ class TestValidationJson(base.BaseTestCase):
         dummy_stats.processed['foohost'] = 5
 
         no_match_result = validation_task
-        no_match_result['task']['status'] = "FAILED"
+        no_match_result['task']['status'] = "SKIPPED"
         no_match_result['task']['info'] = (
             "None of the hosts specified"
             " were matched in the inventory file")
@@ -392,11 +392,11 @@ class TestValidationJson(base.BaseTestCase):
             'stats': {
                 'No host matched': {
                     'changed': 0,
-                    'failures': 1,
+                    'failures': 0,
                     'ignored': 0,
                     'ok': 0,
                     'rescued': 0,
-                    'skipped': 0,
+                    'skipped': 1,
                     'unreachable': 0}},
             'validation_output': results + [no_match_result]
         }

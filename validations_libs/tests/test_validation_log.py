@@ -154,6 +154,15 @@ class TestValidationLog(TestCase):
         self.assertEqual(status, 'FAILED')
 
     @mock.patch('json.load',
+                return_value=fakes.NO_HOST_MATCHED_VALIDATIONS_LOGS_CONTENTS_LIST)
+    @mock.patch('builtins.open')
+    def test_get_status_no_host_matched(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        status = val.get_status
+        self.assertEqual(status, 'SKIPPED')
+
+    @mock.patch('json.load',
                 return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])
     @mock.patch('builtins.open')
     def test_get_status_unreachable(self, mock_open, mock_json):
@@ -188,6 +197,15 @@ class TestValidationLog(TestCase):
             logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
         host_group = val.get_hosts_status
         self.assertEqual(host_group, 'undercloud,FAILED')
+
+    @mock.patch('json.load',
+                return_value=fakes.NO_HOST_MATCHED_VALIDATIONS_LOGS_CONTENTS_LIST)
+    @mock.patch('builtins.open')
+    def test_get_hosts_status_no_host_match(self, mock_open, mock_json):
+        val = ValidationLog(
+            logfile='/tmp/123_foo_2020-03-30T13:17:22.447857Z.json')
+        host_group = val.get_hosts_status
+        self.assertEqual(host_group, 'No host matched,SKIPPED')
 
     @mock.patch('json.load',
                 return_value=fakes.BAD_VALIDATIONS_LOGS_CONTENTS_LIST[0])

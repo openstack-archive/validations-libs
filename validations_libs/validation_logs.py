@@ -199,7 +199,9 @@ class ValidationLog:
         """Return validation status
 
         :return: 'FAILED' if there are any failed or unreachable validations,
-                 'PASSED' if not.
+                 'SKIPPED' if skipped is True and ok is false which means that
+                 the entire validation has been ignored because no host matched,
+                 'PASSED' if none of those conditions.
         :rtype: ``string``
         """
         failure_states = ['failures', 'unreachable']
@@ -207,6 +209,8 @@ class ValidationLog:
         for v_stats in self.content['stats'].values():
             if any([v_stats[failure] != 0 for failure in failure_states]):
                 return 'FAILED'
+            if v_stats['skipped'] and not v_stats['ok']:
+                return 'SKIPPED'
         return 'PASSED'
 
     @property
@@ -239,6 +243,8 @@ class ValidationLog:
                 hosts.append('{},{}'.format(h, 'FAILED'))
             elif self.content['stats'][h].get('unreachable'):
                 hosts.append('{},{}'.format(h, 'UNREACHABLE'))
+            elif self.content['stats'][h].get('skipped') and not self.content['stats'][h].get('ok'):
+                hosts.append('{},{}'.format(h, 'SKIPPED'))
             else:
                 hosts.append('{},{}'.format(h, 'PASSED'))
         return ', '.join(hosts)
