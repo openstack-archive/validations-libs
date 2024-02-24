@@ -1,7 +1,0 @@
----
-packages:
-  all:
-    - name: "python-yaml"
-    - name: "python-PyYAML"
-    - name: "PyYAML"
-    - name: "ansible"
